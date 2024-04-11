@@ -97,9 +97,9 @@ export const updateUser = async (request, response) => {
     } catch (err) {
         const { message } = err;
 
-        if (err instanceof AlreadyExistsError) {
+        if (err instanceof AlreadyExistsError || err instanceof IncorrectPasswordError) {
             response.status(400);
-            
+
         } else {
             console.error(err);
             return response.status(500).json({ message: "Unknown internal error occured" });

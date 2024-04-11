@@ -19,13 +19,16 @@ const userSchema = new mongoose.Schema({
 
     friends: [{
         _id: false,
-        userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+        // userId => user
+        user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
         status: { type: String, enum: ['friend', 'sent', 'received'] }
     }],
 
-    posts: { type: [mongoose.Schema.Types.ObjectId], ref: 'Post', default: [] },
+    posts: { type: [mongoose.Schema.Types.ObjectId], ref: 'Post' },
 
-    images: { type: [mongoose.Schema.Types.ObjectId], ref: 'Image', default: [] },
+    chats: { type: [mongoose.Schema.Types.ObjectId], ref: 'Chat' },
+
+    images: { type: [mongoose.Schema.Types.ObjectId], ref: 'Image' },
     profilePicture: { type: mongoose.Schema.Types.ObjectId, ref: 'Image', default: null },
 });
 

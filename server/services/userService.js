@@ -1,7 +1,11 @@
+import mongoose from 'mongoose';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 
 import User from '../models/userModel.js';
+// import Post from '../models/postModel.js';
+// import Chat from '../models/chatModel.js';
+// import Image from '../models/imageModel.js';
 
 import {
     NotFoundError,
@@ -10,38 +14,50 @@ import {
 } from '../errors/userErrors.js';
 
 
-// export const searchUsers = async (query) => {
-//     userValidators.js => validateSearchQuery (query("age"), query("firstName")...)
+/**
+ * 
+ * @param {object} query Search parameters.
+ * @returns {Promise<Array>} Array of matching users.
+ */
+export const searchUsers = async (query) => {
 
-//     const filter = ?; example: ({ age: { $gte: 20 } })
-//     const result = await User.find(query, { email: 0, password: 0 }); => User.aggregate({ $match: filter }); ?
-//     upd: "$match is similar to find()"
-//     ???
+    // birthDate (age field?)
+    // query.age = { $gte: query.minBirthDate, $lte: query.maxBirthDate };
 
-//     console.log(result);
+    // const result = await User.find(
+    //     query,
+    //     { _id: 1, firstName: 1, lastName: 1, profilePicture: 1 },
+    // );
 
-//     return result || []; (if result !== [] already)
-// }
+    console.log(query);
+
+    // return result;
+}
 
 
 /**
  * Get all of the public user data by ObjectId.
  * 
  * @param {string} id User's ObjectId
- * @returns {Promise<object>} All the public data of requested user.
+ * @returns {Promise<object>} Public data of the requested user.
  */
 export const getUser = async (id) => {
-    // retrieveFriends route & controller & service?
+    
+    const user = await User.findById(
+        id,
+        { email: 0, password: 0, createdAt: 0, chats: 0 }
+    ).populate({
+        path: 'friends.user',
+        select: ['firstName', 'lastName', 'profilePicture']
+    });
 
-    const result = await User.findById(id, { email: 0, password: 0, createdAt: 0 });
-
-    if (!result) {
-        throw new NotFoundError("Provided user doesn't exist");
+    if (!user) {
+        throw new NotFoundError("Such user doesn't exist");
     }
+    
+    user.friends = user.friends.filter(friend => friend.status === 'friend');
 
-    result.friends = result.friends.filter(friend => friend.status === 'friend');
-
-    return result;
+    return user;
 }
 
 
@@ -49,7 +65,7 @@ export const getUser = async (id) => {
  * User sign up data validation and inserting it into the MongoDB.
  * 
  * @param {object} data Object, containing validated user e-mail, password, first & last name, and the rest of optional data.
- * @returns {Promise<object>} Result of mongoose's 'create' method containing the inserted document as object.
+ * @returns {Promise<object>} Result of document creation as object.
  */
 export const createUser = async (data) => {
 
@@ -65,17 +81,16 @@ export const createUser = async (data) => {
     data.password = hash;
 
     const result = await User.create(data);
-    // console.log(result);
 
     return result;
 }
 
 
 /**
- * Define which user wishes to log in, check the tried password and respond with a token for further authorization.
+ * Define which user is logging in, check the tried password and respond with a token for further authorization.
  * 
- * @param {string} email Validated, lowered email address of an existing user.
- * @param {string} password Login password for the corresponding user.
+ * @param {string} email Validated lowercased email address of an existing user.
+ * @param {string} password Password for the corresponding user.
  * @returns {Promise<string>} Obtained JWT token.
  */
 export const authenticateUser = async (email, password) => {
@@ -88,9 +103,9 @@ export const authenticateUser = async (email, password) => {
         throw new NotFoundError("User with such email doesn't exist");
     }
 
-    const result = await bcrypt.compare(password, retrievedUser.password);
+    const comparisonResult = await bcrypt.compare(password, retrievedUser.password);
 
-    if (result !== true) {
+    if (comparisonResult !== true) {
         throw new IncorrectPasswordError("Incorrect password");
     }
     
@@ -108,28 +123,38 @@ export const authenticateUser = async (email, password) => {
  * @param {object} data Object, containing the user data updates.
  */
 export const updateUser = async (userId, data) => {
+    // user can change password and still have an access using same token (if the change was from another device?)
+
+    const user = await User.findById(userId);
 
     if (data.email) {
+        if (user.email === data.email) {
+            throw new AlreadyExistsError("This is your email address already");
+        }
+
         const existingUser = await User.findOne({ email: data.email });
-
+        
         if (existingUser) {
-
-            if (existingUser._id.equals(userId)) {
-                throw new AlreadyExistsError("This is your current email address");
-            }
-
             throw new AlreadyExistsError("Provided email address is already in use");
         }
     }
 
     if (data.password) {
+        const comparisonResult = await bcrypt.compare(data.oldPassword, user.password);
+
+        if (comparisonResult !== true) {
+            throw new IncorrectPasswordError("Incorrect old password");
+        }
+
         const saltRounds = 10;
         
         const hash = await bcrypt.hash(data.password, saltRounds);
         data.password = hash;
     }
 
-    await User.findByIdAndUpdate(userId, data);
+    user.set(data);
+
+    await user.save();
 }
 
 
@@ -140,11 +165,28 @@ export const updateUser = async (userId, data) => {
  */
 export const deleteUser = async (userId) => {
 
-    // Post.deleteMany({ userId });
-    // Image.deleteMany({ userId });
-    // Chat.deleteMany({ userId (primary or secondary user ($or?)) });
+    const session = await mongoose.startSession();
+    session.startTransaction();
 
-    await User.findByIdAndDelete(userId);
+    try {
+        // await Post.deleteMany({ userId }, { session });
+
+        // await Image.deleteMany({ userId }, { session });
+
+        // await Chat.deleteMany({
+        //     $or: [
+        //         { primaryUser: userId },
+        //         { secondaryUser: userId }
+        //     ]
+        // }, { session });
+
+        await User.findByIdAndDelete(userId, { session });
+
+        await session.commitTransaction();
+
+    } finally {
+        await session.endSession();
+    }
 }
 
 /**
@@ -165,38 +207,50 @@ export const updateOnline = async (userId) => {
  */
 export const addFriend = async (userId, requestReceiverId) => {
     
+    if (userId === requestReceiverId) {
+        // AlreadyExistsError?
+        throw new AlreadyExistsError("Provided user id is your own");
+    }
+    
     const requestReceiver = await User.findById(requestReceiverId);
     
     if (!requestReceiver) {
         throw new NotFoundError("No such user to send friend request to");
     }
 
-    const userInFriendsList = requestReceiver.friends.find(friend => friend.userId.equals(userId));
-    
+    const userInFriendsList = requestReceiver.friends.find(friend => friend.user.equals(userId));
+
     if (userInFriendsList) {
+        let message;
 
-        if (userInFriendsList.status === 'friend') {
-            throw new AlreadyExistsError("This user is already your friend");
+        switch (userInFriendsList.status) {
+            case 'friend':
+                message = "This user is already your friend";
+                break;
+            
+            case 'received':
+                message = "The user has already received your request";
+                break;
 
-        } else if (userInFriendsList.status === 'received') {
-            throw new AlreadyExistsError("The user has already received your request");
+            case 'sent':
+                message = "This user has sent friend request to you. You can accept it instead";
+                break;
+            }
 
-        } else if (userInFriendsList.status === 'sent') {
-            throw new AlreadyExistsError("This user has sent friend request to you. You can accept it instead");
-        }
+        throw new AlreadyExistsError(message);
     }
 
-    requestReceiver.friends.push({ userId, status: 'received' });
+    requestReceiver.friends.push({ user: userId, status: 'received' });
 
     const session = await User.startSession();
     session.startTransaction();
 
     try {
-
         await requestReceiver.save({ session });
+
         await User.findByIdAndUpdate(
             userId,
-            { $push: { friends: { userId: requestReceiverId, status: 'sent' } } },
+            { $push: { friends: { user: requestReceiverId, status: 'sent' } } },
             { session }
         );
 
@@ -220,7 +274,7 @@ export const acceptFriend = async (userId, requestSenderId) => {
     const requestSender = await User.findById(requestSenderId);
 
     const receivedRequestIndex = user.friends.findIndex(friend => (
-        friend.userId.equals(requestSenderId) && friend.status === 'received'
+        friend.user.equals(requestSenderId) && friend.status === 'received'
     ));
 
     if (receivedRequestIndex === -1) {
@@ -228,12 +282,12 @@ export const acceptFriend = async (userId, requestSenderId) => {
     }
 
     const sentRequestIndex = requestSender.friends.findIndex(friend => (
-        friend.userId.equals(userId) && friend.status === 'sent'
+        friend.user.equals(userId) && friend.status === 'sent'
     ));
 
     // userId were being deleted by set() (when no userId provided)
-    user.friends.set(receivedRequestIndex, { userId: requestSenderId, status: 'friend' });
-    requestSender.friends.set(sentRequestIndex, { userId, status: 'friend' });
+    user.friends.set(receivedRequestIndex, { user: requestSenderId, status: 'friend' });
+    requestSender.friends.set(sentRequestIndex, { user: userId, status: 'friend' });
 
     const session = await User.startSession();
     session.startTransaction();
@@ -260,13 +314,13 @@ export const removeFriend = async (userId, friendId) => {
 
     const user = await User.findById(userId);
 
-    const isInFriends = user.friends.some(friend => friend.userId.equals(friendId));
+    const isInFriends = user.friends.some(friend => friend.user.equals(friendId));
 
     if (!isInFriends) {
         throw new NotFoundError("There is no such user in your friends list");
     }
 
-    user.friends.pull({ userId: friendId });
+    user.friends.pull({ user: friendId });
 
     const session = await User.startSession();
     session.startTransaction();
@@ -275,7 +329,7 @@ export const removeFriend = async (userId, friendId) => {
         await user.save({ session });
         await User.findByIdAndUpdate(
             friendId, 
-            { $pull: { friends: { userId } } },
+            { $pull: { friends: { user: userId } } },
             { session }
         );
 

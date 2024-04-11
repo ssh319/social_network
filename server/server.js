@@ -37,13 +37,7 @@ process.on("SIGINT", async () => {
 
     console.log("\nInterrupt signal received..");
 
-    try {
-        await mongoose.connection.close()
-        console.log("MongoDB connection has been closed.");
-        process.exit(0);
-
-    } catch (err) {
-        console.error("Error closing MongoDB connection:\n", err);
-        process.exit(1);
-    }
+    await mongoose.connection.close();
+    console.log("MongoDB connection has been closed.");
+    process.exit(0);
 });

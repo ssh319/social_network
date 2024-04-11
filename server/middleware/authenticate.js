@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken';
 import User from '../models/userModel.js';
 
 
-const authenticateUser = async (request, response, next) => {
+const authenticate = async (request, response, next) => {
 
     const token = request.headers.authorization;
     const jwtSecretKey = process.env.JWT_SECRET_KEY;
@@ -42,4 +42,4 @@ const authenticateUser = async (request, response, next) => {
 }
 
 
-export default authenticateUser;
+export default authenticate;

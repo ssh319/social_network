@@ -1,4 +1,4 @@
-import { body, checkExact, validationResult } from 'express-validator';
+import { body, checkExact, query, validationResult } from 'express-validator';
 import { isValidObjectId } from 'mongoose';
 
 
@@ -27,6 +27,20 @@ const isRequired = (value, { req }) => {
     
     return true;
 }
+
+
+const checkOldPassword = (value, { req }) => {
+    if (req.method === 'PATCH' && req.body.password) {
+        return typeof value === 'string';
+    }
+
+    return true;
+}
+
+
+// const isValidBirthDate = (value) => {
+//     return value > new Date('1900-01-01') && value < new Date();
+// }
 
 
 export const validateUserId = (request, response, next) => {
@@ -58,6 +72,13 @@ export const validateUserData = [
         .matches(/^\S+$/).withMessage("Password cannot include whitespaces")
         .isLength({ min: 8 }).withMessage("Password must contain at least 8 characters"),
         // check is containing lowcase, upcase & symbol
+
+    body("oldPassword")
+        .custom(checkOldPassword).withMessage("For password changing you need to provide the old one"),
+
+    body("oldPassword")
+        .optional()
+        .isString().withMessage("Invalid data type for old password confirmation"),
 
     body("firstName")
         .custom(isRequired).withMessage("First name required").bail({ level: "request" }),
@@ -93,19 +114,26 @@ export const validateUserData = [
     body("country")
         .optional()
         .isString().withMessage("Invalid data type for country").bail()
+        // check is letters & whitespaces only (regex?)
         .isLength({ max: 30 }).withMessage("Country name length exceeded")
         .customSanitizer(deleteOptionalField),
 
+    // city?
     body("city")
         .optional()
         .isString().withMessage("Invalid data type for city").bail()
+        // 
         .isLength({ max: 30 }).withMessage("City name length exceeded")
         .customSanitizer(deleteOptionalField),
 
     // validate incorrect dates
     body("birthDate")
         .optional()
-        .isDate().withMessage("Invalid birth date").bail(),
+        // ?
+        .isDate().withMessage("Invalid data type for birth date").bail(),
+        // .toDate()
+        // .customSanitizer(toLocalDate)
+        // .custom(isValidBirthDate).withMessage("Invalid birth date provided")
 
     body("aboutMe")
         .optional()
@@ -158,3 +186,16 @@ export const validateUserLogin = [
         next();
     }
 ]
+
+
+// export const validateSearchQuery = [
+//     (request, response, next) => {
+//         // sanitize query
+
+//         next();
+//     },
+
+//     query("birthDate")
+//         .optional()
+//         .isDate()
+// ]

@@ -5,7 +5,7 @@ import bodyParser from 'body-parser';
 
 import corsConfig from './config/cors.js';
 
-// import authenticateUser from './middleware/authenticateUser.js';
+// import authenticate from './middleware/authenticate.js';
 
 import userRouter from './routes/userRouter.js';
 // import postRouter from './routes/postRouter.js';
@@ -19,10 +19,13 @@ const app = express();
 app.use(bodyParser.json());
 app.use(corsConfig);
 
+// '/api/v1'
+// 404 route
+
 app.use("/users", userRouter);
-// app.use("/posts", authenticateUser, postRouter);
-// app.use("/chats", authenticateUser, chatRouter);
-// app.use("/images", authenticateUser, imageRouter);
+// app.use("/posts", authenticate, postRouter);
+// app.use("/chats", authenticate, chatRouter);
+// app.use("/images", authenticate, imageRouter);
 
 
 export default app;
