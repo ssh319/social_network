@@ -1,5 +1,4 @@
-import { body, checkExact, query, validationResult } from 'express-validator';
-import { isValidObjectId } from 'mongoose';
+import { body, checkExact, /*query,*/ validationResult } from 'express-validator';
 
 
 const capitalize = (value) => {
@@ -44,7 +43,8 @@ const checkOldPassword = (value, { req }) => {
 
 
 export const validateUserId = (request, response, next) => {
-    if (!isValidObjectId(request.params.id)) {
+    // userId?
+    if (!isValidObjectId(request.params.userId)) {
         return response.status(400).json({ message: "Invalid user id provided" });
     }
 

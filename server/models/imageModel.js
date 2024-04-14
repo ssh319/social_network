@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 
 const imageSchema = new mongoose.Schema({
     // => user (populate with firstName, lastName)
-    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     createdAt: { type: Date, default: Date.now },
 
     path: { type: String, required: true },

@@ -17,7 +17,8 @@ import {
 /**
  * 
  * @param {object} query Search parameters.
- * @returns {Promise<Array>} Array of matching users.
+ * @returns {Promise<Array>} List of matching users.
+ * @todo Implement method.
  */
 export const searchUsers = async (query) => {
 
@@ -48,7 +49,12 @@ export const getUser = async (id) => {
         { email: 0, password: 0, createdAt: 0, chats: 0 }
     ).populate({
         path: 'friends.user',
+        // returns _id too?
         select: ['firstName', 'lastName', 'profilePicture']
+    }).populate({
+        path: 'posts'
+    }).populate({
+        path: 'images'
     });
 
     if (!user) {
@@ -208,7 +214,6 @@ export const updateOnline = async (userId) => {
 export const addFriend = async (userId, requestReceiverId) => {
     
     if (userId === requestReceiverId) {
-        // AlreadyExistsError?
         throw new AlreadyExistsError("Provided user id is your own");
     }
     
@@ -273,6 +278,7 @@ export const acceptFriend = async (userId, requestSenderId) => {
     const user = await User.findById(userId);
     const requestSender = await User.findById(requestSenderId);
 
+    // or remove { _id: false } from model, and user .id(requestId).updateOne({ status: 'friend' })
     const receivedRequestIndex = user.friends.findIndex(friend => (
         friend.user.equals(requestSenderId) && friend.status === 'received'
     ));
@@ -285,7 +291,7 @@ export const acceptFriend = async (userId, requestSenderId) => {
         friend.user.equals(userId) && friend.status === 'sent'
     ));
 
-    // userId were being deleted by set() (when no userId provided)
+    // remove { user: .... }? (with id().updateOne())
     user.friends.set(receivedRequestIndex, { user: requestSenderId, status: 'friend' });
     requestSender.friends.set(sentRequestIndex, { user: userId, status: 'friend' });
 

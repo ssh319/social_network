@@ -8,6 +8,7 @@ import {
 
 
 export const searchUsers = async (request, response) => {
+    return response.status(501).json({ message: "Not implemented" })
     try {
         const result = await service.searchUsers(request.query);
         response.json({ result });
@@ -21,7 +22,7 @@ export const searchUsers = async (request, response) => {
 
 export const getUser = async (request, response) => {
     try {
-        const user = await service.getUser(request.params.id);
+        const user = await service.getUser(request.params.userId);
         response.json({ user });
 
     } catch (err) {
@@ -136,7 +137,7 @@ export const updateOnline = async (request, response) => {
 
 export const addFriend = async (request, response) => {
     try {
-        await service.addFriend(request.user._id, request.params.id);
+        await service.addFriend(request.user._id, request.params.userId);
         response.sendStatus(201);
 
     } catch (err) {
@@ -160,7 +161,7 @@ export const addFriend = async (request, response) => {
 
 export const acceptFriend = async (request, response) => {
     try {
-        await service.acceptFriend(request.user._id, request.params.id);
+        await service.acceptFriend(request.user._id, request.params.userId);
         response.sendStatus(200);
 
     } catch (err) {
@@ -181,7 +182,7 @@ export const acceptFriend = async (request, response) => {
 
 export const removeFriend = async (request, response) => {
     try {
-        await service.removeFriend(request.user._id, request.params.id);
+        await service.removeFriend(request.user._id, request.params.userId);
         response.sendStatus(200);
 
     } catch (err) {
