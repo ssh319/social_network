@@ -1,4 +1,11 @@
-import { body, checkExact, /*query,*/ validationResult } from 'express-validator';
+import {
+    body,
+    checkExact,
+    // query,
+    validationResult
+} from 'express-validator';
+
+import { isValidObjectId } from 'mongoose';
 
 
 const capitalize = (value) => {
@@ -88,7 +95,7 @@ export const validateUserData = [
         .isString().withMessage("Invalid data type for first name").bail()
         .trim()
         .isAlpha().withMessage("First name must contain only letters")
-        .isLength({ max: 24 }).withMessage("First name cannot be more than 24 characters")
+        .isLength({ max: 24 }).withMessage("First name cannot be more than 24 characters in length")
         .customSanitizer(capitalize),
 
     body("lastName")
@@ -99,23 +106,22 @@ export const validateUserData = [
         .isString().withMessage("Invalid data type for last name").bail()
         .trim()
         .isAlpha().withMessage("Last name must contain only letters")
-        .isLength({ max: 24 }).withMessage("Last name cannot be more than 24 characters")
+        .isLength({ max: 24 }).withMessage("Last name cannot be more than 24 characters in length")
         .customSanitizer(capitalize),
 
     // allow requests with null for field (custom sanitizer only sets empty strings to null)
-    // messages with max length?
 
     body("publicStatus")
         .optional()
         .isString().withMessage("Invalid data type for public status").bail()
-        .isLength({ max: 200 }).withMessage("Maximum public status length exceeded")
+        .isLength({ max: 200 }).withMessage("Public status cannot be more than 200 characters in length")
         .customSanitizer(deleteOptionalField),
 
     body("country")
         .optional()
         .isString().withMessage("Invalid data type for country").bail()
         // check is letters & whitespaces only (regex?)
-        .isLength({ max: 30 }).withMessage("Country name length exceeded")
+        .isLength({ max: 30 }).withMessage("Country name cannot be more than 30 characters in length")
         .customSanitizer(deleteOptionalField),
 
     // city?
@@ -123,7 +129,7 @@ export const validateUserData = [
         .optional()
         .isString().withMessage("Invalid data type for city").bail()
         // 
-        .isLength({ max: 30 }).withMessage("City name length exceeded")
+        .isLength({ max: 30 }).withMessage("City name cannot be more than 30 characters in length")
         .customSanitizer(deleteOptionalField),
 
     // validate incorrect dates
@@ -137,11 +143,10 @@ export const validateUserData = [
 
     body("aboutMe")
         .optional()
-        .isString().withMessage("Invalid data type for 'about me' text").bail()
-        .isLength({ max: 500 }).withMessage("'About me' text length exceeded")
+        .isString().withMessage("Invalid data type for 'about' info").bail()
+        .isLength({ max: 500 }).withMessage("'About' info text cannot be more than 500 characters in length")
         .customSanitizer(deleteOptionalField),
 
-    // throws "Unknown field(s)" if some of the required fields were omitted (only in validateUserData)
     checkExact(),
 
     (request, response, next) => {

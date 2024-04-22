@@ -1,22 +1,22 @@
-export class AlreadyExistsError extends Error {
+import ClientError from "./clientError.js";
+
+
+export class AlreadyExistsError extends ClientError {
     constructor(message) {
-        super(message);
-        this.name = this.constructor.name;
+        super(message, 400);
     }
 }
 
 
-export class NotFoundError extends Error {
+export class NoSuchResourceError extends ClientError {
     constructor(message) {
-        super(message);
-        this.name = this.constructor.name;
+        super(message, 404);
     }
 }
 
 
-export class IncorrectPasswordError extends Error {
+export class IncorrectPasswordError extends ClientError {
     constructor(message) {
-        super(message);
-        this.name = this.constructor.name;
+        super(message, 400);
     }
 }

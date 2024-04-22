@@ -18,9 +18,7 @@ const userSchema = new mongoose.Schema({
     createdAt: { type: Date, default: Date.now },
 
     friends: [{
-        // remove and use _id as relationId for updateOne() instead?
         _id: false,
-        // userId => user
         user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
         status: { type: String, enum: ['friend', 'sent', 'received'] }
     }],

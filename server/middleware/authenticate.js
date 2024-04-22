@@ -21,7 +21,7 @@ const authenticate = async (request, response, next) => {
             }
 
             request.user = { _id };
-            
+
             next();
 
         } catch (err) {

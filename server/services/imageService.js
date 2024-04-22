@@ -1,0 +1,57 @@
+import Image from '../models/imageModel.js';
+
+import { NoSuchImageError } from '../errors/imageErrors.js';
+
+
+/**
+ * Retrieve the image data including its author's name.
+ * 
+ * @param {String} imageId ObjectId of the image.
+ * @returns {Promise<Object>} Retrieved image data.
+ */
+export const getImage = async (imageId) => {
+    const image = await Image.findById(imageId).populate({
+        path: 'user',
+        select: ['firstName', 'lastName', 'profilePicture']
+    });
+
+    if (!image) {
+        throw new NoSuchImageError("Such image doesn't exist");
+    }
+
+    return image;
+}
+
+
+/**
+ * Upload new image.
+ * 
+ * @param {String} userId ObjectId of image author.
+ * @param {Object} image Image data, containing its storage path and MIME content type.
+ */
+export const uploadImage = async (userId, image) => {}
+
+/**
+ * Delete image and clear all of its resources.
+ * 
+ * @param {String} imageId ObjectId of the image to be deleted.
+ */
+export const deleteImage = async (imageId) => {}
+
+
+/**
+ * Give a like to an image as the provided user. Do nothing if it's already given.
+ * 
+ * @param {String} userId ObjectId of a user, whose like will be on the image.
+ * @param {String} imageId ObjectId of an image to be liked.
+ */
+export const likeImage = async (userId, imageId) => {}
+
+
+/**
+ * Remove the user's like from an image if it is. Do nothing if not.
+ * 
+ * @param {String} userId ObjectId of a user, whose like will be removed from the image.
+ * @param {String} imageId ObjectId of an image to remove the like from.
+ */
+export const unlikeImage = async (userId, imageId) => {}

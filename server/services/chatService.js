@@ -1,117 +1,161 @@
-import Chat from '../models/chatModel.js';
+import mongoose from 'mongoose';
 
-import {
-    NotFoundError
-} from '../errors/chatErrors.js';
+import Chat from '../models/chatModel.js';
+import User from '../models/userModel.js';
+
+import { AccessDeniedError } from '../errors/chatErrors.js';
 
 
 /**
+ * Get all chats of the provided user.
  * 
- * @param {string} userId User's ObjectId.
- * @returns List of user's chats.
+ * @param {String} userId User's ObjectId.
+ * @returns {Promise<Array>} List of user's chats.
+ * 
+ * @todo Get last message from array. (For chat preview)
  */
 export const retrieveChats = async (userId) => {
-    // required to be returned: last message object (with text, timestamp, isRead) & primaryUser or secondaryUser (_id, firstName, lastName, profilePic)
     const chats = await Chat.find({
         $or: [
             { primaryUser: userId },
             { secondaryUser: userId }
         ]
-
+    }, {
+        messages: 0
     }).populate({
         path: 'primaryUser',
-        // returns _id too?
         select: ['firstName', 'lastName', 'profilePicture']
     }).populate({
         path: 'secondaryUser',
-        // _id?
         select: ['firstName', 'lastName', 'profilePicture']
     });
-    // get only last messsage object?
 
     return chats;
 }
 
 
 /**
- * Retrieve the full chat info which the user is participant of.
+ * Retrieve full chat info which the user is participant of.
  * 
- * @param {string} chatId Chat's id.
- * @returns Chat info including all the messages in it.
+ * @param {String} chatId ObjectId of a required chat.
+ * @returns {Promise<Object>} Chat info including all of its messages.
  */
 export const getChat = async (chatId) => {
-    // are msgs sorted?
     const chat = await Chat.findById(chatId);
-
-    if (!chat) {
-        throw new NotFoundError("Such chat doesn't exist");
-    }
-    // userId === chat.primaryUser || userId === chat.secondaryUser;
 
     return chat;
 }
 
 
 /**
- * Start messaging with secondary user as primary user.
+ * Get or create a chat between provided users.
  * 
- * @param {string} primaryUser ObjectId of a user starting the chat.
- * @param {string} secondaryUser ObjectId of a user which to start chat with.
- * @returns ?????????
+ * @param {String} primaryUser ObjectId of a user starting the chat.
+ * @param {String} secondaryUser ObjectId of a user who to start chat with.
+ * @returns {Promise<String>} ObjectId of an existing or created chat.
  */
 export const startChat = async (primaryUser, secondaryUser) => {
-    /*const { _id } = */await Chat.create({ primaryUser, secondaryUser });
-    // return _id;
+    
+    const existingChat = await Chat.findOne({
+        $or: [
+            { $and: [
+                { primaryUser },
+                { secondaryUser }
+            ] },
+
+            { $and: [
+                { secondaryUser: primaryUser },
+                { primaryUser: secondaryUser }
+            ] }
+        ]
+    });
+
+    if (existingChat) {
+        return existingChat._id;
+    }
+
+    const session = await mongoose.startSession();
+    session.startTransaction();
+
+    try {
+        const { _id } = await Chat.create({ primaryUser, secondaryUser });
+
+        await User.findByIdAndUpdate(primaryUser, { $addToSet: { chats: _id } });
+        await User.findByIdAndUpdate(secondaryUser, { $addToSet: { chats: _id } });
+        
+        await session.commitTransaction();
+        return _id;
+        
+    } finally {
+        await session.endSession();
+    }
 }
 
 
 /**
  * Completely erase the chat for both users.
  * 
- * @param {string} chatId ObjectId of the chat to be deleted
+ * @param {String} chatId ObjectId of the chat to be deleted
  */
 export const deleteChat = async (chatId) => {
-    await Chat.findByIdAndDelete(chatId);
+    const session = await mongoose.startSession();
+    session.startTransaction();
+
+    try {
+        const chat = await Chat.findByIdAndDelete(chatId);
+
+        // not tested
+        await User.findByIdAndUpdate(chat.primaryUser, { $pull: { chats: _id } });
+        await User.findByIdAndUpdate(chat.secondaryUser, { $pull: { chats: _id } });
+        
+        await session.commitTransaction();
+        
+    } finally {
+        await session.endSession();
+    }
 }
 
 
 /**
- * Add message to current chat messages' array.
+ * Add message to the provided chat.
  * 
- * @param {string} chatId ObjectId of a current chat.
- * @param {string} text Validated message text.
+ * @param {String} userId ObjectId of the messsage sender.
+ * @param {String} chatId ObjectId of the chat.
+ * @param {String} text Validated message text.
  */
-export const sendMessage = async (chatId, text) => {
-    const chat = await Chat.findById(chatId);
-    // other fields auto?
-    chat.messages.push({ text });
-
-    await chat.save();
+export const sendMessage = async (userId, chatId, text) => {
+    await Chat.findByIdAndUpdate(chatId, {
+        $push: {
+            messages: { user: userId, text }
+        }
+    })
 }
 
 
 /**
  * Change target message's text without updating its timestamp.
  * 
- * @param {string} chatId ObjectId of a current chat.
- * @param {string} messageId ObjectId of the message to change.
- * @param {string} text Validated message text.
+ * @param {String} chatId ObjectId of the chat.
+ * @param {String} messageId ObjectId of the message to be edited.
+ * @param {String} text Validated message text.
  */
 export const editMessage = async (chatId, messageId, text) => {
     const chat = await Chat.findById(chatId);
+    const message = chat.messages.id(messageId);
 
-    chat.messages.id(messageId).updateOne({ text });
+    message.set({ text });
+
+    await chat.save();
 }
 
 
 /**
  * Erase message for both chat participants.
  * 
- * @param {string} chatId ObjectId of a current chat.
- * @param {string} messageId ObjectId of the message to be deleted.
+ * @param {String} chatId ObjectId of the chat.
+ * @param {String} messageId ObjectId of the message to be deleted.
  */
 export const deleteMessage = async (chatId, messageId) => {
-    // ???
     await Chat.findByIdAndUpdate(chatId, {
         $pull: { messages: { _id: messageId } }
     });
@@ -121,9 +165,18 @@ export const deleteMessage = async (chatId, messageId) => {
 /**
  * Mark received message as read.
  * 
- * @param {string} chatId ObjectId of a current chat.
- * @param {string} messageId ObjectId of the message to be marked as read.
+ * @param {String} chatId ObjectId of the chat.
+ * @param {String} messageId ObjectId of the message to be marked as read.
  */
-export const readMessage = async (chatId, messageId) => {
-    // validate that isn't own message
+export const readMessage = async (userId, chatId, messageId) => {
+    const chat = await Chat.findById(chatId);
+    const message = chat.messages.id(messageId);
+
+    if (message.user.equals(userId)) {
+        throw new AccessDeniedError("You cannot mark as read your own message");
+    }
+
+    message.set({ isRead: true });
+
+    await message.save();
 }

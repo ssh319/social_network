@@ -1,4 +1,5 @@
 import { isValidObjectId } from "mongoose";
+import { body, checkExact, validationResult } from "express-validator";
 
 
 export const validateImageId = (request, response, next) => {
@@ -10,7 +11,4 @@ export const validateImageId = (request, response, next) => {
 }
 
 
-// export const validateImageAccess = (request, response, next) => {}
-
-
-// export const validateImage = []
+export const validateImage = []

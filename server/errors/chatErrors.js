@@ -1,6 +1,8 @@
-export class NotFoundError extends Error {
+import ClientError from "./clientError.js";
+
+
+export class AccessDeniedError extends ClientError {
     constructor(message) {
-        super(message);
-        this.name = this.constructor.name;
+        super(message, 403);
     }
 }

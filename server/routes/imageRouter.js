@@ -2,20 +2,19 @@ import { Router } from 'express';
 
 import * as controller from '../controllers/imageController.js';
 
-import {
-    validateImageId,
-    // validateImageAccess
-} from '../validators/imageValidators.js';
+import { validateImage, validateImageId } from '../validators/imageValidators.js';
+import { checkImageAccess } from '../middleware/imageAccess.js';
 
 
 const router = Router();
-// getUser returns arr of Image ObjectIds, how to retrieve user's images then?
-// upd: (User.findById(...).populate({ path: 'images' })) ???
-// upd2: done in service.getUser
 
-// !!!
-// router.get("/:userId/all", validateId, controller.retrieveImages);
+router.post("/", validateImage, controller.uploadImage);
+
 router.get("/:imageId", validateImageId, controller.getImage);
+router.delete("/:imageId", validateImageId, checkImageAccess, controller.deleteImage);
+
+router.post("/:imageId/like", validateImageId, controller.likeImage);
+router.delete("/:imageId/like", validateImageId, controller.unlikeImage);
 
 
 export default router;

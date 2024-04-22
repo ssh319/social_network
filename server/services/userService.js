@@ -8,7 +8,7 @@ import User from '../models/userModel.js';
 // import Image from '../models/imageModel.js';
 
 import {
-    NotFoundError,
+    NoSuchResourceError,
     IncorrectPasswordError,
     AlreadyExistsError
 } from '../errors/userErrors.js';
@@ -16,9 +16,10 @@ import {
 
 /**
  * 
- * @param {object} query Search parameters.
+ * @param {Object} query Search parameters.
  * @returns {Promise<Array>} List of matching users.
- * @todo Implement method.
+ * 
+ * @todo Implement.
  */
 export const searchUsers = async (query) => {
 
@@ -39,17 +40,16 @@ export const searchUsers = async (query) => {
 /**
  * Get all of the public user data by ObjectId.
  * 
- * @param {string} id User's ObjectId
- * @returns {Promise<object>} Public data of the requested user.
+ * @param {String} userId User's ObjectId
+ * @returns {Promise<Object>} Public data of the requested user.
  */
-export const getUser = async (id) => {
+export const getUser = async (userId) => {
     
     const user = await User.findById(
-        id,
+        userId,
         { email: 0, password: 0, createdAt: 0, chats: 0 }
     ).populate({
         path: 'friends.user',
-        // returns _id too?
         select: ['firstName', 'lastName', 'profilePicture']
     }).populate({
         path: 'posts'
@@ -58,7 +58,7 @@ export const getUser = async (id) => {
     });
 
     if (!user) {
-        throw new NotFoundError("Such user doesn't exist");
+        throw new NoSuchResourceError("Such user doesn't exist");
     }
     
     user.friends = user.friends.filter(friend => friend.status === 'friend');
@@ -70,8 +70,8 @@ export const getUser = async (id) => {
 /**
  * User sign up data validation and inserting it into the MongoDB.
  * 
- * @param {object} data Object, containing validated user e-mail, password, first & last name, and the rest of optional data.
- * @returns {Promise<object>} Result of document creation as object.
+ * @param {Object} data Object, containing validated user e-mail, password, first & last name, and the rest of optional data.
+ * @returns {Promise<Object>} Result of document creation as object.
  */
 export const createUser = async (data) => {
 
@@ -95,9 +95,9 @@ export const createUser = async (data) => {
 /**
  * Define which user is logging in, check the tried password and respond with a token for further authorization.
  * 
- * @param {string} email Validated lowercased email address of an existing user.
- * @param {string} password Password for the corresponding user.
- * @returns {Promise<string>} Obtained JWT token.
+ * @param {String} email Validated lowercased email address of an existing user.
+ * @param {String} password Password for the corresponding user.
+ * @returns {Promise<String>} Obtained JWT token.
  */
 export const authenticateUser = async (email, password) => {
 
@@ -106,7 +106,7 @@ export const authenticateUser = async (email, password) => {
     const retrievedUser = await User.findOne({ email });
 
     if (!retrievedUser) {
-        throw new NotFoundError("User with such email doesn't exist");
+        throw new NoSuchResourceError("User with such email doesn't exist");
     }
 
     const comparisonResult = await bcrypt.compare(password, retrievedUser.password);
@@ -125,8 +125,8 @@ export const authenticateUser = async (email, password) => {
 /**
  * Update the provided user's data fields.
  * 
- * @param {string} userId User's ObjectId
- * @param {object} data Object, containing the user data updates.
+ * @param {String} userId User's ObjectId
+ * @param {Object} data Object, containing the user data updates.
  */
 export const updateUser = async (userId, data) => {
     // user can change password and still have an access using same token (if the change was from another device?)
@@ -165,9 +165,9 @@ export const updateUser = async (userId, data) => {
 
 
 /**
- * Delete the user from database and clear all of its resources.
+ * Remove the user and all of its resources from database.
  * 
- * @param {string} userId User's ObjectId
+ * @param {String} userId User's ObjectId
  */
 export const deleteUser = async (userId) => {
 
@@ -197,7 +197,7 @@ export const deleteUser = async (userId) => {
 
 /**
  * 
- * @param {string} userId ObjectId of a current user.
+ * @param {String} userId ObjectId of a current user.
  */
 export const updateOnline = async (userId) => {
     await User.findByIdAndUpdate(userId, { lastActive: new Date() });
@@ -208,8 +208,8 @@ export const updateOnline = async (userId) => {
  * Add current user id and request receiver id to each others' friends
  * arrays with 'received' and 'sent' statuses respectively.
  * 
- * @param {string} userId ObjectId of a current user.
- * @param {string} requestReceiverId Friend request receiver's User's ObjectId
+ * @param {String} userId ObjectId of a current user.
+ * @param {String} requestReceiverId Friend request receiver's User's ObjectId
  */
 export const addFriend = async (userId, requestReceiverId) => {
     
@@ -220,7 +220,7 @@ export const addFriend = async (userId, requestReceiverId) => {
     const requestReceiver = await User.findById(requestReceiverId);
     
     if (!requestReceiver) {
-        throw new NotFoundError("No such user to send friend request to");
+        throw new NoSuchResourceError("No such user to send friend request to");
     }
 
     const userInFriendsList = requestReceiver.friends.find(friend => friend.user.equals(userId));
@@ -270,28 +270,26 @@ export const addFriend = async (userId, requestReceiverId) => {
 /**
  * Remove id's from each others' received and sent requests arrays, and add them to friend lists if the request is accepted.
  * 
- * @param {string} userId ObjectId id of a current user.
- * @param {string} requestSenderId ObjectId id of a user, whose friend request will be answered.
+ * @param {String} userId ObjectId id of a current user.
+ * @param {String} requestSenderId ObjectId id of a user, whose friend request will be answered.
  */
 export const acceptFriend = async (userId, requestSenderId) => {
 
     const user = await User.findById(userId);
     const requestSender = await User.findById(requestSenderId);
 
-    // or remove { _id: false } from model, and user .id(requestId).updateOne({ status: 'friend' })
     const receivedRequestIndex = user.friends.findIndex(friend => (
         friend.user.equals(requestSenderId) && friend.status === 'received'
     ));
 
     if (receivedRequestIndex === -1) {
-        throw new NotFoundError("There is no received friend request from such user");
+        throw new NoSuchResourceError("There is no received friend request from such user");
     }
 
     const sentRequestIndex = requestSender.friends.findIndex(friend => (
         friend.user.equals(userId) && friend.status === 'sent'
     ));
 
-    // remove { user: .... }? (with id().updateOne())
     user.friends.set(receivedRequestIndex, { user: requestSenderId, status: 'friend' });
     requestSender.friends.set(sentRequestIndex, { user: userId, status: 'friend' });
 
@@ -313,8 +311,8 @@ export const acceptFriend = async (userId, requestSenderId) => {
 /**
  * Remove provided friend or friend request sender/receiver from friends list.
  * 
- * @param {string} userId ObjectId of a current user.
- * @param {string} friendId ObjectId of the user which will be deleted from friends.
+ * @param {String} userId ObjectId of a current user.
+ * @param {String} friendId ObjectId of the user which will be deleted from friends.
  */
 export const removeFriend = async (userId, friendId) => {
 
@@ -323,7 +321,7 @@ export const removeFriend = async (userId, friendId) => {
     const isInFriends = user.friends.some(friend => friend.user.equals(friendId));
 
     if (!isInFriends) {
-        throw new NotFoundError("There is no such user in your friends list");
+        throw new NoSuchResourceError("There is no such user in your friends list");
     }
 
     user.friends.pull({ user: friendId });

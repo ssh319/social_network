@@ -1,6 +1,4 @@
 import dotenv from 'dotenv';
-dotenv.config();
-
 import mongoose from 'mongoose';
 // import https from 'https';
 // import fs from 'fs';
@@ -8,6 +6,7 @@ import mongoose from 'mongoose';
 import app from './app.js';
 import connectToDatabase from './config/db.js';
 
+dotenv.config();
 
 const PORT = process.env.PORT || 8080;
 const HOST = process.env.HOST || '127.0.0.1';

@@ -1,8 +1,6 @@
 import { isValidObjectId } from 'mongoose';
 import { body, checkExact, validationResult } from 'express-validator';
 
-import Chat from '../models/chatModel.js';
-
 
 export const validateChatId = (request, response, next) => {
     if (!isValidObjectId(request.params.chatId)) {
@@ -22,17 +20,6 @@ export const validateMessageId = (request, response, next) => {
 }
 
 
-export const validateChatAccess = async (request, response, next) => {
-    const chat = await Chat.findById(request.params.chatId);
-    
-    if (!(chat.primaryUser.equals(request.user._id) || chat.secondaryUser.equals(request.user._id))) {
-        return response.status(403).json({ message: "Access to chat denied" });
-    }
-    
-    next();
-}
-
-
 export const validateMessage = [
     body("text")
         .isString().withMessage("Invalid data type for message text").bail()
@@ -47,7 +34,7 @@ export const validateMessage = [
 
         if (!validationErrors.isEmpty()) {
             return response.status(400).json(
-                validationErrors.errors.map(({ msg }) => { return { msg } })
+                validationErrors.errors.map(({ msg }) => { return { msg }; })
             );
         }
 

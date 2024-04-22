@@ -1,5 +1,3 @@
-// logging? (or server.js?)
-
 import express from 'express';
 import bodyParser from 'body-parser';
 
@@ -20,13 +18,14 @@ app.use(bodyParser.json());
 app.use(corsConfig);
 
 // api access?
+
 // '/api/v1'
-// 404 route
 
 app.use("/users", userRouter);
 app.use("/posts", authenticate, postRouter);
 app.use("/chats", authenticate, chatRouter);
 app.use("/images", authenticate, imageRouter);
 
+// centralized err handler & logger (for 500s) (or server.js?)
 
 export default app;

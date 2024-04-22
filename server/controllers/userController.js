@@ -1,22 +1,24 @@
 import * as service from '../services/userService.js';
 
-import {
-    NotFoundError,
-    IncorrectPasswordError,
-    AlreadyExistsError
-} from '../errors/userErrors.js';
+import ClientError from '../errors/clientError.js';
 
 
+// next(err) if not ClientError? (err handler to respond with 500 and write to logs)
 export const searchUsers = async (request, response) => {
-    return response.status(501).json({ message: "Not implemented" })
-    try {
-        const result = await service.searchUsers(request.query);
-        response.json({ result });
+    response.sendStatus(501);
+    // try {
+    //     const result = await service.searchUsers(request.query);
+    //     response.json({ result });
 
-    } catch (err) {
-        console.error(err);
-        response.status(500).json({ message: "Unknown internal error occured" });
-    }
+    // } catch (err) {
+    //     if (err instanceof ClientError) {
+    //         response.status(err.statusCode).json({ message: err.message });
+    
+    //     } else {
+    //         console.error(err);
+    //         response.status(500).json({ message: "Unknown internal error occured" });
+    //     }
+    // }
 }
 
 
@@ -26,17 +28,13 @@ export const getUser = async (request, response) => {
         response.json({ user });
 
     } catch (err) {
-        const { message } = err;
-
-        if (err instanceof NotFoundError) {
-            response.status(404);
+        if (err instanceof ClientError) {
+            response.status(err.statusCode).json({ message: err.message });
 
         } else {
             console.error(err);
-            return response.status(500).json({ message: "Unknown internal error occured" });
+            response.status(500).json({ message: "Unknown internal error occured" });
         }
-
-        response.json({ message });
     }
 }
 
@@ -49,43 +47,30 @@ export const createUser = async (request, response) => {
         response.status(201).json({ _id, firstName, lastName });
 
     } catch (err) {
-        const { message } = err;
-
-        if (err instanceof AlreadyExistsError) {
-            response.status(400);
+        if (err instanceof ClientError) {
+            response.status(err.statusCode).json({ message: err.message });
 
         } else {
             console.error(err);
-            return response.status(500).json({ message: "Unknown internal error occured" });
+            response.status(500).json({ message: "Unknown internal error occured" });
         }
-
-        response.json({ message });
     }
 }
 
 
 export const authenticateUser = async (request, response) => {
-    const { email, password } = request.body;
-
     try {
-        const token = await service.authenticateUser(email, password);
+        const token = await service.authenticateUser(request.body.email, request.body.password);
         response.json({ token });
 
     } catch (err) {
-        const { message } = err;
-
-        if (err instanceof NotFoundError) {
-            response.status(404);
-
-        } else if (err instanceof IncorrectPasswordError) {
-            response.status(401);
+        if (err instanceof ClientError) {
+            response.status(err.statusCode).json({ message: err.message });
 
         } else {
             console.error(err);
-            return response.status(500).json({ message: "Unknown internal error occured" });
+            response.status(500).json({ message: "Unknown internal error occured" });
         }
-
-        response.json({ message });
     }
 }
 
@@ -96,17 +81,13 @@ export const updateUser = async (request, response) => {
         response.sendStatus(200);
 
     } catch (err) {
-        const { message } = err;
-
-        if (err instanceof AlreadyExistsError || err instanceof IncorrectPasswordError) {
-            response.status(400);
+        if (err instanceof ClientError) {
+            response.status(err.statusCode).json({ message: err.message });
 
         } else {
             console.error(err);
-            return response.status(500).json({ message: "Unknown internal error occured" });
+            response.status(500).json({ message: "Unknown internal error occured" });
         }
-
-        response.json({ message });
     }
 }
 
@@ -117,8 +98,13 @@ export const deleteUser = async (request, response) => {
         response.sendStatus(200);
 
     } catch (err) {
-        console.error(err);
-        response.status(500).json({ message: "Unknown internal error occured" });
+        if (err instanceof ClientError) {
+            response.status(err.statusCode).json({ message: err.message });
+
+        } else {
+            console.error(err);
+            response.status(500).json({ message: "Unknown internal error occured" });
+        }
     }
 }
 
@@ -129,8 +115,13 @@ export const updateOnline = async (request, response) => {
         response.sendStatus(200);
 
     } catch (err) {
-        console.error(err);
-        response.status(500).json({ message: "Unknown internal error occured" });
+        if (err instanceof ClientError) {
+            response.status(err.statusCode).json({ message: err.message });
+
+        } else {
+            console.error(err);
+            response.status(500).json({ message: "Unknown internal error occured" });
+        }
     }
 }
 
@@ -141,20 +132,13 @@ export const addFriend = async (request, response) => {
         response.sendStatus(201);
 
     } catch (err) {
-        const { message } = err;
-
-        if (err instanceof NotFoundError) {
-            response.status(404);
-
-        } else if (err instanceof AlreadyExistsError) {
-            response.status(400);
+        if (err instanceof ClientError) {
+            response.status(err.statusCode).json({ message: err.message });
 
         } else {
             console.error(err);
-            return response.status(500).json({ message: "Unknown internal error occured" })
+            response.status(500).json({ message: "Unknown internal error occured" });
         }
-
-        response.json({ message });
     }
 }
 
@@ -165,17 +149,13 @@ export const acceptFriend = async (request, response) => {
         response.sendStatus(200);
 
     } catch (err) {
-        const { message } = err;
-
-        if (err instanceof NotFoundError) {
-            response.status(404);
+        if (err instanceof ClientError) {
+            response.status(err.statusCode).json({ message: err.message });
 
         } else {
             console.error(err);
-            return response.status(500).json({ message: "Unknown internal error occured" });
+            response.status(500).json({ message: "Unknown internal error occured" });
         }
-
-        response.json({ message });
     }
 }
 
@@ -186,16 +166,12 @@ export const removeFriend = async (request, response) => {
         response.sendStatus(200);
 
     } catch (err) {
-        const { message } = err;
-
-        if (err instanceof NotFoundError) {
-            response.status(404);
+        if (err instanceof ClientError) {
+            response.status(err.statusCode).json({ message: err.message });
 
         } else {
             console.error(err);
-            return response.status(500).json({ message: "Unknown internal error occured" });
+            response.status(500).json({ message: "Unknown internal error occured" });
         }
-
-        response.json({ message });
     }
 }
