@@ -19,8 +19,6 @@ app.use(corsConfig);
 
 // api access?
 
-// '/api/v1'
-
 app.use("/users", userRouter);
 app.use("/posts", authenticate, postRouter);
 app.use("/chats", authenticate, chatRouter);

@@ -19,8 +19,8 @@ const userSchema = new mongoose.Schema({
 
     friends: [{
         _id: false,
-        user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-        status: { type: String, enum: ['friend', 'sent', 'received'] }
+        user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+        status: { type: String, enum: ['friend', 'sent', 'received'], required: true }
     }],
 
     posts: { type: [mongoose.Schema.Types.ObjectId], ref: 'Post' },

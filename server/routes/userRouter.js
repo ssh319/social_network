@@ -15,8 +15,8 @@ import {
 const router = Router();
 
 
-router.get("/", /*authenticate,*/ /* validateSearchQuery, */ controller.searchUsers);
-router.get("/:userId", /*authenticate,*/ validateUserId, controller.getUser);
+router.get("/", authenticate, /* validateSearchQuery, */ controller.searchUsers);
+router.get("/:userId", authenticate, validateUserId, controller.getUser);
 
 router.post("/signup", validateUserData, controller.createUser);
 router.post("/login", validateUserLogin, controller.authenticateUser);

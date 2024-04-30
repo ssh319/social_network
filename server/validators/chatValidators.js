@@ -24,7 +24,7 @@ export const validateMessage = [
     body("text")
         .isString().withMessage("Invalid data type for message text").bail()
         .notEmpty().withMessage("Empty message text provided").bail()
-        .isLength({ max: 1024 }).withMessage("Message cannot be more than 1024 characters in length"),
+        .isLength({ max: 1000 }).withMessage("Message cannot be more than 1000 characters in length"),
 
     checkExact(),
 
@@ -34,7 +34,7 @@ export const validateMessage = [
 
         if (!validationErrors.isEmpty()) {
             return response.status(400).json(
-                validationErrors.errors.map(({ msg }) => { return { msg }; })
+                validationErrors.errors.map(({ msg }) => ({ msg }))
             );
         }
 

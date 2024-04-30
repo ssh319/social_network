@@ -1,7 +1,6 @@
 import Chat from "../models/chatModel.js";
 
 
-// chat, post, image can be not found, but the check is performed in service (with errors throwing)
 export const checkChatAccess = async (request, response, next) => {
     const chat = await Chat.findById(request.params.chatId);
 

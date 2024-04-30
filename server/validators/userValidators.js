@@ -50,7 +50,6 @@ const checkOldPassword = (value, { req }) => {
 
 
 export const validateUserId = (request, response, next) => {
-    // userId?
     if (!isValidObjectId(request.params.userId)) {
         return response.status(400).json({ message: "Invalid user id provided" });
     }
@@ -94,7 +93,8 @@ export const validateUserData = [
         .optional()
         .isString().withMessage("Invalid data type for first name").bail()
         .trim()
-        .isAlpha().withMessage("First name must contain only letters")
+        // accepts latin only (use regexp)
+        .isAlpha().withMessage("First name can contain letters only")
         .isLength({ max: 24 }).withMessage("First name cannot be more than 24 characters in length")
         .customSanitizer(capitalize),
 
@@ -105,7 +105,8 @@ export const validateUserData = [
         .optional()
         .isString().withMessage("Invalid data type for last name").bail()
         .trim()
-        .isAlpha().withMessage("Last name must contain only letters")
+        // accepts latin only (use regexp)
+        .isAlpha().withMessage("Last name can contain letters only")
         .isLength({ max: 24 }).withMessage("Last name cannot be more than 24 characters in length")
         .customSanitizer(capitalize),
 
@@ -155,7 +156,7 @@ export const validateUserData = [
 
         if (!validationErrors.isEmpty()) {
             return response.status(400).json(
-                validationErrors.errors.map(({ path, msg }) => { return { path, msg } })
+                validationErrors.errors.map(({ path, msg }) => ({ path, msg }))
             );
         }
         
@@ -184,7 +185,7 @@ export const validateUserLogin = [
         
         if (!validationErrors.isEmpty()) {
             return response.status(400).json(
-                validationErrors.errors.map(({ path, msg }) => { return { path, msg } })
+                validationErrors.errors.map(({ path, msg }) => ({ path, msg }))
             );
         }
 

@@ -38,9 +38,9 @@ export const searchUsers = async (query) => {
 
 
 /**
- * Get all of the public user data by ObjectId.
+ * Get all of the public user data by its `ObjectId`.
  * 
- * @param {String} userId User's ObjectId
+ * @param {String} userId User's `ObjectId`
  * @returns {Promise<Object>} Public data of the requested user.
  */
 export const getUser = async (userId) => {
@@ -125,7 +125,7 @@ export const authenticateUser = async (email, password) => {
 /**
  * Update the provided user's data fields.
  * 
- * @param {String} userId User's ObjectId
+ * @param {String} userId User's `ObjectId`
  * @param {Object} data Object, containing the user data updates.
  */
 export const updateUser = async (userId, data) => {
@@ -167,7 +167,7 @@ export const updateUser = async (userId, data) => {
 /**
  * Remove the user and all of its resources from database.
  * 
- * @param {String} userId User's ObjectId
+ * @param {String} userId User's `ObjectId`
  */
 export const deleteUser = async (userId) => {
 
@@ -175,9 +175,9 @@ export const deleteUser = async (userId) => {
     session.startTransaction();
 
     try {
-        // await Post.deleteMany({ userId }, { session });
+        // await Post.deleteMany({ user: userId }, { session });
 
-        // await Image.deleteMany({ userId }, { session });
+        // await Image.deleteMany({ user: userId }, { session });
 
         // await Chat.deleteMany({
         //     $or: [
@@ -197,7 +197,7 @@ export const deleteUser = async (userId) => {
 
 /**
  * 
- * @param {String} userId ObjectId of a current user.
+ * @param {String} userId `ObjectId` of a current user.
  */
 export const updateOnline = async (userId) => {
     await User.findByIdAndUpdate(userId, { lastActive: new Date() });
@@ -208,8 +208,8 @@ export const updateOnline = async (userId) => {
  * Add current user id and request receiver id to each others' friends
  * arrays with 'received' and 'sent' statuses respectively.
  * 
- * @param {String} userId ObjectId of a current user.
- * @param {String} requestReceiverId Friend request receiver's User's ObjectId
+ * @param {String} userId `ObjectId` of a current user.
+ * @param {String} requestReceiverId Friend request receiver's User's `ObjectId`
  */
 export const addFriend = async (userId, requestReceiverId) => {
     
@@ -247,7 +247,7 @@ export const addFriend = async (userId, requestReceiverId) => {
 
     requestReceiver.friends.push({ user: userId, status: 'received' });
 
-    const session = await User.startSession();
+    const session = await mongoose.startSession();
     session.startTransaction();
 
     try {
@@ -270,8 +270,8 @@ export const addFriend = async (userId, requestReceiverId) => {
 /**
  * Remove id's from each others' received and sent requests arrays, and add them to friend lists if the request is accepted.
  * 
- * @param {String} userId ObjectId id of a current user.
- * @param {String} requestSenderId ObjectId id of a user, whose friend request will be answered.
+ * @param {String} userId `ObjectId` id of a current user.
+ * @param {String} requestSenderId `ObjectId` id of a user, whose friend request will be answered.
  */
 export const acceptFriend = async (userId, requestSenderId) => {
 
@@ -293,7 +293,7 @@ export const acceptFriend = async (userId, requestSenderId) => {
     user.friends.set(receivedRequestIndex, { user: requestSenderId, status: 'friend' });
     requestSender.friends.set(sentRequestIndex, { user: userId, status: 'friend' });
 
-    const session = await User.startSession();
+    const session = await mongoose.startSession();
     session.startTransaction();
 
     try {
@@ -311,8 +311,8 @@ export const acceptFriend = async (userId, requestSenderId) => {
 /**
  * Remove provided friend or friend request sender/receiver from friends list.
  * 
- * @param {String} userId ObjectId of a current user.
- * @param {String} friendId ObjectId of the user which will be deleted from friends.
+ * @param {String} userId `ObjectId` of a current user.
+ * @param {String} friendId `ObjectId` of the user which will be deleted from friends.
  */
 export const removeFriend = async (userId, friendId) => {
 
@@ -326,7 +326,7 @@ export const removeFriend = async (userId, friendId) => {
 
     user.friends.pull({ user: friendId });
 
-    const session = await User.startSession();
+    const session = await mongoose.startSession();
     session.startTransaction();
 
     try {

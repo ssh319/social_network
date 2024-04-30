@@ -21,25 +21,27 @@ export const validateCommentId = (request, response, next) => {
 
 
 export const validatePost = [
-    // body("text")
-    //     .isString().withMessage("Invalid data type for post text").bail()
-    //     .notEmpty().withMessage("Post comment cannot be empty")
-    //     .isLength({ max: 500 }).withMessage("Post comment cannot be more than 500 characters in length"),
+    body("text")
+        .exists().withMessage("Text for post required").bail()
+        .isString().withMessage("Invalid data type for post text").bail()
+        .notEmpty().withMessage("Post text cannot be empty")
+        .isLength({ max: 500 }).withMessage("Post comment cannot be more than 500 characters in length"),
 
-    // is array of objectids
-    // body("images")
-    //     .isArray(),
+    // is array of ObjectId's
+    body("images")
+        .optional()
+        .isArray().withMessage("Invalid data type for images list").bail(),
 
-    // checkExact(),
+    checkExact(),
 
     (request, response, next) => {
-    //     const validationErrors = validationResult(request);
+        const validationErrors = validationResult(request);
 
-    //     if (!validationErrors.isEmpty()) {
-    //         return response.status(400).json(
-    //             validationErrors.errors.map(({ msg }) => { return { msg }; })
-    //         )
-    //     }
+        if (!validationErrors.isEmpty()) {
+            return response.status(400).json(
+                validationErrors.errors.map(({ msg }) => ({ msg }))
+            )
+        }
 
         next();
     }
@@ -47,20 +49,22 @@ export const validatePost = [
 
 
 export const validateComment = [
-    // body("text")
-    //     .isString().withMessage("Invalid data type for post comment text").bail()
-    //     .notEmpty().withMessage,
+    body("text")
+        .exists().withMessage("Text for post comment required").bail()
+        .isString().withMessage("Invalid data type for post comment text").bail()
+        .notEmpty().withMessage("Empty comment text provided").bail()
+        .isLength({ max: 500 }).withMessage("Post comment cannot be more than 500 characters in length"),
 
-    // checkExact(),
+    checkExact(),
 
     (request, response, next) => {
-        // const validationErrors = validationResult(request);
+        const validationErrors = validationResult(request);
 
-        // if (!validationErrors.isEmpty()) {
-        //     return response.status(400).json(
-        //         validationErrors.errors.map(({ msg }) => ({ msg }))
-        //     );
-        // }
+        if (!validationErrors.isEmpty()) {
+            return response.status(400).json(
+                validationErrors.errors.map(({ msg }) => ({ msg }))
+            );
+        }
 
         next();
     }

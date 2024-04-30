@@ -1,85 +1,200 @@
-import Post from '../models/postModel.js';
+import mongoose from 'mongoose';
 
-import { NoSuchResourceError } from '../errors/postErrors.js';
+import Post from '../models/postModel.js';
+import User from '../models/userModel.js';
+
+import { NoSuchPostError } from '../errors/postErrors.js';
 
 
 /**
- * Retrieve feed, containing posts by user's friends.
+ * Retrieve feed, containing posts from user's friends.
  * 
- * @param {String} userId ObjectId of the user, whose feed to retrieve.
+ * @param {String} userId `ObjectId` of the user, whose feed to retrieve.
  * @returns {Promise<Array>} List of post objects.
  */
-export const getPostsFeed = async (userId) => {}
+export const getPostsFeed = async (userId) => {
+    const user = await User.findById(userId, { friends: 1 });
+
+    user.friends = user.friends.filter(friend => friend.status === 'friend');
+    
+    const feed = await Post.find({
+        user: {
+            $in: [
+                user._id,
+                ...user.friends.map(friend => friend.user)
+            ]
+        }
+    }).populate({
+        path: 'user',
+        select: ['firstName', 'lastName', 'profilePicture']
+    });
+
+    return feed;
+}
 
 
 /**
  * Get public post info by its id.
  * 
- * @param {String} postId ObjectId of the post.
- * @returns {Promise<Object>} Object, containing the full post info.
+ * @param {String} postId `ObjectId` of the post.
+ * @returns {Promise<Object>} Object containing the full post info.
  */
-export const getPost = async (postId) => {}
+export const getPost = async (postId) => {
+    const post = await Post.findById(
+        postId
+    ).populate({
+        path: 'user',
+        select: ['firstName', 'lastName', 'profilePicture']
+    }).populate({
+        path: 'comments.user',
+        select: ['firstName', 'lastName', 'profilePicture']
+    }).populate({
+        path: 'likes',
+        select: ['firstName', 'lastName', 'profilePicture']
+    });
+
+    if (!post) {
+        throw new NoSuchPostError("Such post doesn't exist");
+    }
+
+    return post;
+}
 
 
 /**
  * Create a public post.
  * 
- * @param {String} userId ObjectId of the post creator.
+ * @param {String} userId `ObjectId` of the post creator.
  * @param {Object} post Post data, which may include references to images, if the post is required to contain any.
  */
-export const createPost = async (userId, post) => {}
+export const createPost = async (userId, post) => {
+
+    post.user = userId;
+
+    const session = await mongoose.startSession();
+    session.startTransaction();
+
+    try {
+        const [ createdPost ] = await Post.insertMany(post, { session });
+
+        await User.findByIdAndUpdate(userId, {
+            $push: { posts: createdPost._id }
+        }, { session });
+
+        await session.commitTransaction();
+
+    } finally {
+        await session.endSession();
+    }
+}
 
 
 /**
  * Delete a public post.
  * 
- * @param {String} postId ObjectId of a post for deletion.
+ * @param {String} postId `ObjectId` of a post to be deleted.
  */
-export const deletePost = async (postId) => {}
+export const deletePost = async (postId) => {
+    const session = await mongoose.startSession();
+    session.startTransaction();
+
+    try {
+        const post = await Post.findByIdAndDelete(postId, { session });
+
+        await User.findByIdAndUpdate(post.user, {
+            $pull: { posts: post._id }
+        }, { session });
+
+        await session.commitTransaction();
+
+    } finally {
+        await session.endSession();
+    }
+}
 
 
 /**
  * Give a like to the post as the provided user. Do nothing if it's already given.
  * 
- * @param {String} userId ObjectId of a user, whose like will be on the post.
- * @param {String} postId ObjectId of a post to be liked.
+ * @param {String} userId `ObjectId` of a user, whose like will be on the post.
+ * @param {String} postId `ObjectId` of a post to be liked.
  */
-export const likePost = async (userId, postId) => {}
+export const likePost = async (userId, postId) => {
+    const post = await Post.findByIdAndUpdate(postId, {
+        $addToSet: { likes: userId }
+    });
+
+    if (!post) {
+        throw new NoSuchPostError("No such public post to like");
+    }
+}
 
 
 /**
  * Remove the user's like from a post if it is, do nothing if not.
  * 
- * @param {String} userId ObjectId of a user, whose like will be removed from the post.
- * @param {String} postId ObjectId of a post to remove the like from.
+ * @param {String} userId `ObjectId` of a user, whose like will be removed from the post.
+ * @param {String} postId `ObjectId` of a post to remove the like from.
  */
-export const unlikePost = async (userId, postId) => {}
+export const unlikePost = async (userId, postId) => {
+    const post = await Post.findByIdAndUpdate(postId, {
+        $pull: { likes: userId }
+    });
+
+    if (!post) {
+        throw new NoSuchPostError("No such public post to remove a like from");
+    }
+}
 
 
 /**
  * Send comment to a post as the provided user.
  * 
- * @param {String} userId ObjectId of a user, which the comment will be sent by.
- * @param {String} postId ObjectId of a post to comment.
+ * @param {String} userId `ObjectId` of a user, which the comment will be sent by.
+ * @param {String} postId `ObjectId` of a post to comment.
  * @param {Object} comment Comment data.
  */
-export const sendPostComment = async (userId, postId, comment) => {}
+export const sendPostComment = async (userId, postId, comment) => {
+
+    comment.user = userId;
+
+    const post = await Post.findByIdAndUpdate(postId, {
+        $push: { comments: comment }
+    });
+
+    if (!post) {
+        throw new NoSuchPostError("No such public post to comment");
+    }
+}
 
 
 /**
  * Update the provided comment's text.
  * 
- * @param {String} postId ObjectId of a post, whose comment will be edited.
- * @param {String} commentId ObjectId of a comment to edit.
- * @param {String} commentText New comment text.
+ * @param {String} postId `ObjectId` of a post, whose comment will be edited.
+ * @param {String} commentId `ObjectId` of a comment to edit.
+ * @param {String} updatedComment New comment data.
+ * 
+ * @todo To test.
  */
-export const editPostComment = async (postId, commentId, commentText) => {}
+export const editPostComment = async (postId, commentId, updatedComment) => {
+    const post = await Post.findByIdAndUpdate(postId);
+
+    const comment = post.comments.id(commentId);
+    comment.set({ text: updatedComment.text });
+
+    await post.save();
+}
 
 
 /**
  * Delete provided comment from a post.
  * 
- * @param {String} postId ObjectId of a post, whose comment will be deleted.
- * @param {String} commentId ObjectId of a comment to delete.
+ * @param {String} postId `ObjectId` of a post, whose comment will be deleted.
+ * @param {String} commentId `ObjectId` of a comment to delete.
  */
-export const deletePostComment = async (postId, commentId) => {}
+export const deletePostComment = async (postId, commentId) => {
+    await Post.findByIdAndUpdate(postId, {
+        $pull: { comments: { _id: commentId } }
+    });
+}
