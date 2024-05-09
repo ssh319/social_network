@@ -10,11 +10,13 @@ import User from '../models/userModel.js';
 import {
     NoSuchResourceError,
     IncorrectPasswordError,
+    IncorrectOldPasswordError,
     AlreadyExistsError
 } from '../errors/userErrors.js';
 
 
 /**
+ * Find users by parameters.
  * 
  * @param {Object} query Search parameters.
  * @returns {Promise<Array>} List of matching users.
@@ -22,18 +24,14 @@ import {
  * @todo Implement.
  */
 export const searchUsers = async (query) => {
+    const result = await User.find(
+        query,
+        { firstName: 1, lastName: 1, profilePicture: 1 },
+        // ???
+        { limit: 10 }
+    );
 
-    // birthDate (age field?)
-    // query.age = { $gte: query.minBirthDate, $lte: query.maxBirthDate };
-
-    // const result = await User.find(
-    //     query,
-    //     { _id: 1, firstName: 1, lastName: 1, profilePicture: 1 },
-    // );
-
-    console.log(query);
-
-    // return result;
+    return result;
 }
 
 
@@ -70,7 +68,7 @@ export const getUser = async (userId) => {
 /**
  * User sign up data validation and inserting it into the MongoDB.
  * 
- * @param {Object} data Object, containing validated user e-mail, password, first & last name, and the rest of optional data.
+ * @param {Object} data `Object`, containing validated user e-mail, password, first & last name, and the rest of optional data.
  * @returns {Promise<Object>} Result of document creation as object.
  */
 export const createUser = async (data) => {
@@ -126,10 +124,10 @@ export const authenticateUser = async (email, password) => {
  * Update the provided user's data fields.
  * 
  * @param {String} userId User's `ObjectId`
- * @param {Object} data Object, containing the user data updates.
+ * @param {Object} data `Object`, containing the user data updates.
  */
 export const updateUser = async (userId, data) => {
-    // user can change password and still have an access using same token (if the change was from another device?)
+    // user can change password and still have the access with old token (if the change was performed from another device)
 
     const user = await User.findById(userId);
 
@@ -149,7 +147,7 @@ export const updateUser = async (userId, data) => {
         const comparisonResult = await bcrypt.compare(data.oldPassword, user.password);
 
         if (comparisonResult !== true) {
-            throw new IncorrectPasswordError("Incorrect old password");
+            throw new IncorrectOldPasswordError("Incorrect old password");
         }
 
         const saltRounds = 10;
@@ -194,6 +192,7 @@ export const deleteUser = async (userId) => {
         await session.endSession();
     }
 }
+
 
 /**
  * 

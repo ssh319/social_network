@@ -2,23 +2,29 @@ import * as service from '../services/userService.js';
 
 import ClientError from '../errors/clientError.js';
 
+// next(err) if not a ClientError? (err handler to respond with 500 and write to logs)
 
-// next(err) if not ClientError? (err handler to respond with 500 and write to logs)
+
 export const searchUsers = async (request, response) => {
-    response.sendStatus(501);
-    // try {
-    //     const result = await service.searchUsers(request.query);
-    //     response.json({ result });
 
-    // } catch (err) {
-    //     if (err instanceof ClientError) {
-    //         response.status(err.statusCode).json({ message: err.message });
+    console.log(request.query);
+    return response.sendStatus(501);
+
+    /*
+    try {
+        const users = await service.searchUsers(request.query);
+        response.json({ users });
+
+    } catch (err) {
+        if (err instanceof ClientError) {
+            response.status(err.statusCode).json({ message: err.message });
     
-    //     } else {
-    //         console.error(err);
-    //         response.status(500).json({ message: "Unknown internal error occured" });
-    //     }
-    // }
+        } else {
+            console.error(err);
+            response.status(500).json({ message: "Unknown internal error occured" });
+        }
+    }
+    */
 }
 
 
@@ -44,7 +50,7 @@ export const createUser = async (request, response) => {
         const result = await service.createUser(request.body);
 
         const { _id, firstName, lastName } = result;
-        response.status(201).json({ _id, firstName, lastName });
+        response.status(201).json({ createdUser: { _id, firstName, lastName }});
 
     } catch (err) {
         if (err instanceof ClientError) {

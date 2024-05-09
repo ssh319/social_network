@@ -17,6 +17,13 @@ export class NoSuchResourceError extends ClientError {
 
 export class IncorrectPasswordError extends ClientError {
     constructor(message) {
-        super(message, 400);
+        super(message, 401);
+    }
+}
+
+
+export class IncorrectOldPasswordError extends ClientError {
+    constructor(message) {
+        super(message, 403);
     }
 }

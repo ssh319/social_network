@@ -25,10 +25,9 @@ const authenticate = async (request, response, next) => {
             next();
 
         } catch (err) {
-            const { message } = err;
 
             if (err instanceof jwt.JsonWebTokenError) {
-                response.status(401).json({ message: "Invalid JWT token provided: " + message });
+                response.status(401).json({ message: "Invalid JWT token provided: " + err.message });
 
             } else {
                 console.error(err);
