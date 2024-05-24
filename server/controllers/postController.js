@@ -39,8 +39,8 @@ export const getPost = async (request, response) => {
 
 export const createPost = async (request, response) => {
     try {
-        await service.createPost(request.user._id, request.body);
-        response.sendStatus(201);
+        const createdPost = await service.createPost(request.user._id, request.body);
+        response.status(201).json({ createdPost });
 
     } catch (err) {
         if (err instanceof ClientError) {
@@ -74,7 +74,7 @@ export const deletePost = async (request, response) => {
 export const likePost = async (request, response) => {
     try {
         await service.likePost(request.user._id, request.params.postId);
-        response.sendStatus(201);
+        response.sendStatus(200);
 
     } catch (err) {
         if (err instanceof ClientError) {
@@ -122,9 +122,9 @@ export const sendPostComment = async (request, response) => {
 }
 
 
-export const editPostComment = async (request, response) => {
+export const deletePostComment = async (request, response) => {
     try {
-        await service.editPostComment(request.params.postId, request.params.commentId, request.body);
+        await service.deletePostComment(request.params.postId, request.params.commentId);
         response.sendStatus(200);
 
     } catch (err) {
@@ -139,9 +139,26 @@ export const editPostComment = async (request, response) => {
 }
 
 
-export const deletePostComment = async (request, response) => {
+export const likePostComment = async (request, response) => {
     try {
-        await service.deletePostComment(request.params.postId, request.params.commentId);
+        await service.likePostComment(request.user._id, request.params.postId, request.params.commentId);
+        response.sendStatus(200);
+
+    } catch (err) {
+        if (err instanceof ClientError) {
+            response.status(err.statusCode).json({ message: err.message });
+
+        } else {
+            console.error(err);
+            response.status(500).json({ message: "Unknown internal error occured" });
+        }
+    }
+}
+
+
+export const unlikePostComment = async (request, response) => {
+    try {
+        await service.unlikePostComment(request.user._id, request.params.postId, request.params.commentId);
         response.sendStatus(200);
 
     } catch (err) {

@@ -16,7 +16,7 @@ const notExistingId = "00aa11bb22cc33dd44ee55ff";
 let exampleUserId;
 let exampleFriendId;
 let userToken;
-let friendToken;
+// let friendToken;
 
 beforeAll(async () => {
     await initDb();
@@ -28,7 +28,7 @@ beforeEach(async () => {
     exampleUserId = usersCreationResult.exampleUserId;
     exampleFriendId = usersCreationResult.exampleFriendId;
     userToken = usersCreationResult.userToken;
-    friendToken = usersCreationResult.friendToken;
+    // friendToken = usersCreationResult.friendToken;
 });
 
 afterEach(async () => {
@@ -40,13 +40,24 @@ afterAll(async () => {
 });
 
 
+// 2500 ms!
+test("should respond with 'bad request' to a syntax-malformed json request body", async () => {
+    const response = await request(app)
+        .post('/users/signup')
+        .send('{ "email": "syntaxerror@testmail.com",,, }')
+        .set('Content-Type', 'application/json');
+
+    expect(response.status).toEqual(400);
+    expect(response.body).toHaveProperty("message");
+});
+
+
 describe("User API endpoints", () => {
 
     // Unauthorized requests testing
     test("should respond with 'unauthorized' error due to 'Authorization' header absence", async () => {
         const response = await request(app)
-            .get('/users?firstName=unauthorizedTest')
-            .set('Content-Type', 'application/json');
+            .get('/users?firstName=unauthorizedTest');
             
         expect(response.status).toEqual(401);
         expect(response.body).toHaveProperty("message");
@@ -55,7 +66,6 @@ describe("User API endpoints", () => {
     test("should respond with 'unauthorized' error due to invalid Bearer token", async () => {
         const response = await request(app)
             .get('/users?firstName=unauthorizedTest')
-            .set('Content-Type', 'application/json')
             .set('Authorization', 'Bearer invalidtoken');
         
         expect(response.status).toEqual(401);
@@ -69,12 +79,12 @@ describe("User API endpoints", () => {
         test("should return an array of matching users", async () => {
             // const response = await request(app)
             //     .get('/users?lastName=Example')
-            //     .set('Content-Type', 'application/json')
+            // 
             //     .set('Authorization', `Bearer ${userToken}`);
         
             // expect(response.status).toEqual(200);
             // expect(response.body).toHaveProperty("users");
-            // expect(Array.isArray(response.body.users)).toBeTruthy();
+            // expect(response.body.users).toBeInstanceOf(Array);
             // expect(response.body.users).toHaveLength(2);
             // expect(response.body.users[0].lastName).toEqual("Example");
         });
@@ -87,7 +97,6 @@ describe("User API endpoints", () => {
         test("should return only the public user data in 'user' object", async () => {
             const response = await request(app)
                 .get(`/users/${exampleUserId}`)
-                .set('Content-Type', 'application/json')
                 .set('Authorization', `Bearer ${userToken}`);
 
             expect(response.status).toEqual(200);
@@ -101,7 +110,6 @@ describe("User API endpoints", () => {
         test("should respond with 'invalid id' error", async () => {
             const response = await request(app)
                 .get('/users/111')
-                .set('Content-Type', 'application/json')
                 .set('Authorization', `Bearer ${userToken}`);
 
             expect(response.status).toEqual(400);
@@ -111,7 +119,6 @@ describe("User API endpoints", () => {
         test("should respond with 'no such user' error", async () => {
             const response = await request(app)
                 .get(`/users/${notExistingId}`)
-                .set('Content-Type', 'application/json')
                 .set('Authorization', `Bearer ${userToken}`);
 
             expect(response.status).toEqual(404);
@@ -131,8 +138,7 @@ describe("User API endpoints", () => {
                     password: "11112222",
                     firstName: "new",
                     lastName: "USER"
-                })
-                .set('Content-Type', 'application/json');
+                });
 
             expect(response.status).toEqual(201);
             expect(response.body).toHaveProperty("createdUser");
@@ -144,7 +150,7 @@ describe("User API endpoints", () => {
             expect(createdUser.password.startsWith("$2b")).toBeTruthy();
         });
 
-        test("should respond with 'invalid data' error", async () => {
+        test("should respond with user data validation errors list", async () => {
             const response = await request(app)
                 .post('/users/signup')
                 .send({
@@ -152,36 +158,67 @@ describe("User API endpoints", () => {
                     password: "invalid password",
                     firstName: "invalid name",
                     lastName: "123"
-                })
-                .set('Content-Type', 'application/json');
+                });
 
             expect(response.status).toEqual(400);
-            expect(Array.isArray(response.body)).toBeTruthy();
-            expect(response.body[0]).toHaveProperty("msg");
-            expect(response.body).toHaveLength(4);
+            expect(response.body).toHaveProperty("errors");
+
+            expect(response.body.errors).toBeInstanceOf(Array);
+            expect(response.body.errors[0]).toHaveProperty("msg");
+            expect(response.body.errors).toHaveLength(4);
+        });
+
+        test("should respond with 'unexpected fields' error", async () => {
+            const response = await request(app)
+                .post('/users/signup')
+                .send({
+                    email: "newuser@testmail.com",
+                    password: "11112222",
+                    firstName: "New",
+                    lastName: "User",
+                    unexpectedField: "value"
+                });
+
+            expect(response.status).toEqual(400);
+            expect(response.body).toHaveProperty("errors");
+
+            expect(response.body.errors).toBeInstanceOf(Array);
+            expect(response.body.errors[0]).toHaveProperty("msg");
+            expect(response.body.errors).toHaveLength(1);
+        });
+
+        test("should respond with 'invalid type' error", async () => {
+            const response = await request(app)
+                .post('/users/signup')
+                .send({
+                    email: 1,
+                    password: "11112222",
+                    firstName: "New",
+                    lastName: "User"
+                });
+
+            expect(response.status).toEqual(400);
+            expect(response.body).toHaveProperty("errors");
+
+            expect(response.body.errors).toBeInstanceOf(Array);
+            expect(response.body.errors[0]).toHaveProperty("msg");
+            expect(response.body.errors[0]).toHaveProperty("path", "email");
         });
 
         test("should respond with 'already exists' error", async () => {
-            const existingUserTestData = {
-                email: "existinguser@testmail.com",
-                password: "12345678",
-                firstName: "Already",
-                lastName: "Existing"
-            };
-
-            await request(app)
-                .post('/users/signup')
-                .send(existingUserTestData)
-                .set('Content-Type', 'application/json');
-
             const response = await request(app)
                 .post('/users/signup')
-                .send(existingUserTestData)
-                .set('Content-Type', 'application/json');
+                .send({
+                    email: "example@testmail.com",
+                    password: "11112222",
+                    firstName: "Busy",
+                    lastName: "Email"
+                });
 
             expect(response.status).toEqual(400);
             expect(response.body).toHaveProperty("message");
         });
+        
     });
 
     
@@ -193,8 +230,7 @@ describe("User API endpoints", () => {
                 .send({
                     email: "example@testmail.com",
                     password: "12345678"
-                })
-                .set('Content-Type', 'application/json');
+                });
 
             expect(response.status).toEqual(200);
             expect(response.body).toHaveProperty("token");
@@ -206,8 +242,7 @@ describe("User API endpoints", () => {
                 .send({
                     email: "notexistinguser@testmail.com",
                     password: "12345678"
-                })
-                .set('Content-Type', 'application/json');
+                });
 
             expect(response.status).toEqual(404);
             expect(response.body).toHaveProperty("message");
@@ -219,12 +254,47 @@ describe("User API endpoints", () => {
                 .send({
                     email: "example@testmail.com",
                     password: "wrongpassword"
-                })
-                .set('Content-Type', 'application/json');
+                });
 
             expect(response.status).toEqual(401);
             expect(response.body).toHaveProperty("message");
-        })
+        });
+
+        test("should respond with 'unexpected fields' error", async () => {
+            const response = await request(app)
+                .post('/users/login')
+                .send({
+                    email: "example@testmail.com",
+                    password: "12345678",
+                    unexpectedField: "value"
+                })
+
+
+            expect(response.status).toEqual(400);
+            expect(response.body).toHaveProperty("errors");
+
+            expect(response.body.errors).toBeInstanceOf(Array);
+            expect(response.body.errors[0]).toHaveProperty("msg");
+            expect(response.body.errors).toHaveLength(1);
+        });
+
+        test("should respond with 'invalid type' error", async () => {
+            const response = await request(app)
+                .post('/users/login')
+                .send({
+                    email: 1,
+                    password: "12345678"
+                });
+
+            expect(response.status).toEqual(400);
+            expect(response.body).toHaveProperty("errors");
+
+            expect(response.body.errors).toBeInstanceOf(Array);
+            expect(response.body.errors[0]).toHaveProperty("msg");
+            expect(response.body.errors[0]).toHaveProperty("path", "email");
+            expect(response.body.errors).toHaveLength(1);
+        });
+
     });
 
 
@@ -237,35 +307,78 @@ describe("User API endpoints", () => {
             const response = await request(app)
                 .patch('/users/account')
                 .send({
-                    email: 'updatedmail@testmail.com',
+                    email: "updatedmail@testmail.com",
                     oldPassword: "12345678",
                     password: "newpassword"
                 })
-                .set('Content-Type', 'application/json')
                 .set('Authorization', `Bearer ${userToken}`);
                 
             expect(response.status).toEqual(200);
 
-            const updatedUser = await User.findById(userBeforeUpdate._id);
+            const userAfterUpdate = await User.findById(userBeforeUpdate._id);
 
-            expect(updatedUser.email).toEqual("updatedmail@testmail.com");
-            expect(updatedUser.password).not.toEqual(userBeforeUpdate.password);
-            expect(updatedUser.password.startsWith("$2b")).toBeTruthy();
+            expect(userAfterUpdate.email).toEqual("updatedmail@testmail.com");
+            expect(userAfterUpdate.password).not.toEqual(userBeforeUpdate.password);
+            expect(userAfterUpdate.password.startsWith("$2b")).toBeTruthy();
         });
 
-        test("should respond with 'invalid data' error", async () => {
+        test("should respond with user data validation errors list", async () => {
             const response = await request(app)
                 .patch('/users/account')
                 .send({
-                    firstName: 'Invalid name 123'
+                    firstName: "Invalid name 123"
                 })
-                .set('Content-Type', 'application/json')
                 .set('Authorization', `Bearer ${userToken}`);
 
             expect(response.status).toEqual(400);
-            expect(Array.isArray(response.body)).toBeTruthy();
-            expect(response.body[0]).toHaveProperty("msg");
-            expect(response.body).toHaveLength(1);
+            expect(response.body).toHaveProperty("errors");
+
+            expect(response.body.errors).toBeInstanceOf(Array);
+            expect(response.body.errors[0]).toHaveProperty("msg");
+            expect(response.body.errors[0]).toHaveProperty("path", "firstName");
+            expect(response.body.errors).toHaveLength(1);
+        });
+
+        test("should respond with 'unexpected fields' error", async () => {
+            const response = await request(app)
+                .patch('/users/account')
+                .send({
+                    email: "newuser@testmail.com",
+                    oldPassword: "12345678",
+                    password: "11112222",
+                    firstName: "New",
+                    lastName: "User",
+                    unexpectedField: "value"
+                })
+                .set('Authorization', `Bearer ${userToken}`);
+
+            expect(response.status).toEqual(400);
+            expect(response.body).toHaveProperty("errors");
+
+            expect(response.body.errors).toBeInstanceOf(Array);
+            expect(response.body.errors[0]).toHaveProperty("msg");
+            expect(response.body.errors).toHaveLength(1);
+        });
+
+        test("should respond with 'invalid type' error", async () => {
+            const response = await request(app)
+                .patch('/users/account')
+                .send({
+                    email: 1,
+                    oldPassword: "12345678",
+                    password: "11112222",
+                    firstName: "New",
+                    lastName: "User"
+                })
+                .set('Authorization', `Bearer ${userToken}`);
+
+            expect(response.status).toEqual(400);
+            expect(response.body).toHaveProperty("errors");
+
+            expect(response.body.errors).toBeInstanceOf(Array);
+            expect(response.body.errors[0]).toHaveProperty("msg");
+            expect(response.body.errors[0]).toHaveProperty("path", "email");
+            expect(response.body.errors).toHaveLength(1);
         });
 
         test("should respond with 'old password required' error", async () => {
@@ -274,12 +387,14 @@ describe("User API endpoints", () => {
                 .send({
                     password: "newpassword"
                 })
-                .set('Content-Type', 'application/json')
                 .set('Authorization', `Bearer ${userToken}`);
 
             expect(response.status).toEqual(400);
-            expect(Array.isArray(response.body)).toBeTruthy();
-            expect(response.body[0].path).toEqual("oldPassword");
+            expect(response.body).toHaveProperty("errors");
+
+            expect(response.body.errors).toBeInstanceOf(Array);
+            expect(response.body.errors[0]).toHaveProperty("path", "oldPassword");
+            expect(response.body.errors).toHaveLength(1);
         });
 
         test("should respond with 'incorrect old password' error", async () => {
@@ -289,7 +404,6 @@ describe("User API endpoints", () => {
                     oldPassword: 'wrongpassword',
                     password: 'newpassword'
                 })
-                .set('Content-Type', 'application/json')
                 .set('Authorization', `Bearer ${userToken}`);
     
             expect(response.status).toEqual(403);
@@ -304,7 +418,6 @@ describe("User API endpoints", () => {
         test("should delete the user and all of its resources from db", async () => {
             const response = await request(app)
                 .delete('/users/account')
-                .set('Content-Type', 'application/json')
                 .set('Authorization', `Bearer ${userToken}`);
 
             expect(response.status).toEqual(200);
@@ -330,7 +443,6 @@ describe("User API endpoints", () => {
 
             const response = await request(app)
                 .patch('/users/update_online')
-                .set('Content-Type', 'application/json')
                 .set('Authorization', `Bearer ${userToken}`);
 
             expect(response.status).toEqual(200);
@@ -356,7 +468,6 @@ describe("User API endpoints", () => {
 
             const response = await request(app)
                 .post(`/users/friends/${userToReceiveRequest._id}`)
-                .set('Content-Type', 'application/json')
                 .set('Authorization', `Bearer ${userToken}`);
 
             expect(response.status).toEqual(201);
@@ -381,7 +492,6 @@ describe("User API endpoints", () => {
         test("should respond with 'already in friends list' error", async () => {
             const response = await request(app)
                 .post(`/users/friends/${exampleFriendId}`)
-                .set('Content-Type', 'application/json')
                 .set('Authorization', `Bearer ${userToken}`);
 
             expect(response.status).toEqual(400);
@@ -391,7 +501,7 @@ describe("User API endpoints", () => {
         test("should respond with 'no such user' error", async () => {
             const response = await request(app)
                 .post(`/users/friends/${notExistingId}`)
-                .set('Content-Type', 'application/json')
+
                 .set('Authorization', `Bearer ${userToken}`);
 
             expect(response.status).toEqual(404);
@@ -418,7 +528,6 @@ describe("User API endpoints", () => {
 
             const response = await request(app)
                 .patch(`/users/friends/${userToSendRequest._id}`)
-                .set('Content-Type', 'application/json')
                 .set('Authorization', `Bearer ${userToken}`);
 
             expect(response.status).toEqual(200);
@@ -442,7 +551,6 @@ describe("User API endpoints", () => {
         test("should respond with 'no such request' error", async () => {
             const response = await request(app)
                 .patch(`/users/friends/${notExistingId}`)
-                .set('Content-Type', 'application/json')
                 .set('Authorization', `Bearer ${userToken}`);
 
             expect(response.status).toEqual(404);
@@ -452,7 +560,6 @@ describe("User API endpoints", () => {
         test("should respond with 'no such request' error for the user who is already a friend", async () => {
             const response = await request(app)
                 .patch(`/users/friends/${exampleFriendId}`)
-                .set('Content-Type', 'application/json')
                 .set('Authorization', `Bearer ${userToken}`);
 
             expect(response.status).toEqual(404);
@@ -461,13 +568,12 @@ describe("User API endpoints", () => {
 
     });
 
-
+    
     describe("removeFriend", () => {
 
         test("should delete users from each other's friends lists", async () => {
             const response = await request(app)
                 .delete(`/users/friends/${exampleFriendId}`)
-                .set('Content-Type', 'application/json')
                 .set('Authorization', `Bearer ${userToken}`);
 
             expect(response.status).toEqual(200);
@@ -479,19 +585,18 @@ describe("User API endpoints", () => {
                 user.friends.some(
                     friend => friend.user.equals(exampleFriendId)
                 )
-            ).toEqual(false);
+            ).toBeFalsy();
 
             expect(
                 friend.friends.some(
                     friend => friend.user.equals(exampleUserId)
                 )
-            ).toEqual(false);
+            ).toBeFalsy();
         });
 
         test("should respond with 'no such friend' error", async () => {
             const response = await request(app)
                 .delete(`/users/friends/${notExistingId}`)
-                .set('Content-Type', 'application/json')
                 .set('Authorization', `Bearer ${userToken}`);
 
             expect(response.status).toEqual(404);

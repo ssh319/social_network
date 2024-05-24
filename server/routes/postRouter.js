@@ -31,14 +31,6 @@ router.post(
     controller.sendPostComment
 );
 
-router.patch(
-    "/:postId/comments/:commentId",
-    validatePostId,
-    validateCommentId,
-    checkCommentAccess,
-    validateComment,
-    controller.editPostComment
-);
 
 router.delete(
     "/:postId/comments/:commentId",
@@ -46,6 +38,20 @@ router.delete(
     validateCommentId,
     checkCommentAccess,
     controller.deletePostComment
+);
+
+router.post(
+    "/:postId/comments/:commentId/likes",
+    validatePostId,
+    validateCommentId,
+    controller.likePostComment
+);
+
+router.delete(
+    "/:postId/comments/:commentId/likes",
+    validatePostId,
+    validateCommentId,
+    controller.unlikePostComment
 );
 
 

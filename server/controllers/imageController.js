@@ -54,12 +54,10 @@ export const deleteImage = async (request, response) => {
 }
 
 
-// likes logic will use addToSet(), and ignore req if there is already like or there was no like for removal
-// so 404 is only if the image wasn't found
 export const likeImage = async (request, response) => {
     try {
         await service.likeImage(request.user._id, request.params.imageId);
-        response.sendStatus(201);
+        response.sendStatus(200);
 
     } catch (err) {
         if (err instanceof ClientError) {

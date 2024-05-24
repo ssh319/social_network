@@ -38,9 +38,9 @@ export const validatePost = [
         const validationErrors = validationResult(request);
 
         if (!validationErrors.isEmpty()) {
-            return response.status(400).json(
-                validationErrors.errors.map(({ msg }) => ({ msg }))
-            )
+            return response.status(400).json({
+                errors: validationErrors.errors.map(({ path, msg }) => ({ path, msg }))
+            });
         }
 
         next();
@@ -61,9 +61,9 @@ export const validateComment = [
         const validationErrors = validationResult(request);
 
         if (!validationErrors.isEmpty()) {
-            return response.status(400).json(
-                validationErrors.errors.map(({ msg }) => ({ msg }))
-            );
+            return response.status(400).json({
+                errors: validationErrors.errors.map(({ path, msg }) => ({ path, msg }))
+            });
         }
 
         next();

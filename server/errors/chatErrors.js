@@ -6,3 +6,10 @@ export class AccessDeniedError extends ClientError {
         super(message, 403);
     }
 }
+
+
+export class NoSuchUserError extends ClientError {
+    constructor(message) {
+        super(message, 404);
+    }
+}

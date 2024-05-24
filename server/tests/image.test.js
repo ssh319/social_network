@@ -13,45 +13,61 @@ import {
 
 const notExistingId = "00aa11bb22cc33dd44ee55ff";
 
-let exampleUserId;
-let exampleFriendId;
+// let exampleUserId;
+// let exampleFriendId;
 // let exampleImageId;
-let userToken;
-let friendToken;
+// let userToken;
+// let friendToken;
 
-beforeAll(async () => {
-    await initDb();
+// beforeAll(async () => {
+//     await initDb();
 
-    const usersCreationResult = await createTestUsers();
+//     const usersCreationResult = await createTestUsers();
 
-    exampleUserId = usersCreationResult.exampleUserId;
-    exampleFriendId = usersCreationResult.exampleFriendId;
-    userToken = usersCreationResult.userToken;
-    friendToken = usersCreationResult.friendToken;
-});
+//     exampleUserId = usersCreationResult.exampleUserId;
+//     exampleFriendId = usersCreationResult.exampleFriendId;
+//     userToken = usersCreationResult.userToken;
+//     friendToken = usersCreationResult.friendToken;
+// });
 
-beforeEach(async () => {
-    // const imageCreationResult = await createTestImage(exampleUserId);
+// beforeEach(async () => {
+//     const imageCreationResult = await createTestImage(exampleUserId);
 
-    // exampleImageId = imageCreationResult.exampleImageId;
-});
+//     exampleImageId = imageCreationResult.exampleImageId;
+// });
 
-afterEach(async () => {
-    await mongoose.connection.dropCollection('images');
-});
+// afterEach(async () => {
+//     await mongoose.connection.dropCollection('images');
+// });
 
-afterAll(async () => {
-    await closeDb();
-});
+// afterAll(async () => {
+//     await closeDb();
+// });
 
 
 describe("Image API endpoints", () => {
 
     describe("getImage", () => {
 
-        test("should ...", async () => {
+        test("...", async () => {
 
         });
+
+    });
+
+    describe("uploadImage", () => {
+
+    });
+
+    describe("deleteImage", () => {
+
+    });
+
+    describe("likeImage", () => {
+
+    });
+
+    describe("unlikeImage", () => {
 
     });
     

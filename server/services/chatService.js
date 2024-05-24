@@ -3,7 +3,10 @@ import mongoose from 'mongoose';
 import Chat from '../models/chatModel.js';
 import User from '../models/userModel.js';
 
-import { AccessDeniedError } from '../errors/chatErrors.js';
+import {
+    AccessDeniedError,
+    NoSuchUserError
+} from '../errors/chatErrors.js';
 
 
 /**
@@ -21,7 +24,7 @@ export const retrieveChats = async (userId) => {
             { secondaryUser: userId }
         ] },
 
-        // not include all messages for every chat
+        // not include all the messages for every chat
         { messages: 0 }
 
     ).populate({
@@ -53,7 +56,7 @@ export const getChat = async (chatId) => {
  * Get or create a chat between provided users.
  * 
  * @param {String} primaryUser `ObjectId` of a user starting the chat.
- * @param {String} secondaryUser `ObjectId` of a user who to start chat with.
+ * @param {String} secondaryUser `ObjectId` of a user which to start chat with.
  * @returns {Promise<String>} `ObjectId` of an existing or created chat.
  */
 export const startChat = async (primaryUser, secondaryUser) => {
@@ -73,20 +76,33 @@ export const startChat = async (primaryUser, secondaryUser) => {
     });
 
     if (existingChat) {
-        return existingChat._id;
+        return {
+            chat: existingChat._id,
+            isNewChat: false
+        };
+    }
+
+    const existingUser = await User.findById(secondaryUser);
+
+    if (!existingUser) {
+        throw new NoSuchUserError("No such user to start a chat with");
     }
 
     const session = await mongoose.startSession();
     session.startTransaction();
 
     try {
-        const { _id } = await Chat.create({ primaryUser, secondaryUser }, { session });
+        const { _id } = await Chat.create([{ primaryUser, secondaryUser }], { session });
 
         await User.findByIdAndUpdate(primaryUser, { $push: { chats: _id } }, { session });
         await User.findByIdAndUpdate(secondaryUser, { $push: { chats: _id } }, { session });
         
         await session.commitTransaction();
-        return _id;
+
+        return {
+            chat: _id,
+            isNewChat: true
+        };
         
     } finally {
         await session.endSession();
@@ -132,14 +148,17 @@ export const deleteChat = async (chatId) => {
 export const sendMessage = async (userId, chatId, text) => {
     await Chat.findByIdAndUpdate(chatId, {
         $push: {
-            messages: { user: userId, text }
+            messages: {
+                user: userId,
+                text
+            }
         }
-    })
+    });
 }
 
 
 /**
- * Change target message's text without updating its timestamp.
+ * Update the provided message's text.
  * 
  * @param {String} chatId `ObjectId` of the chat.
  * @param {String} messageId `ObjectId` of the message to be edited.
@@ -184,5 +203,5 @@ export const readMessage = async (userId, chatId, messageId) => {
 
     message.set({ isRead: true });
 
-    await message.save();
+    await chat.save();
 }

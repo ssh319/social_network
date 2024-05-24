@@ -39,8 +39,8 @@ export const getChat = async (request, response) => {
 
 export const startChat = async (request, response) => {
     try {
-        const chat = await service.startChat(request.user._id, request.params.userId);
-        response.status(201).json({ chat });
+        const { chat, isNewChat } = await service.startChat(request.user._id, request.params.userId);
+        response.status(isNewChat ? 201 : 200).json({ chat });
 
     } catch (err) {
         if (err instanceof ClientError) {

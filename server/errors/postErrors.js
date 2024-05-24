@@ -6,3 +6,10 @@ export class NoSuchPostError extends ClientError {
         super(message, 404);
     }
 }
+
+
+export class NoSuchCommentError extends ClientError {
+    constructor(message) {
+        super(message, 404);
+    }
+}

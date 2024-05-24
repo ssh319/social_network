@@ -49,7 +49,7 @@ export const createTestUsers = async () => {
     
 
     const friendPassword = await bcrypt.hash("12345678", 10);
-    
+
     const friend = await User.create({
         email: "friendexample@testmail.com",
         password: friendPassword,
@@ -63,8 +63,8 @@ export const createTestUsers = async () => {
     await User.findByIdAndUpdate(exampleUserId, { $push: { friends: { user: exampleFriendId, status: 'friend' } } });
     await User.findByIdAndUpdate(exampleFriendId, { $push: { friends: { user: exampleUserId, status: 'friend' } } });
     
-    const userToken = jwt.sign({ _id: exampleUserId }, process.env.JWT_SECRET_KEY, { expiresIn: "7d" });
-    const friendToken = jwt.sign({ _id: exampleFriendId }, process.env.JWT_SECRET_KEY, { expiresIn: "7d" });
+    const userToken = jwt.sign({ _id: exampleUserId }, process.env.JWT_SECRET_KEY, { expiresIn: '7d' });
+    const friendToken = jwt.sign({ _id: exampleFriendId }, process.env.JWT_SECRET_KEY, { expiresIn: '7d' });
     
     return {
         exampleUserId,
@@ -82,9 +82,25 @@ export const createTestPost = async (userId) => {
     });
     
     const examplePostId = post._id.toHexString();
+
+    const commentedPost = await Post.findByIdAndUpdate(examplePostId, {
+        $push: {
+            comments: {
+                text: "Post comment example",
+                user: userId
+            }
+        }
+    }, { new: true });
+
+    const exampleCommentId = commentedPost.comments[0]._id.toHexString();
+
+    await User.findByIdAndUpdate(userId, {
+        $push: { posts: examplePostId }
+    });
     
     return {
-        examplePostId
+        examplePostId,
+        exampleCommentId
     };
 }
 
@@ -96,11 +112,21 @@ export const createTestChat = async (userId, friendId) => {
     });
 
     const exampleChatId = chat._id.toHexString();
-    
 
     const message = chat.messages.create({ user: userId, text: "Message example" });
-
     const exampleMessageId = message._id.toHexString();
+
+    chat.messages.push(message);
+    
+    await chat.save();
+
+    await User.findByIdAndUpdate(userId, {
+        $push: { chats: exampleChatId }
+    });
+
+    await User.findByIdAndUpdate(friendId, {
+        $push: { chats: exampleChatId }
+    });
 
     return {
         exampleChatId,
@@ -122,11 +148,11 @@ export const createTestChat = async (userId, friendId) => {
 //         contentType: "image/jpeg"
 //     });
 
-//     const pngImageExampleId = pngImage._id.toHexString();
-//     const jpegImageExampleId = jpegImage._id.toHextString();
+//     const examplePngImageId = pngImage._id.toHexString();
+//     const exampleJpegImageId = jpegImage._id.toHexString();
 
 //     return {
-//         pngImageExampleId,
-//         jpegImageExampleId
+//         examplePngImageId,
+//         exampleJpegImageId
 //     };
 // }

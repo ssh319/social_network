@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 import Post from '../models/postModel.js';
 import User from '../models/userModel.js';
 
-import { NoSuchPostError } from '../errors/postErrors.js';
+import { NoSuchPostError, NoSuchCommentError } from '../errors/postErrors.js';
 
 
 /**
@@ -83,6 +83,8 @@ export const createPost = async (userId, post) => {
 
         await session.commitTransaction();
 
+        return createdPost;
+
     } finally {
         await session.endSession();
     }
@@ -117,7 +119,7 @@ export const deletePost = async (postId) => {
  * Give a like to the post as the provided user. Do nothing if it's already given.
  * 
  * @param {String} userId `ObjectId` of a user, whose like will be on the post.
- * @param {String} postId `ObjectId` of a post to be liked.
+ * @param {String} postId `ObjectId` of the post to be liked.
  */
 export const likePost = async (userId, postId) => {
     const post = await Post.findByIdAndUpdate(postId, {
@@ -134,7 +136,7 @@ export const likePost = async (userId, postId) => {
  * Remove the user's like from a post if it is, do nothing if not.
  * 
  * @param {String} userId `ObjectId` of a user, whose like will be removed from the post.
- * @param {String} postId `ObjectId` of a post to remove the like from.
+ * @param {String} postId `ObjectId` of the post to remove the like from.
  */
 export const unlikePost = async (userId, postId) => {
     const post = await Post.findByIdAndUpdate(postId, {
@@ -151,7 +153,7 @@ export const unlikePost = async (userId, postId) => {
  * Send comment to a post as the provided user.
  * 
  * @param {String} userId `ObjectId` of a user, which the comment will be sent by.
- * @param {String} postId `ObjectId` of a post to comment.
+ * @param {String} postId `ObjectId` of the post to comment.
  * @param {Object} comment Comment data.
  */
 export const sendPostComment = async (userId, postId, comment) => {
@@ -169,32 +171,69 @@ export const sendPostComment = async (userId, postId, comment) => {
 
 
 /**
- * Update the provided comment's text.
+ * Delete provided comment from a post.
  * 
- * @param {String} postId `ObjectId` of a post, whose comment will be edited.
- * @param {String} commentId `ObjectId` of a comment to edit.
- * @param {String} updatedComment New comment data.
- * 
- * @todo To test.
+ * @param {String} postId `ObjectId` of a post, whose comment will be deleted.
+ * @param {String} commentId `ObjectId` of the comment to delete.
  */
-export const editPostComment = async (postId, commentId, updatedComment) => {
-    const post = await Post.findByIdAndUpdate(postId);
+export const deletePostComment = async (postId, commentId) => {
+    await Post.findByIdAndUpdate(postId, {
+        $pull: { comments: { _id: commentId } }
+    });
+}
+
+
+/**
+ * Give a like to the post comment as the provided user.
+ * 
+ * @param {String} userId `ObjectId` of a user, whose like will be on the comment.
+ * @param {String} postId `ObjectId` of a post, whose comment to like.
+ * @param {String} commentId `ObjectId` of the comment to give a like to.
+ */
+export const likePostComment = async (userId, postId, commentId) => {
+    const post = await Post.findById(postId);
+
+    if (!post) {
+        throw new NoSuchPostError("Provided post doesn't exist");
+    }
 
     const comment = post.comments.id(commentId);
-    comment.set({ text: updatedComment.text });
+
+    if (!comment) {
+        throw new NoSuchCommentError("No such post comment to like");
+    }
+
+    if (!comment.likes.includes(userId)) {
+        comment.likes.push(userId);
+    }
 
     await post.save();
 }
 
 
 /**
- * Delete provided comment from a post.
+ * Remove the provided user's like from the post comment if it is.
  * 
- * @param {String} postId `ObjectId` of a post, whose comment will be deleted.
- * @param {String} commentId `ObjectId` of a comment to delete.
+ * @param {String} userId `ObjectId` of a user, whose like will be removed from comment.
+ * @param {String} postId `ObjectId` of a post, whose comment a like will be removed from.
+ * @param {String} commentId `ObjectId` of the comment to remove a like from.
  */
-export const deletePostComment = async (postId, commentId) => {
-    await Post.findByIdAndUpdate(postId, {
-        $pull: { comments: { _id: commentId } }
-    });
+export const unlikePostComment = async (userId, postId, commentId) => {
+    const post = await Post.findById(postId);
+
+    if (!post) {
+        throw new NoSuchPostError("Provided post doesn't exist");
+    }
+
+    const comment = post.comments.id(commentId);
+
+    if (!comment) {
+        throw new NoSuchCommentError("No such post comment to like");
+    }
+
+    comment.likes = comment.likes.filter(
+        like => !like.equals(userId)
+    );
+
+    await post.save();
 }
