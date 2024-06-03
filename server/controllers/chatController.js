@@ -3,7 +3,7 @@ import * as service from '../services/chatService.js';
 import ClientError from '../errors/clientError.js';
 
 
-export const retrieveChats = async (request, response) => {
+export const retrieveChats = async (request, response, next) => {
     try {
         const chats = await service.retrieveChats(request.user._id);
         response.json({ chats });
@@ -13,14 +13,13 @@ export const retrieveChats = async (request, response) => {
             response.status(err.statusCode).json({ message: err.message });
 
         } else {
-            console.error(err);
-            response.status(500).json({ message: "Unknown internal error occured" });
+            next(err);
         }
     }
 }
 
 
-export const getChat = async (request, response) => {
+export const getChat = async (request, response, next) => {
     try {
         const chat = await service.getChat(request.params.chatId);
         response.json({ chat });
@@ -30,14 +29,13 @@ export const getChat = async (request, response) => {
             response.status(err.statusCode).json({ message: err.message });
 
         } else {
-            console.error(err);
-            response.status(500).json({ message: "Unknown internal error occured" });
+            next(err);
         }
     }
 }
 
 
-export const startChat = async (request, response) => {
+export const startChat = async (request, response, next) => {
     try {
         const { chat, isNewChat } = await service.startChat(request.user._id, request.params.userId);
         response.status(isNewChat ? 201 : 200).json({ chat });
@@ -47,14 +45,13 @@ export const startChat = async (request, response) => {
             response.status(err.statusCode).json({ message: err.message });
 
         } else {
-            console.error(err);
-            response.status(500).json({ message: "Unknown internal error occured" });
+            next(err);
         }
     }
 }
 
 
-export const deleteChat = async (request, response) => {
+export const deleteChat = async (request, response, next) => {
     try {
         await service.deleteChat(request.params.chatId);
         response.sendStatus(200);
@@ -64,14 +61,13 @@ export const deleteChat = async (request, response) => {
             response.status(err.statusCode).json({ message: err.message });
 
         } else {
-            console.error(err);
-            response.status(500).json({ message: "Unknown internal error occured" });
+            next(err);
         }
     }
 }
 
 
-export const sendMessage = async (request, response) => {
+export const sendMessage = async (request, response, next) => {
     try {
         await service.sendMessage(request.user._id, request.params.chatId, request.body.text);
         response.sendStatus(201);
@@ -81,14 +77,13 @@ export const sendMessage = async (request, response) => {
             response.status(err.statusCode).json({ message: err.message });
 
         } else {
-            console.error(err);
-            response.status(500).json({ message: "Unknown internal error occured" });
+            next(err);
         }
     }
 }
 
 
-export const editMessage = async (request, response) => {
+export const editMessage = async (request, response, next) => {
     try {
         await service.editMessage(request.params.chatId, request.params.messageId, request.body.text);
         response.sendStatus(200);
@@ -98,14 +93,13 @@ export const editMessage = async (request, response) => {
             response.status(err.statusCode).json({ message: err.message });
 
         } else {
-            console.error(err);
-            response.status(500).json({ message: "Unknown internal error occured" });
+            next(err);
         }
     }
 }
 
 
-export const deleteMessage = async (request, response) => {
+export const deleteMessage = async (request, response, next) => {
     try {
         await service.deleteMessage(request.params.chatId, request.params.messageId);
         response.sendStatus(200);
@@ -115,14 +109,13 @@ export const deleteMessage = async (request, response) => {
             response.status(err.statusCode).json({ message: err.message });
 
         } else {
-            console.error(err);
-            response.status(500).json({ message: "Unknown internal error occured" });
+            next(err);
         }
     }
 }
 
 
-export const readMessage = async (request, response) => {
+export const readMessage = async (request, response, next) => {
     try {
         await service.readMessage(request.user._id, request.params.chatId, request.params.messageId);
         response.sendStatus(200);
@@ -132,8 +125,7 @@ export const readMessage = async (request, response) => {
             response.status(err.statusCode).json({ message: err.message });
 
         } else {
-            console.error(err);
-            response.status(500).json({ message: "Unknown internal error occured" });
+            next(err);
         }
     }
 }

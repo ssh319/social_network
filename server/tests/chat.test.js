@@ -7,18 +7,16 @@ import {
     initDb,
     closeDb,
     createTestUsers,
-    createTestChat
-} from './dbUtils.js';
+    createTestChat,
+    checkInvalidId,
+    checkNotFound
+} from './utils.js';
 
 import Chat from '../models/chatModel.js';
 import User from '../models/userModel.js';
 
 
 const notExistingId = "00aa11bb22cc33dd44ee55ff";
-
-// invalid id & not found errs to separate function
-// const checkId = async (route) => {}
-// test("should ...", checkId);
 
 let exampleUserId;
 let exampleFriendId;
@@ -29,20 +27,20 @@ let friendToken;
 
 beforeAll(async () => {
     await initDb();
-    
-    const usersCreationResult = await createTestUsers();
 
-    exampleUserId = usersCreationResult.exampleUserId;
-    exampleFriendId = usersCreationResult.exampleFriendId;
-    userToken = usersCreationResult.userToken;
-    friendToken = usersCreationResult.friendToken;
+    ({
+        exampleUserId,
+        exampleFriendId,
+        userToken,
+        friendToken
+    } = await createTestUsers());
 });
 
 beforeEach(async () => {
-    const chatCreationResult = await createTestChat(exampleUserId, exampleFriendId);
-    
-    exampleChatId = chatCreationResult.exampleChatId;
-    exampleMessageId = chatCreationResult.exampleMessageId;
+    ({
+        exampleChatId,
+        exampleMessageId
+    } = await createTestChat(exampleUserId, exampleFriendId));
 });
 
 afterEach(async () => {
@@ -129,21 +127,11 @@ describe("Chat API endpoints", () => {
         });
 
         test("should respond with 'invalid id' error", async () => {
-            const response = await request(app)
-                .get('/chats/111')
-                .set('Authorization', `Bearer ${userToken}`);
-
-            expect(response.status).toEqual(400);
-            expect(response.body).toHaveProperty("message");
+            await checkInvalidId('get', '/chats/111', userToken);
         });
 
         test("should respond with 'no such chat' error", async () => {
-            const response = await request(app)
-                .get(`/chats/${notExistingId}`)
-                .set('Authorization', `Bearer ${userToken}`);
-
-            expect(response.status).toEqual(404);
-            expect(response.body).toHaveProperty("message");
+            await checkNotFound('get', `/chats/${notExistingId}`, userToken);
         });
 
         test("should respond with 'no chat access' error", async () => {
@@ -199,21 +187,11 @@ describe("Chat API endpoints", () => {
         });
 
         test("should respond with 'invalid id' error", async () => {
-            const response = await request(app)
-                .post('/chats/111')
-                .set('Authorization', `Bearer ${userToken}`);
-
-            expect(response.status).toEqual(400);
-            expect(response.body).toHaveProperty("message");
+            await checkInvalidId('post', '/chats/111', userToken);
         });
 
         test("should respond with 'no such user' error", async () => {
-            const response = await request(app)
-                .post(`/chats/${notExistingId}`)
-                .set('Authorization', `Bearer ${userToken}`);
-
-            expect(response.status).toEqual(404);
-            expect(response.body).toHaveProperty("message");
+            await checkNotFound('post', `/chats/${notExistingId}`, userToken);
         });
 
     });
@@ -280,21 +258,11 @@ describe("Chat API endpoints", () => {
         });
 
         test("should respond with 'invalid id' error", async () => {
-            const response = await request(app)
-                .delete('/chats/111')
-                .set('Authorization', `Bearer ${userToken}`);
-
-            expect(response.status).toEqual(400);
-            expect(response.body).toHaveProperty("message");
+            await checkInvalidId('delete', '/chats/111', userToken);
         });
 
         test("should respond with 'no such chat' error", async () => {
-            const response = await request(app)
-                .delete(`/chats/${notExistingId}`)
-                .set('Authorization', `Bearer ${userToken}`);
-
-            expect(response.status).toEqual(404);
-            expect(response.body).toHaveProperty("message");
+            await checkNotFound('delete', `/chats/${notExistingId}`, userToken);
         });
 
     });
@@ -317,27 +285,11 @@ describe("Chat API endpoints", () => {
         });
 
         test("should respond with 'invalid id' error", async () => {
-            const response = await request(app)
-                .post('/chats/111/messages')
-                .send({
-                    text: "Test message"
-                })
-                .set('Authorization', `Bearer ${userToken}`);
-
-            expect(response.status).toEqual(400);
-            expect(response.body).toHaveProperty("message");
+            await checkInvalidId('post', '/chats/111/messages', userToken);
         });
 
         test("should respond with 'no such chat' error", async () => {
-            const response = await request(app)
-                .post(`/chats/${notExistingId}/messages`)
-                .send({
-                    text: "Test message"
-                })
-                .set('Authorization', `Bearer ${userToken}`);
-
-            expect(response.status).toEqual(404);
-            expect(response.body).toHaveProperty("message");
+            await checkNotFound('post', `/chats/${notExistingId}/messages`, userToken);
         });
 
         test("should respond with 'no chat access' error", async () => {
@@ -504,49 +456,13 @@ describe("Chat API endpoints", () => {
         });
 
         test("should respond with 'invalid id' errors", async () => {
-            const invalidChatIdResponse = await request(app)
-                .patch(`/chats/111/messages/${notExistingId}`)
-                .send({
-                    text: "Edited message text"
-                })
-                .set('Authorization', `Bearer ${userToken}`);
-
-            expect(invalidChatIdResponse.status).toEqual(400);
-            expect(invalidChatIdResponse.body).toHaveProperty("message");
-
-            const invalidMessageIdResponse = await request(app)
-                .patch(`/chats/${exampleChatId}/messages/111`)
-                .send({
-                    text: "Edited message text"
-                })
-                .set('Authorization', `Bearer ${userToken}`);
-
-            expect(invalidMessageIdResponse.status).toEqual(400);
-            expect(invalidMessageIdResponse.body).toHaveProperty("message");
+            await checkInvalidId('patch', `/chats/111/messages/${notExistingId}`, userToken);
+            await checkInvalidId('patch', `/chats/${exampleChatId}/messages/111`, userToken);
         });
 
-        test("should respond with 'no such chat' error", async () => {
-            const response = await request(app)
-                .patch(`/chats/${notExistingId}/messages/${notExistingId}`)
-                .send({
-                    text: "Edited message text"
-                })
-                .set('Authorization', `Bearer ${userToken}`);
-
-            expect(response.status).toEqual(404);
-            expect(response.body).toHaveProperty("message");
-        });
-
-        test("should respond with 'no such message' error", async () => {
-            const response = await request(app)
-                .patch(`/chats/${exampleChatId}/messages/${notExistingId}`)
-                .send({
-                    text: "Edited message text"
-                })
-                .set('Authorization', `Bearer ${userToken}`);
-
-            expect(response.status).toEqual(404);
-            expect(response.body).toHaveProperty("message");
+        test("should respond with 'not found' errors", async () => {
+            await checkNotFound('patch', `/chats/${notExistingId}/messages/${notExistingId}`, userToken);
+            await checkNotFound('patch', `/chats/${exampleChatId}/messages/${notExistingId}`, userToken);
         });
 
     });
@@ -589,37 +505,13 @@ describe("Chat API endpoints", () => {
         });
 
         test("should respond with 'invalid id' errors", async () => {
-            const invalidChatIdResponse = await request(app)
-                .delete(`/chats/111/messages/${notExistingId}`)
-                .set('Authorization', `Bearer ${userToken}`);
-
-            expect(invalidChatIdResponse.status).toEqual(400);
-            expect(invalidChatIdResponse.body).toHaveProperty("message");
-
-            const invalidMessageIdResponse = await request(app)
-                .delete(`/chats/${exampleChatId}/messages/111`)
-                .set('Authorization', `Bearer ${userToken}`);
-
-            expect(invalidMessageIdResponse.status).toEqual(400);
-            expect(invalidMessageIdResponse.body).toHaveProperty("message");
+            await checkInvalidId('delete', `/chats/111/messages/${notExistingId}`, userToken);
+            await checkInvalidId('delete', `/chats/${exampleChatId}/messages/111`, userToken);
         });
 
-        test("should respond with 'no such chat' error", async () => {
-            const response = await request(app)
-                .delete(`/chats/${notExistingId}/messages/${notExistingId}`)
-                .set('Authorization', `Bearer ${userToken}`);
-
-            expect(response.status).toEqual(404);
-            expect(response.body).toHaveProperty("message");
-        });
-
-        test("should respond with 'no such message' error", async () => {
-            const response = await request(app)
-                .delete(`/chats/${exampleChatId}/messages/${notExistingId}`)
-                .set('Authorization', `Bearer ${userToken}`);
-
-            expect(response.status).toEqual(404);
-            expect(response.body).toHaveProperty("message");
+        test("should respond with 'not found' errors", async () => {
+            await checkNotFound('delete', `/chats/${notExistingId}/messages/${notExistingId}`, userToken);
+            await checkNotFound('delete', `/chats/${exampleChatId}/messages/${notExistingId}`, userToken);
         });
         
     });
@@ -653,37 +545,13 @@ describe("Chat API endpoints", () => {
         });
 
         test("should respond with 'invalid id' errors", async () => {
-            const invalidChatIdResponse = await request(app)
-                .patch(`/chats/111/messages/${notExistingId}/read`)
-                .set('Authorization', `Bearer ${friendToken}`);
-
-            expect(invalidChatIdResponse.status).toEqual(400);
-            expect(invalidChatIdResponse.body).toHaveProperty("message");
-
-            const invalidMessageIdResponse = await request(app)
-                .patch(`/chats/${exampleChatId}/messages/111`)
-                .set('Authorization', `Bearer ${friendToken}`);
-
-            expect(invalidMessageIdResponse.status).toEqual(400);
-            expect(invalidMessageIdResponse.body).toHaveProperty("message");
+            await checkInvalidId('patch', `/chats/111/messages/${notExistingId}`, friendToken);
+            await checkInvalidId('patch', `/chats/${exampleChatId}/messages/111`, friendToken);
         });
 
-        test("should respond with 'no such chat' error", async () => {
-            const response = await request(app)
-                .patch(`/chats/${notExistingId}/messages/${notExistingId}/read`)
-                .set('Authorization', `Bearer ${friendToken}`);
-
-            expect(response.status).toEqual(404);
-            expect(response.body).toHaveProperty("message");
-        });
-
-        test("should respond with 'no such message' error", async () => {
-            const response = await request(app)
-                .patch(`/chats/${exampleChatId}/messages/${notExistingId}`)
-                .set('Authorization', `Bearer ${friendToken}`);
-
-            expect(response.status).toEqual(404);
-            expect(response.body).toHaveProperty("message");
+        test("should respond with 'not found' errors", async () => {
+            await checkNotFound('patch', `/chats/${notExistingId}/messages/${notExistingId}`, friendToken);
+            await checkNotFound('patch', `/chats/${exampleChatId}/messages/${notExistingId}`, friendToken);
         });
 
         test("should respond with 'no chat access' error", async () => {

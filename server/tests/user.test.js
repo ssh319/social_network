@@ -7,8 +7,10 @@ import User from '../models/userModel.js';
 import {
     initDb,
     closeDb,
-    createTestUsers
-} from './dbUtils.js';
+    createTestUsers,
+    checkInvalidId,
+    checkNotFound
+} from './utils.js';
 
 
 const notExistingId = "00aa11bb22cc33dd44ee55ff";
@@ -16,19 +18,17 @@ const notExistingId = "00aa11bb22cc33dd44ee55ff";
 let exampleUserId;
 let exampleFriendId;
 let userToken;
-// let friendToken;
 
 beforeAll(async () => {
     await initDb();
 });
 
 beforeEach(async () => {
-    const usersCreationResult = await createTestUsers();
-    
-    exampleUserId = usersCreationResult.exampleUserId;
-    exampleFriendId = usersCreationResult.exampleFriendId;
-    userToken = usersCreationResult.userToken;
-    // friendToken = usersCreationResult.friendToken;
+    ({
+        exampleUserId,
+        exampleFriendId,
+        userToken
+    } = await createTestUsers());
 });
 
 afterEach(async () => {
@@ -72,7 +72,6 @@ describe("User API endpoints", () => {
         expect(response.body).toHaveProperty("message");
     });
 
-
     // Routes testing
     describe("searchUsers", () => {
         
@@ -108,21 +107,11 @@ describe("User API endpoints", () => {
         });
 
         test("should respond with 'invalid id' error", async () => {
-            const response = await request(app)
-                .get('/users/111')
-                .set('Authorization', `Bearer ${userToken}`);
-
-            expect(response.status).toEqual(400);
-            expect(response.body).toHaveProperty("message");
+            await checkInvalidId('get', '/users/111', userToken);
         });
 
         test("should respond with 'no such user' error", async () => {
-            const response = await request(app)
-                .get(`/users/${notExistingId}`)
-                .set('Authorization', `Bearer ${userToken}`);
-
-            expect(response.status).toEqual(404);
-            expect(response.body).toHaveProperty("message");
+            await checkNotFound('get', `/users/${notExistingId}`, userToken);
         });
 
     });
@@ -499,13 +488,12 @@ describe("User API endpoints", () => {
         });
 
         test("should respond with 'no such user' error", async () => {
-            const response = await request(app)
-                .post(`/users/friends/${notExistingId}`)
-
-                .set('Authorization', `Bearer ${userToken}`);
-
-            expect(response.status).toEqual(404);
+            await checkNotFound('post', `/users/friends/${notExistingId}`, userToken);
         });
+
+        test("should respond with 'invalid user id' error", async () => {
+            await checkInvalidId('post', '/users/friends/111', userToken);
+        })
 
     });
 
@@ -549,21 +537,15 @@ describe("User API endpoints", () => {
         });
 
         test("should respond with 'no such request' error", async () => {
-            const response = await request(app)
-                .patch(`/users/friends/${notExistingId}`)
-                .set('Authorization', `Bearer ${userToken}`);
-
-            expect(response.status).toEqual(404);
-            expect(response.body).toHaveProperty("message");
+            await checkNotFound('patch', `/users/friends/${notExistingId}`, userToken);
         });
 
         test("should respond with 'no such request' error for the user who is already a friend", async () => {
-            const response = await request(app)
-                .patch(`/users/friends/${exampleFriendId}`)
-                .set('Authorization', `Bearer ${userToken}`);
+            await checkNotFound('patch', `/users/friends/${exampleFriendId}`, userToken);
+        });
 
-            expect(response.status).toEqual(404);
-            expect(response.body).toHaveProperty("message");
+        test("should respond with 'invalid user id' errors", async () => {
+            await checkInvalidId('patch', '/users/friends/111', userToken);
         });
 
     });
@@ -595,12 +577,11 @@ describe("User API endpoints", () => {
         });
 
         test("should respond with 'no such friend' error", async () => {
-            const response = await request(app)
-                .delete(`/users/friends/${notExistingId}`)
-                .set('Authorization', `Bearer ${userToken}`);
+            await checkNotFound('delete', `/users/friends/${notExistingId}`, userToken);
+        });
 
-            expect(response.status).toEqual(404);
-            expect(response.body).toHaveProperty("message");
+        test("should respond with 'invalid user id' error", async () => {
+            await checkInvalidId('delete', '/users/friends/111', userToken);
         });
 
     });

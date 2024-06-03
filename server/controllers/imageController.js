@@ -3,7 +3,7 @@ import * as service from '../services/imageService.js';
 import ClientError from '../errors/clientError.js';
 
 
-export const getImage = async (request, response) => {
+export const getImage = async (request, response, next) => {
     try {
         const image = await service.getImage(request.params.imageId);
         response.json({ image });
@@ -13,14 +13,13 @@ export const getImage = async (request, response) => {
             response.status(err.statusCode).json({ message: err.message });
 
         } else {
-            console.error(err);
-            response.status(500).json({ message: "Unknown internal error occured" });
+            next(err);
         }
     }
 }
 
 
-export const uploadImage = async (request, response) => {
+export const uploadImage = async (request, response, next) => {
     try {
         await service.uploadImage(request.user._id, request.body);
         response.sendStatus(201);
@@ -30,14 +29,13 @@ export const uploadImage = async (request, response) => {
             response.status(err.statusCode).json({ message: err.message });
 
         } else {
-            console.error(err);
-            response.status(500).json({ message: "Unknown internal error occured" });
+            next(err);
         }
     }
 }
 
 
-export const deleteImage = async (request, response) => {
+export const deleteImage = async (request, response, next) => {
     try {
         await service.deleteImage(request.params.imageId);
         response.sendStatus(200);
@@ -47,14 +45,13 @@ export const deleteImage = async (request, response) => {
             response.status(err.statusCode).json({ message: err.message });
 
         } else {
-            console.error(err);
-            response.status(500).json({ message: "Unknown internal error occured" });
+            next(err);
         }
     }
 }
 
 
-export const likeImage = async (request, response) => {
+export const likeImage = async (request, response, next) => {
     try {
         await service.likeImage(request.user._id, request.params.imageId);
         response.sendStatus(200);
@@ -64,14 +61,13 @@ export const likeImage = async (request, response) => {
             response.status(err.statusCode).json({ message: err.message });
 
         } else {
-            console.error(err);
-            response.status(500).json({ message: "Unknown internal error occured" });
+            next(err);
         }
     }
 }
 
 
-export const unlikeImage = async (request, response) => {
+export const unlikeImage = async (request, response, next) => {
     try {
         await service.unlikeImage(request.user._id, request.params.imageId);
         response.sendStatus(200);
@@ -81,8 +77,7 @@ export const unlikeImage = async (request, response) => {
             response.status(err.statusCode).json({ message: err.message });
 
         } else {
-            console.error(err);
-            response.status(500).json({ message: "Unknown internal error occured" });
+            next(err);
         }
     }
 }

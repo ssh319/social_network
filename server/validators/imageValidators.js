@@ -11,4 +11,21 @@ export const validateImageId = (request, response, next) => {
 }
 
 
-export const validateImage = []
+export const validateImage = [
+    // body("...")
+    //    .exists().withMessage("...").bail(),
+
+    // checkExact(),
+
+    (request, response, next) => {
+        const validationErrors = validationResult(request);
+
+        if (!validationErrors.isEmpty()) {
+            return response.status(400).json({
+                errors: validationErrors.errors.map(({ path, msg }) => ({ path, msg }))
+            });
+        }
+
+        next();
+    }
+]

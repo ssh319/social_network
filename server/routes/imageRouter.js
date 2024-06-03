@@ -10,13 +10,15 @@ import { checkImageAccess } from '../middleware/imageAccess.js';
 
 const router = Router();
 
-router.get("/:imageId", validateImageId, controller.getImage);
+router.param('imageId', validateImageId);
+
+router.get("/:imageId", controller.getImage);
 
 router.post("/", validateImage, controller.uploadImage);
-router.delete("/:imageId", validateImageId, checkImageAccess, controller.deleteImage);
+router.delete("/:imageId", checkImageAccess, controller.deleteImage);
 
-router.post("/:imageId/likes", validateImageId, controller.likeImage);
-router.delete("/:imageId/likes", validateImageId, controller.unlikeImage);
+router.post("/:imageId/likes", controller.likeImage);
+router.delete("/:imageId/likes", controller.unlikeImage);
 
 
 export default router;

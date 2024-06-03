@@ -7,8 +7,10 @@ import {
     initDb,
     closeDb,
     createTestUsers,
-    createTestPost
-} from './dbUtils.js';
+    createTestPost,
+    checkInvalidId,
+    checkNotFound
+} from './utils.js';
 
 import Post from '../models/postModel.js';
 import User from '../models/userModel.js';
@@ -26,19 +28,19 @@ let friendToken;
 beforeAll(async () => {
     await initDb();
     
-    const usersCreationResult = await createTestUsers();
-
-    exampleUserId = usersCreationResult.exampleUserId;
-    exampleFriendId = usersCreationResult.exampleFriendId;
-    userToken = usersCreationResult.userToken;
-    friendToken = usersCreationResult.friendToken;
+    ({
+        exampleUserId,
+        exampleFriendId,
+        userToken,
+        friendToken
+    } = await createTestUsers());
 });
 
 beforeEach(async () => {
-    const postCreationResult = await createTestPost(exampleUserId);
-
-    examplePostId = postCreationResult.examplePostId;
-    exampleCommentId = postCreationResult.exampleCommentId;
+    ({
+        examplePostId,
+        exampleCommentId
+    } = await createTestPost(exampleUserId));
 });
 
 afterEach(async () => {
@@ -130,21 +132,11 @@ describe("Post API endpoints", () => {
         });
 
         test("should respond with 'no such post' error", async () => {
-            const response = await request(app)
-                .get(`/posts/${notExistingId}`)
-                .set('Authorization', `Bearer ${userToken}`);
-
-            expect(response.status).toEqual(404);
-            expect(response.body).toHaveProperty("message");
+            await checkNotFound('get', `/posts/${notExistingId}`, userToken);
         });
 
         test("should respond with 'invalid id' error", async () => {
-            const response = await request(app)
-                .get('/posts/111')
-                .set('Authorization', `Bearer ${userToken}`);
-
-            expect(response.status).toEqual(400);
-            expect(response.body).toHaveProperty("message");
+            await checkInvalidId('get', '/posts/111', userToken);
         });
 
     });
@@ -256,21 +248,11 @@ describe("Post API endpoints", () => {
         });
 
         test("should respond with 'invalid id' error", async () => {
-            const response = await request(app)
-                .delete('/posts/111')
-                .set('Authorization', `Bearer ${userToken}`);
-
-            expect(response.status).toEqual(400);
-            expect(response.body).toHaveProperty("message");
+            await checkInvalidId('delete', '/posts/111', userToken);
         });
 
         test("should respond with 'no such post' error", async () => {
-            const response = await request(app)
-                .delete(`/posts/${notExistingId}`)
-                .set('Authorization', `Bearer ${userToken}`);
-
-            expect(response.status).toEqual(404);
-            expect(response.body).toHaveProperty("message");
+            await checkNotFound('delete', `/posts/${notExistingId}`, userToken);
         });
 
     });
@@ -311,21 +293,11 @@ describe("Post API endpoints", () => {
         });
 
         test("should respond with 'invalid id' error", async () => {
-            const response = await request(app)
-                .post('/posts/111/likes')
-                .set('Authorization', `Bearer ${friendToken}`);
-
-            expect(response.status).toEqual(400);
-            expect(response.body).toHaveProperty("message");
+            await checkInvalidId('post', '/posts/111/likes', friendToken);
         });
 
         test("should respond with 'no such post' error", async () => {
-            const response = await request(app)
-                .post(`/posts/${notExistingId}/likes`)
-                .set('Authorization', `Bearer ${friendToken}`);
-
-            expect(response.status).toEqual(404);
-            expect(response.body).toHaveProperty("message");
+            await checkNotFound('post', `/posts/${notExistingId}/likes`, friendToken);
         });
 
     });
@@ -364,21 +336,11 @@ describe("Post API endpoints", () => {
         });
 
         test("should respond with 'invalid id' error", async () => {
-            const response = await request(app)
-                .delete('/posts/111/likes')
-                .set('Authorization', `Bearer ${friendToken}`);
-
-            expect(response.status).toEqual(400);
-            expect(response.body).toHaveProperty("message");
+            await checkInvalidId('delete', '/posts/111/likes', friendToken);
         });
 
         test("should respond with 'no such post' error", async () => {
-            const response = await request(app)
-                .delete(`/posts/${notExistingId}/likes`)
-                .set('Authorization', `Bearer ${friendToken}`);
-
-            expect(response.status).toEqual(404);
-            expect(response.body).toHaveProperty("message");
+            await checkNotFound('delete', `/posts/${notExistingId}/likes`, friendToken);
         });
 
     });
@@ -408,20 +370,13 @@ describe("Post API endpoints", () => {
         });
 
         test("should respond with 'invalid id' error", async () => {
-            const response = await request(app)
-                .post('/posts/111/comments/')
-                .send({
-                    text: "Post comment test"
-                })
-                .set('Authorization', `Bearer ${userToken}`);
-
-            expect(response.status).toEqual(400);
-            expect(response.body).toHaveProperty("message");
+            await checkInvalidId('post', '/posts/111/comments', userToken);
         });
 
         test("should respond with 'no such post' error", async () => {
+            // !
             const response = await request(app)
-                .post(`/posts/${notExistingId}/comments/`)
+                .post(`/posts/${notExistingId}/comments`)
                 .send({
                     text: "Post comment test"
                 })
@@ -433,7 +388,7 @@ describe("Post API endpoints", () => {
 
         test("should respond with comment data validation errors list", async () => {
             const response = await request(app)
-                .post(`/posts/${examplePostId}/comments/`)
+                .post(`/posts/${examplePostId}/comments`)
                 .send({
                     text: "c".repeat(501)
                 })
@@ -451,7 +406,7 @@ describe("Post API endpoints", () => {
 
         test("should respond with 'unexpected fields' error", async () => {
             const response = await request(app)
-                .post(`/posts/${examplePostId}/comments/`)
+                .post(`/posts/${examplePostId}/comments`)
                 .send({
                     text: "Post comment test",
                     unexpectedField: "value"
@@ -467,7 +422,7 @@ describe("Post API endpoints", () => {
 
         test("should respond with 'invalid type' error", async () => {
             const response = await request(app)
-                .post(`/posts/${examplePostId}/comments/`)
+                .post(`/posts/${examplePostId}/comments`)
                 .send({
                     text: 1
                 })
@@ -511,37 +466,13 @@ describe("Post API endpoints", () => {
         });
 
         test("should respond with 'invalid id' error", async () => {
-            const invalidPostIdResponse = await request(app)
-                .delete(`/posts/111/comments/${notExistingId}`)
-                .set('Authorization', `Bearer ${userToken}`);
-
-            expect(invalidPostIdResponse.status).toEqual(400);
-            expect(invalidPostIdResponse.body).toHaveProperty("message");
-
-            const invalidCommentIdResponse = await request(app)
-                .delete(`/posts/${examplePostId}/comments/111`)
-                .set('Authorization', `Bearer ${userToken}`);
-
-            expect(invalidCommentIdResponse.status).toEqual(400);
-            expect(invalidCommentIdResponse.body).toHaveProperty("message");
+            await checkInvalidId('delete', `/posts/111/comments/${notExistingId}`, userToken);
+            await checkInvalidId('delete', `/posts/${examplePostId}/comments/111`, userToken);
         });
 
-        test("should respond with 'no such post' error", async () => {
-            const response = await request(app)
-                .delete(`/posts/${notExistingId}/comments/${notExistingId}`)
-                .set('Authorization', `Bearer ${userToken}`);
-
-            expect(response.status).toEqual(404);
-            expect(response.body).toHaveProperty("message");
-        });
-
-        test("should respond with 'no such comment' error", async () => {
-            const response = await request(app)
-                .delete(`/posts/${examplePostId}/comments/${notExistingId}`)
-                .set('Authorization', `Bearer ${userToken}`);
-
-            expect(response.status).toEqual(404);
-            expect(response.body).toHaveProperty("message");
+        test("should respond with 'not found' errors", async () => {
+            await checkNotFound('delete', `/posts/${notExistingId}/comments/${notExistingId}`, userToken);
+            await checkNotFound('delete', `/posts/${examplePostId}/comments/${notExistingId}`, userToken);
         });
 
     });
@@ -586,30 +517,13 @@ describe("Post API endpoints", () => {
         });
 
         test("should respond with 'invalid id' error", async () => {
-            const response = await request(app)
-                .post(`/posts/${examplePostId}/comments/111/likes`)
-                .set('Authorization', `Bearer ${friendToken}`);
-
-            expect(response.status).toEqual(400);
-            expect(response.body).toHaveProperty("message");
+            await checkInvalidId('post', `/posts/111/comments/${notExistingId}/likes`, friendToken);
+            await checkInvalidId('post', `/posts/${examplePostId}/comments/111/likes`, friendToken);
         });
 
-        test("should respond with 'no such post' error", async () => {
-            const response = await request(app)
-                .post(`/posts/${notExistingId}/comments/${notExistingId}/likes`)
-                .set('Authorization', `Bearer ${friendToken}`);
-
-            expect(response.status).toEqual(404);
-            expect(response.body).toHaveProperty("message");
-        });
-
-        test("should respond with 'no such comment' error", async () => {
-            const response = await request(app)
-                .post(`/posts/${examplePostId}/comments/${notExistingId}/likes`)
-                .set('Authorization', `Bearer ${friendToken}`);
-
-            expect(response.status).toEqual(404);
-            expect(response.body).toHaveProperty("message");
+        test("should respond with 'not found' errors", async () => {
+            await checkNotFound('post', `/posts/${notExistingId}/comments/${notExistingId}/likes`, friendToken);
+            await checkNotFound('post', `/posts/${examplePostId}/comments/${notExistingId}/likes`, friendToken);
         });
         
     });
@@ -642,30 +556,13 @@ describe("Post API endpoints", () => {
         });
 
         test("should respond with 'invalid id' error", async () => {
-            const response = await request(app)
-                .post(`/posts/${examplePostId}/comments/111/likes`)
-                .set('Authorization', `Bearer ${friendToken}`);
-
-            expect(response.status).toEqual(400);
-            expect(response.body).toHaveProperty("message");
+            await checkInvalidId('delete', `/posts/111/comments/${notExistingId}/likes`, friendToken);
+            await checkInvalidId('delete', `/posts/${examplePostId}/comments/111/likes`, friendToken);
         });
 
-        test("should respond with 'no such post' error", async () => {
-            const response = await request(app)
-                .post(`/posts/${notExistingId}/comments/${notExistingId}/likes`)
-                .set('Authorization', `Bearer ${friendToken}`);
-
-            expect(response.status).toEqual(404);
-            expect(response.body).toHaveProperty("message");
-        });
-
-        test("should respond with 'no such comment' error", async () => {
-            const response = await request(app)
-                .post(`/posts/${examplePostId}/comments/${notExistingId}/likes`)
-                .set('Authorization', `Bearer ${friendToken}`);
-
-            expect(response.status).toEqual(404);
-            expect(response.body).toHaveProperty("message");
+        test("should respond with 'not found' errors", async () => {
+            await checkNotFound('delete', `/posts/${notExistingId}/comments/${notExistingId}/likes`, friendToken);
+            await checkNotFound('delete', `/posts/${examplePostId}/comments/${notExistingId}/likes`, friendToken);
         });
 
     });

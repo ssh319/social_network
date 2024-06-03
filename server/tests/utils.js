@@ -1,3 +1,5 @@
+import request from 'supertest';
+
 import mongoose from 'mongoose';
 import { MongoMemoryReplSet } from 'mongodb-memory-server';
 import bcrypt from 'bcrypt';
@@ -11,6 +13,8 @@ import User from '../models/userModel.js';
 import Post from '../models/postModel.js';
 import Chat from '../models/chatModel.js';
 // import Image from '../models/imageModel.js';
+
+import app from '../app.js';
 
 
 let replset;
@@ -156,3 +160,23 @@ export const createTestChat = async (userId, friendId) => {
 //         exampleJpegImageId
 //     };
 // }
+
+
+export const checkInvalidId = async (method, route, token) => {
+    const response = await request(app)
+        [method](route)
+        .set('Authorization', `Bearer ${token}`);
+
+    expect(response.status).toEqual(400);
+    expect(response.body).toHaveProperty("message");
+}
+
+
+export const checkNotFound = async (method, route, token) => {
+    const response = await request(app)
+        [method](route)
+        .set('Authorization', `Bearer ${token}`);
+
+    expect(response.status).toEqual(404);
+    expect(response.body).toHaveProperty("message");
+}

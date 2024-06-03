@@ -1,7 +1,7 @@
 import {
     body,
     checkExact,
-    // query,
+    query,
     validationResult
 } from 'express-validator';
 
@@ -93,7 +93,7 @@ export const validateUserData = [
         .optional()
         .isString().withMessage("Invalid data type for first name").bail()
         .trim()
-        // accepts latin only (use regexp)
+        // accepts latin only yet (use regexp)
         .isAlpha().withMessage("First name can contain letters only")
         .isLength({ max: 24 }).withMessage("First name cannot be more than 24 characters in length")
         .customSanitizer(capitalize),
@@ -105,7 +105,7 @@ export const validateUserData = [
         .optional()
         .isString().withMessage("Invalid data type for last name").bail()
         .trim()
-        // accepts latin only (use regexp)
+        // accepts latin only yet (use regexp)
         .isAlpha().withMessage("Last name can contain letters only")
         .isLength({ max: 24 }).withMessage("Last name cannot be more than 24 characters in length")
         .customSanitizer(capitalize),
@@ -194,14 +194,19 @@ export const validateUserLogin = [
 ]
 
 
-// export const validateSearchQuery = [
-//     (request, response, next) => {
-//         // sanitize query
+export const validateSearchQuery = [
+    query("firstName")
+        .optional(),
 
-//         next();
-//     },
+    (request, response, next) => {
+        const validationErrors = validationResult(request);
 
-//     query("birthDate")
-//         .optional()
-//         .isDate()
-// ]
+        if (!validationErrors.isEmpty()) {
+            return response.status(400).json({
+                errors: validationErrors.errors.map(({ path, msg }) => ({ path, msg }))
+            });
+        }
+
+        next();
+    }
+]

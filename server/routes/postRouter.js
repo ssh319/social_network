@@ -14,45 +14,24 @@ import { checkPostAccess, checkCommentAccess } from '../middleware/postAccess.js
 
 const router = Router();
 
+router.param('postId', validatePostId);
+
+router.param('commentId', validateCommentId);
+
 router.get("/feed", controller.getPostsFeed);
-router.get("/:postId", validatePostId, controller.getPost);
+router.get("/:postId", controller.getPost);
 
 router.post("/", validatePost, controller.createPost);
-router.delete("/:postId", validatePostId, checkPostAccess, controller.deletePost);
+router.delete("/:postId", checkPostAccess, controller.deletePost);
 
-router.post("/:postId/likes", validatePostId, controller.likePost);
-router.delete("/:postId/likes", validatePostId, controller.unlikePost);
+router.post("/:postId/likes", controller.likePost);
+router.delete("/:postId/likes", controller.unlikePost);
 
+router.post("/:postId/comments", validateComment, controller.sendPostComment);
+router.delete("/:postId/comments/:commentId", checkCommentAccess, controller.deletePostComment);
 
-router.post(
-    "/:postId/comments",
-    validatePostId,
-    validateComment,
-    controller.sendPostComment
-);
-
-
-router.delete(
-    "/:postId/comments/:commentId",
-    validatePostId,
-    validateCommentId,
-    checkCommentAccess,
-    controller.deletePostComment
-);
-
-router.post(
-    "/:postId/comments/:commentId/likes",
-    validatePostId,
-    validateCommentId,
-    controller.likePostComment
-);
-
-router.delete(
-    "/:postId/comments/:commentId/likes",
-    validatePostId,
-    validateCommentId,
-    controller.unlikePostComment
-);
+router.post("/:postId/comments/:commentId/likes", controller.likePostComment);
+router.delete("/:postId/comments/:commentId/likes", controller.unlikePostComment);
 
 
 export default router;

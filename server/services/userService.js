@@ -199,6 +199,7 @@ export const deleteUser = async (userId) => {
  * @param {String} userId `ObjectId` of a current user.
  */
 export const updateOnline = async (userId) => {
+    // Date.now()
     await User.findByIdAndUpdate(userId, { lastActive: new Date() });
 }
 

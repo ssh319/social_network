@@ -37,7 +37,10 @@ export const uploadImage = async (userId, image) => {}
  * 
  * @param {String} imageId `ObjectId` of the image to be deleted.
  */
-export const deleteImage = async (imageId) => {}
+export const deleteImage = async (imageId) => {
+    // !!!
+    // The image existence has been checked in imageAccess.js
+}
 
 
 /**
