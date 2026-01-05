@@ -19,16 +19,11 @@ app.use(corsConfig);
 app.use(bodyParser.json());
 
 app.use((error, _, response, next) => {
-    if (!error) {   
-        next();
-
-    } else if (error instanceof SyntaxError) {
+    if (error instanceof SyntaxError) {
         response.status(400).json({ message: "Malformed JSON syntax" });
 
     } else {
-        // logger.log(error);
-        console.error(error);
-        response.status(500).json({ message: "Unknown internal error occured" });
+        next();
     }
 });
 

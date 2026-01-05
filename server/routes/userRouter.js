@@ -7,7 +7,7 @@ import authenticate from '../middleware/authenticate.js';
 import {
     validateUserId,
     validateUserData,
-    validateUserLogin,
+    validateUserAuth,
     validateSearchQuery
 } from '../validators/userValidators.js';
 
@@ -20,7 +20,7 @@ router.get("/", authenticate, validateSearchQuery, controller.searchUsers);
 router.get("/:userId", authenticate, controller.getUser);
 
 router.post("/signup", validateUserData, controller.createUser);
-router.post("/login", validateUserLogin, controller.authenticateUser);
+router.post("/login", validateUserAuth, controller.authenticateUser);
 
 router.patch("/account", authenticate, validateUserData, controller.updateUser);
 router.delete("/account", authenticate, controller.deleteUser);

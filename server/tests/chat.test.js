@@ -321,8 +321,8 @@ describe("Chat API endpoints", () => {
             expect(response.body).toHaveProperty("errors");
 
             expect(response.body.errors).toBeInstanceOf(Array);
-            expect(response.body.errors[0]).toHaveProperty("path", "text");
             expect(response.body.errors).toHaveLength(1);
+            expect(typeof response.body.errors[0] === 'string').toBeTruthy();
         });
 
         test("should respond with 'invalid data type' error", async () => {
@@ -337,8 +337,8 @@ describe("Chat API endpoints", () => {
             expect(response.body).toHaveProperty("errors");
 
             expect(response.body.errors).toBeInstanceOf(Array);
-            expect(response.body.errors[0]).toHaveProperty("path", "text");
             expect(response.body.errors).toHaveLength(1);
+            expect(typeof response.body.errors[0] === 'string').toBeTruthy();
         });
 
         test("should respond with 'unexpected fields' error", async () => {
@@ -354,8 +354,8 @@ describe("Chat API endpoints", () => {
             expect(response.body).toHaveProperty("errors");
 
             expect(response.body.errors).toBeInstanceOf(Array);
-            expect(response.body.errors[0]).toHaveProperty("msg");
             expect(response.body.errors).toHaveLength(1);
+            expect(typeof response.body.errors[0] === 'string').toBeTruthy();
         });
 
     });
@@ -389,8 +389,8 @@ describe("Chat API endpoints", () => {
             expect(response.body).toHaveProperty("errors");
             
             expect(response.body.errors).toBeInstanceOf(Array);
-            expect(response.body.errors[0]).toHaveProperty("path", "text");
             expect(response.body.errors).toHaveLength(1);
+            expect(typeof response.body.errors[0] === 'string').toBeTruthy();
         });
 
         test("should respond with 'invalid data type' error", async () => {
@@ -405,8 +405,8 @@ describe("Chat API endpoints", () => {
             expect(response.body).toHaveProperty("errors");
             
             expect(response.body.errors).toBeInstanceOf(Array);
-            expect(response.body.errors[0]).toHaveProperty("path", "text");
             expect(response.body.errors).toHaveLength(1);
+            expect(typeof response.body.errors[0] === 'string').toBeTruthy();
         });
 
         test("should respond with 'unexpected fields' error", async () => {
@@ -422,8 +422,8 @@ describe("Chat API endpoints", () => {
             expect(response.body).toHaveProperty("errors");
             
             expect(response.body.errors).toBeInstanceOf(Array);
-            expect(response.body.errors[0]).toHaveProperty("msg");
             expect(response.body.errors).toHaveLength(1);
+            expect(typeof response.body.errors[0] === 'string').toBeTruthy();
         });
 
         test("should respond with 'no chat access' error", async () => {

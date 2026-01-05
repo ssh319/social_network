@@ -6,7 +6,7 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
 
-// get JWT_SECRET_KEY
+// TEST_JWT_SECRET_KEY instead of prod. key?
 dotenv.config();
 
 import User from '../models/userModel.js';

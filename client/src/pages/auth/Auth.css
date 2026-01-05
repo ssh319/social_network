@@ -1,0 +1,11 @@
+.auth-window {
+    position: relative;
+    margin: 0 auto;
+    width: 45%;
+    margin-top: 12rem;
+    border-radius: 1rem;
+}
+
+.auth-input {
+    margin: 35px 0;
+}

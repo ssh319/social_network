@@ -22,7 +22,7 @@ export const validateImage = [
 
         if (!validationErrors.isEmpty()) {
             return response.status(400).json({
-                errors: validationErrors.errors.map(({ path, msg }) => ({ path, msg }))
+                errors: validationErrors.errors.map(error => error.msg)
             });
         }
 

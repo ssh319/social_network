@@ -153,8 +153,8 @@ describe("User API endpoints", () => {
             expect(response.body).toHaveProperty("errors");
 
             expect(response.body.errors).toBeInstanceOf(Array);
-            expect(response.body.errors[0]).toHaveProperty("msg");
             expect(response.body.errors).toHaveLength(4);
+            expect(typeof response.body.errors[0] === 'string').toBeTruthy();
         });
 
         test("should respond with 'unexpected fields' error", async () => {
@@ -172,8 +172,8 @@ describe("User API endpoints", () => {
             expect(response.body).toHaveProperty("errors");
 
             expect(response.body.errors).toBeInstanceOf(Array);
-            expect(response.body.errors[0]).toHaveProperty("msg");
             expect(response.body.errors).toHaveLength(1);
+            expect(typeof response.body.errors[0] === 'string').toBeTruthy();
         });
 
         test("should respond with 'invalid type' error", async () => {
@@ -190,8 +190,7 @@ describe("User API endpoints", () => {
             expect(response.body).toHaveProperty("errors");
 
             expect(response.body.errors).toBeInstanceOf(Array);
-            expect(response.body.errors[0]).toHaveProperty("msg");
-            expect(response.body.errors[0]).toHaveProperty("path", "email");
+            expect(typeof response.body.errors[0] === 'string').toBeTruthy();
         });
 
         test("should respond with 'already exists' error", async () => {
@@ -200,7 +199,7 @@ describe("User API endpoints", () => {
                 .send({
                     email: "example@testmail.com",
                     password: "11112222",
-                    firstName: "Busy",
+                    firstName: "AlreadyUsed",
                     lastName: "Email"
                 });
 
@@ -263,8 +262,8 @@ describe("User API endpoints", () => {
             expect(response.body).toHaveProperty("errors");
 
             expect(response.body.errors).toBeInstanceOf(Array);
-            expect(response.body.errors[0]).toHaveProperty("msg");
             expect(response.body.errors).toHaveLength(1);
+            expect(typeof response.body.errors[0] === 'string').toBeTruthy();
         });
 
         test("should respond with 'invalid type' error", async () => {
@@ -279,9 +278,8 @@ describe("User API endpoints", () => {
             expect(response.body).toHaveProperty("errors");
 
             expect(response.body.errors).toBeInstanceOf(Array);
-            expect(response.body.errors[0]).toHaveProperty("msg");
-            expect(response.body.errors[0]).toHaveProperty("path", "email");
             expect(response.body.errors).toHaveLength(1);
+            expect(typeof response.body.errors[0] === 'string').toBeTruthy();
         });
 
     });
@@ -323,9 +321,8 @@ describe("User API endpoints", () => {
             expect(response.body).toHaveProperty("errors");
 
             expect(response.body.errors).toBeInstanceOf(Array);
-            expect(response.body.errors[0]).toHaveProperty("msg");
-            expect(response.body.errors[0]).toHaveProperty("path", "firstName");
             expect(response.body.errors).toHaveLength(1);
+            expect(typeof response.body.errors[0] === 'string').toBeTruthy();
         });
 
         test("should respond with 'unexpected fields' error", async () => {
@@ -345,8 +342,8 @@ describe("User API endpoints", () => {
             expect(response.body).toHaveProperty("errors");
 
             expect(response.body.errors).toBeInstanceOf(Array);
-            expect(response.body.errors[0]).toHaveProperty("msg");
             expect(response.body.errors).toHaveLength(1);
+            expect(typeof response.body.errors[0] === 'string').toBeTruthy();
         });
 
         test("should respond with 'invalid type' error", async () => {
@@ -365,9 +362,8 @@ describe("User API endpoints", () => {
             expect(response.body).toHaveProperty("errors");
 
             expect(response.body.errors).toBeInstanceOf(Array);
-            expect(response.body.errors[0]).toHaveProperty("msg");
-            expect(response.body.errors[0]).toHaveProperty("path", "email");
             expect(response.body.errors).toHaveLength(1);
+            expect(typeof response.body.errors[0] === 'string').toBeTruthy();
         });
 
         test("should respond with 'old password required' error", async () => {
@@ -382,8 +378,8 @@ describe("User API endpoints", () => {
             expect(response.body).toHaveProperty("errors");
 
             expect(response.body.errors).toBeInstanceOf(Array);
-            expect(response.body.errors[0]).toHaveProperty("path", "oldPassword");
             expect(response.body.errors).toHaveLength(1);
+            expect(typeof response.body.errors[0] === 'string').toBeTruthy();
         });
 
         test("should respond with 'incorrect old password' error", async () => {

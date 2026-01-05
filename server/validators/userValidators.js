@@ -145,7 +145,7 @@ export const validateUserData = [
     body("aboutMe")
         .optional()
         .isString().withMessage("Invalid data type for 'about' info").bail()
-        .isLength({ max: 500 }).withMessage("'About' info text cannot be more than 500 characters in length")
+        .isLength({ max: 500 }).withMessage("'About' information text cannot be more than 500 characters in length")
         .customSanitizer(deleteOptionalField),
 
     checkExact(),
@@ -156,7 +156,7 @@ export const validateUserData = [
 
         if (!validationErrors.isEmpty()) {
             return response.status(400).json({
-                errors: validationErrors.errors.map(({ path, msg }) => ({ path, msg }))
+                errors: validationErrors.errors.map(error => error.msg)
             });
         }
         
@@ -165,7 +165,7 @@ export const validateUserData = [
 ]
 
 
-export const validateUserLogin = [
+export const validateUserAuth = [
 
     body("email")
         .exists().withMessage("Email address required").bail()
@@ -185,7 +185,7 @@ export const validateUserLogin = [
         
         if (!validationErrors.isEmpty()) {
             return response.status(400).json({
-                errors: validationErrors.errors.map(({ path, msg }) => ({ path, msg }))
+                errors: validationErrors.errors.map(error => error.msg)
             });
         }
 
@@ -203,7 +203,7 @@ export const validateSearchQuery = [
 
         if (!validationErrors.isEmpty()) {
             return response.status(400).json({
-                errors: validationErrors.errors.map(({ path, msg }) => ({ path, msg }))
+                errors: validationErrors.errors.map(error => error.msg)
             });
         }
 

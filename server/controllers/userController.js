@@ -2,7 +2,7 @@ import * as service from '../services/userService.js';
 
 import ClientError from '../errors/clientError.js';
 
-                                                                                                                            
+
 export const searchUsers = async (request, response, next) => {
 
     console.log(request.query);
