@@ -85,7 +85,7 @@ export const startChat = async (primaryUser, secondaryUser) => {
     const existingUser = await User.findById(secondaryUser);
 
     if (!existingUser) {
-        throw new NoSuchUserError("No such user to start a chat with");
+        throw new NoSuchUserError("No such user to start a chat with", "secondaryUser");
     }
 
     const session = await mongoose.startSession();
@@ -198,7 +198,7 @@ export const readMessage = async (userId, chatId, messageId) => {
     const message = chat.messages.id(messageId);
 
     if (message.user.equals(userId)) {
-        throw new AccessDeniedError("You cannot mark as read your own message");
+        throw new AccessDeniedError("You cannot mark as read your own message", "messageId");
     }
 
     message.set({ isRead: true });

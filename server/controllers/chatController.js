@@ -10,7 +10,7 @@ export const retrieveChats = async (request, response, next) => {
 
     } catch (err) {
         if (err instanceof ClientError) {
-            response.status(err.statusCode).json({ message: err.message });
+            response.status(err.statusCode).json({ errors: { [err.path]: err.msg } });
 
         } else {
             next(err);
@@ -26,7 +26,7 @@ export const getChat = async (request, response, next) => {
 
     } catch (err) {
         if (err instanceof ClientError) {
-            response.status(err.statusCode).json({ message: err.message });
+            response.status(err.statusCode).json({ errors: { [err.path]: err.msg } });
 
         } else {
             next(err);
@@ -42,7 +42,7 @@ export const startChat = async (request, response, next) => {
 
     } catch (err) {
         if (err instanceof ClientError) {
-            response.status(err.statusCode).json({ message: err.message });
+            response.status(err.statusCode).json({ errors: { [err.path]: err.msg } });
 
         } else {
             next(err);
@@ -58,7 +58,7 @@ export const deleteChat = async (request, response, next) => {
 
     } catch (err) {
         if (err instanceof ClientError) {
-            response.status(err.statusCode).json({ message: err.message });
+            response.status(err.statusCode).json({ errors: { [err.path]: err.msg } });
 
         } else {
             next(err);
@@ -74,7 +74,7 @@ export const sendMessage = async (request, response, next) => {
 
     } catch (err) {
         if (err instanceof ClientError) {
-            response.status(err.statusCode).json({ message: err.message });
+            response.status(err.statusCode).json({ errors: { [err.path]: err.msg } });
 
         } else {
             next(err);
@@ -90,7 +90,7 @@ export const editMessage = async (request, response, next) => {
 
     } catch (err) {
         if (err instanceof ClientError) {
-            response.status(err.statusCode).json({ message: err.message });
+            response.status(err.statusCode).json({ errors: { [err.path]: err.msg } });
 
         } else {
             next(err);
@@ -106,7 +106,7 @@ export const deleteMessage = async (request, response, next) => {
 
     } catch (err) {
         if (err instanceof ClientError) {
-            response.status(err.statusCode).json({ message: err.message });
+            response.status(err.statusCode).json({ errors: { [err.path]: err.msg } });
 
         } else {
             next(err);
@@ -122,7 +122,7 @@ export const readMessage = async (request, response, next) => {
 
     } catch (err) {
         if (err instanceof ClientError) {
-            response.status(err.statusCode).json({ message: err.message });
+            response.status(err.statusCode).json({ errors: { [err.path]: err.msg } });
 
         } else {
             next(err);

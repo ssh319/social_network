@@ -2,28 +2,28 @@ import ClientError from "./clientError.js";
 
 
 export class AlreadyExistsError extends ClientError {
-    constructor(message) {
-        super(message, 400);
+    constructor(msg, path = "") {
+        super(msg, 400, path);
     }
 }
 
 
 export class NoSuchResourceError extends ClientError {
-    constructor(message) {
-        super(message, 404);
+    constructor(msg, path = "") {
+        super(msg, 404, path);
     }
 }
 
 
 export class IncorrectPasswordError extends ClientError {
-    constructor(message) {
-        super(message, 401);
+    constructor(msg, path = "") {
+        super(msg, 401, path);
     }
 }
 
 
 export class IncorrectOldPasswordError extends ClientError {
-    constructor(message) {
-        super(message, 403);
+    constructor(msg, path = "") {
+        super(msg, 403, path);
     }
 }

@@ -145,7 +145,7 @@ describe("Chat API endpoints", () => {
                 .set('Authorization', `Bearer ${friendToken}`);
 
             expect(response.status).toEqual(403);
-            expect(response.body).toHaveProperty("message");
+            expect(response.body).toHaveProperty("errors");
         });
 
     });
@@ -244,7 +244,7 @@ describe("Chat API endpoints", () => {
                 .set('Authorization', `Bearer ${friendToken}`);
 
             expect(response.status).toEqual(403);
-            expect(response.body).toHaveProperty("message");
+            expect(response.body).toHaveProperty("errors");
 
             const chat = Chat.findById(exampleChatId);
 
@@ -306,7 +306,7 @@ describe("Chat API endpoints", () => {
                 .set('Authorization', `Bearer ${friendToken}`);
 
             expect(response.status).toEqual(403);
-            expect(response.body).toHaveProperty("message");
+            expect(response.body).toHaveProperty("errors");
         });
 
         test("should respond with message data validation errors", async () => {
@@ -320,9 +320,7 @@ describe("Chat API endpoints", () => {
             expect(response.status).toEqual(400);
             expect(response.body).toHaveProperty("errors");
 
-            expect(response.body.errors).toBeInstanceOf(Array);
-            expect(response.body.errors).toHaveLength(1);
-            expect(typeof response.body.errors[0] === 'string').toBeTruthy();
+            expect(Object.keys(response.body.errors)).toHaveLength(1);
         });
 
         test("should respond with 'invalid data type' error", async () => {
@@ -336,9 +334,7 @@ describe("Chat API endpoints", () => {
             expect(response.status).toEqual(400);
             expect(response.body).toHaveProperty("errors");
 
-            expect(response.body.errors).toBeInstanceOf(Array);
-            expect(response.body.errors).toHaveLength(1);
-            expect(typeof response.body.errors[0] === 'string').toBeTruthy();
+            expect(Object.keys(response.body.errors)).toHaveLength(1);
         });
 
         test("should respond with 'unexpected fields' error", async () => {
@@ -353,9 +349,7 @@ describe("Chat API endpoints", () => {
             expect(response.status).toEqual(400);
             expect(response.body).toHaveProperty("errors");
 
-            expect(response.body.errors).toBeInstanceOf(Array);
-            expect(response.body.errors).toHaveLength(1);
-            expect(typeof response.body.errors[0] === 'string').toBeTruthy();
+            expect(Object.keys(response.body.errors)).toHaveLength(1);
         });
 
     });
@@ -388,9 +382,7 @@ describe("Chat API endpoints", () => {
             expect(response.status).toEqual(400);
             expect(response.body).toHaveProperty("errors");
             
-            expect(response.body.errors).toBeInstanceOf(Array);
-            expect(response.body.errors).toHaveLength(1);
-            expect(typeof response.body.errors[0] === 'string').toBeTruthy();
+            expect(Object.keys(response.body.errors)).toHaveLength(1);
         });
 
         test("should respond with 'invalid data type' error", async () => {
@@ -404,9 +396,7 @@ describe("Chat API endpoints", () => {
             expect(response.status).toEqual(400);
             expect(response.body).toHaveProperty("errors");
             
-            expect(response.body.errors).toBeInstanceOf(Array);
-            expect(response.body.errors).toHaveLength(1);
-            expect(typeof response.body.errors[0] === 'string').toBeTruthy();
+            expect(Object.keys(response.body.errors)).toHaveLength(1);
         });
 
         test("should respond with 'unexpected fields' error", async () => {
@@ -421,9 +411,7 @@ describe("Chat API endpoints", () => {
             expect(response.status).toEqual(400);
             expect(response.body).toHaveProperty("errors");
             
-            expect(response.body.errors).toBeInstanceOf(Array);
-            expect(response.body.errors).toHaveLength(1);
-            expect(typeof response.body.errors[0] === 'string').toBeTruthy();
+            expect(Object.keys(response.body.errors)).toHaveLength(1);
         });
 
         test("should respond with 'no chat access' error", async () => {
@@ -440,7 +428,7 @@ describe("Chat API endpoints", () => {
                 .set('Authorization', `Bearer ${friendToken}`);
 
             expect(response.status).toEqual(403);
-            expect(response.body).toHaveProperty("message");
+            expect(response.body).toHaveProperty("errors");
         });
 
         test("should respond with 'no message access' error", async () => {
@@ -452,7 +440,7 @@ describe("Chat API endpoints", () => {
                 .set('Authorization', `Bearer ${friendToken}`);
 
             expect(response.status).toEqual(403);
-            expect(response.body).toHaveProperty("message");
+            expect(response.body).toHaveProperty("errors");
         });
 
         test("should respond with 'invalid id' errors", async () => {
@@ -492,7 +480,7 @@ describe("Chat API endpoints", () => {
                 .set('Authorization', `Bearer ${friendToken}`);
 
             expect(response.status).toEqual(403);
-            expect(response.body).toHaveProperty("message");
+            expect(response.body).toHaveProperty("errors");
         });
 
         test("should respond with 'no message access' error", async () => {
@@ -501,7 +489,7 @@ describe("Chat API endpoints", () => {
                 .set('Authorization', `Bearer ${friendToken}`);
 
             expect(response.status).toEqual(403);
-            expect(response.body).toHaveProperty("message");
+            expect(response.body).toHaveProperty("errors");
         });
 
         test("should respond with 'invalid id' errors", async () => {
@@ -536,7 +524,7 @@ describe("Chat API endpoints", () => {
                 .set('Authorization', `Bearer ${userToken}`);
 
             expect(response.status).toEqual(403);
-            expect(response.body).toHaveProperty("message");
+            expect(response.body).toHaveProperty("errors");
 
             const chat = await Chat.findById(exampleChatId);
             const message = chat.messages.id(exampleMessageId);
@@ -565,7 +553,7 @@ describe("Chat API endpoints", () => {
                 .set('Authorization', `Bearer ${friendToken}`);
 
             expect(response.status).toEqual(403);
-            expect(response.body).toHaveProperty("message");
+            expect(response.body).toHaveProperty("errors");
         });
 
     });

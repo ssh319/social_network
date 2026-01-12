@@ -1,11 +1,61 @@
 .auth-window {
     position: relative;
     margin: 0 auto;
-    width: 45%;
-    margin-top: 12rem;
-    border-radius: 1rem;
+    width: 27%;
+    margin-top: 190px;
+    border-radius: 15px;
+    text-align: center;
+    padding-bottom: 20px;
+}
+
+.auth-header {
+    position: relative;
+    font-size: 32px;
+    font-weight: 600;
+    margin-top: 30px;
+    margin-bottom: 15px;
+}
+
+.input-container {
+    position: relative;
+    padding-bottom: 25px;
+    text-align: left;
 }
 
 .auth-input {
-    margin: 35px 0;
+    position: relative;
+    margin: 0 auto;
+    padding: 9px 15px;
+    opacity: 85%;
+    width: 95%;
+}
+
+.error-message {
+    position: relative;
+    color: red;
+    font-size: 13px;
+    text-align: left;
+    left: 17px;
+}
+
+.submit-btn {
+    position: relative;
+    margin: 0 auto;
+    font-size: 18px;
+    width: 60%;
+    padding: 7px 0;
+    border-radius: 5px;
+    margin-top: 19px;
+}
+
+.eye-icon {
+    position: absolute;
+    border: none;
+    background: transparent;
+    right: 20px;
+    top: 9px;
+}
+
+.form-control {
+    box-shadow: none !important;
 }

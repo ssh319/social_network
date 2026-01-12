@@ -1,20 +1,21 @@
 import { useEffect, useState } from 'react';
 import { Outlet } from 'react-router-dom';
+import { ClipLoader } from 'react-spinners';
 import 'bootstrap/dist/css/bootstrap.min.css';
+
+import useAuth from '../hooks/useAuth';
+// import UserService from '../services/userService';
 
 import '../App.css';
 import './Header.css';
 
-// import UserService from '../services/userService';
-
 
 const Header = () => {
+    const { user, isLoaded } = useAuth();
     
-    const [username, setUsername] = useState("");
     
     useEffect(() => {
-        document.body.classList.add("light");
-        setUsername("Name Surname");
+        document.title = "Feed";
     }, []);
     
     return (
@@ -23,9 +24,12 @@ const Header = () => {
                 <div>
                     <nav className='navbar'>
                         <div>
-                            <ul>{username}</ul>
+                            {isLoaded ?
+                                <span>{user.firstName} {user.lastName}</span> :
+                                <span><ClipLoader size={18}/></span>
+                            }
                         </div>
-                    </nav>
+                    </nav> 
                 </div>
             </header>
     

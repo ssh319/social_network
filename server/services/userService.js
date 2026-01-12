@@ -56,10 +56,29 @@ export const getUser = async (userId) => {
     });
 
     if (!user) {
-        throw new NoSuchResourceError("Such user doesn't exist");
+        throw new NoSuchResourceError("Such user doesn't exist", "userId");
     }
     
     user.friends = user.friends.filter(friend => friend.status === 'friend');
+
+    return user;
+}
+
+
+/**
+ * Get all of the account's personal data.
+ * 
+ * @param {String} userId User's `ObjectId`
+ */
+export const getAccountData = async (userId) => {
+    const user = await User.findById(
+        userId,
+        { password: 0, chats: 0, posts: 0, images: 0, friends: 0 }
+    );
+
+    if (!user) {
+        throw new NoSuchResourceError("Such user doesn't exist", "userId");
+    }
 
     return user;
 }
@@ -76,7 +95,7 @@ export const createUser = async (data) => {
     const existingUser = await User.findOne({ email: data.email });
 
     if (existingUser) {
-        throw new AlreadyExistsError("This email address is already in use");
+        throw new AlreadyExistsError("This email address is already in use", "email");
     }
     
     const saltRounds = 10;
@@ -104,13 +123,13 @@ export const authenticateUser = async (email, password) => {
     const retrievedUser = await User.findOne({ email });
 
     if (!retrievedUser) {
-        throw new NoSuchResourceError("User with such email doesn't exist");
+        throw new NoSuchResourceError("User with such email doesn't exist", "email");
     }
 
     const comparisonResult = await bcrypt.compare(password, retrievedUser.password);
 
     if (comparisonResult !== true) {
-        throw new IncorrectPasswordError("Incorrect password");
+        throw new IncorrectPasswordError("Incorrect password", "password");
     }
     
     const { _id } = retrievedUser;
@@ -133,13 +152,13 @@ export const updateUser = async (userId, data) => {
 
     if (data.email) {
         if (user.email === data.email) {
-            throw new AlreadyExistsError("This is your email address already");
+            throw new AlreadyExistsError("This is your email address already", "email");
         }
 
         const existingUser = await User.findOne({ email: data.email });
         
         if (existingUser) {
-            throw new AlreadyExistsError("Provided email address is already in use");
+            throw new AlreadyExistsError("Provided email address is already in use", "email");
         }
     }
 
@@ -147,7 +166,7 @@ export const updateUser = async (userId, data) => {
         const comparisonResult = await bcrypt.compare(data.oldPassword, user.password);
 
         if (comparisonResult !== true) {
-            throw new IncorrectOldPasswordError("Incorrect old password");
+            throw new IncorrectOldPasswordError("Incorrect old password", "oldPassword");
         }
 
         const saltRounds = 10;
@@ -214,13 +233,13 @@ export const updateOnline = async (userId) => {
 export const addFriend = async (userId, requestReceiverId) => {
     
     if (userId === requestReceiverId) {
-        throw new AlreadyExistsError("Provided user id is your own");
+        throw new AlreadyExistsError("Provided user id is your own", "userId");
     }
     
     const requestReceiver = await User.findById(requestReceiverId);
     
     if (!requestReceiver) {
-        throw new NoSuchResourceError("No such user to send friend request to");
+        throw new NoSuchResourceError("No such user to send friend request to", "requestReceiverId");
     }
 
     const userInFriendsList = requestReceiver.friends.find(friend => friend.user.equals(userId));
@@ -242,7 +261,7 @@ export const addFriend = async (userId, requestReceiverId) => {
                 break;
             }
 
-        throw new AlreadyExistsError(message);
+        throw new AlreadyExistsError(message, "requestReceiverId");
     }
 
     requestReceiver.friends.push({ user: userId, status: 'received' });
@@ -283,7 +302,7 @@ export const acceptFriend = async (userId, requestSenderId) => {
     ));
 
     if (receivedRequestIndex === -1) {
-        throw new NoSuchResourceError("There is no received friend request from such user");
+        throw new NoSuchResourceError("There is no received friend request from such user", "requestSenderId");
     }
 
     const sentRequestIndex = requestSender.friends.findIndex(friend => (
@@ -321,7 +340,7 @@ export const removeFriend = async (userId, friendId) => {
     const isInFriends = user.friends.some(friend => friend.user.equals(friendId));
 
     if (!isInFriends) {
-        throw new NoSuchResourceError("There is no such user in your friends list");
+        throw new NoSuchResourceError("There is no such user in your friends list", "friendId");
     }
 
     user.friends.pull({ user: friendId });

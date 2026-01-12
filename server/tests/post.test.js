@@ -171,10 +171,7 @@ describe("Post API endpoints", () => {
             expect(response.status).toEqual(400);
             expect(response.body).toHaveProperty("errors");
 
-            expect(response.body.errors).toBeInstanceOf(Array);
-            expect(response.body.errors).toHaveLength(1);
-            expect(typeof response.body.errors[0] === 'string').toBeTruthy();
-
+            expect(Object.keys(response.body.errors)).toHaveLength(1);
         });
 
         test("should respond with 'unexpected fields' error", async () => {
@@ -188,9 +185,6 @@ describe("Post API endpoints", () => {
 
             expect(response.status).toEqual(400);
             expect(response.body).toHaveProperty("errors");
-
-            expect(response.body.errors).toBeInstanceOf(Array);
-            expect(typeof response.body.errors[0] === 'string').toBeTruthy();
         });
 
         test("should respond with 'invalid type' error", async () => {
@@ -203,9 +197,6 @@ describe("Post API endpoints", () => {
 
             expect(response.status).toEqual(400);
             expect(response.body).toHaveProperty("errors");
-
-            expect(response.body.errors).toBeInstanceOf(Array);
-            expect(typeof response.body.errors[0] === 'string').toBeTruthy();
         });
 
     });
@@ -234,7 +225,7 @@ describe("Post API endpoints", () => {
                 .set('Authorization', `Bearer ${friendToken}`);
 
             expect(response.status).toEqual(403);
-            expect(response.body).toHaveProperty("message");
+            expect(response.body).toHaveProperty("errors");
 
             const deletedPost = await Post.findById(examplePostId);
 
@@ -381,7 +372,7 @@ describe("Post API endpoints", () => {
                 .set('Authorization', `Bearer ${userToken}`);
 
             expect(response.status).toEqual(404);
-            expect(response.body).toHaveProperty("message");
+            expect(response.body).toHaveProperty("errors");
         });
 
         test("should respond with comment data validation errors list", async () => {
@@ -395,9 +386,7 @@ describe("Post API endpoints", () => {
             expect(response.status).toEqual(400);
             expect(response.body).toHaveProperty("errors");
 
-            expect(response.body.errors).toBeInstanceOf(Array);
-            expect(response.body.errors).toHaveLength(1);
-            expect(typeof response.body.errors[0] === 'string').toBeTruthy();
+            expect(Object.keys(response.body.errors)).toHaveLength(1);
         });
 
         test("should respond with 'unexpected fields' error", async () => {
@@ -411,9 +400,6 @@ describe("Post API endpoints", () => {
 
             expect(response.status).toEqual(400);
             expect(response.body).toHaveProperty("errors");
-
-            expect(response.body.errors).toBeInstanceOf(Array);
-            expect(typeof response.body.errors[0] === 'string').toBeTruthy();
         });
 
         test("should respond with 'invalid type' error", async () => {
@@ -426,9 +412,6 @@ describe("Post API endpoints", () => {
 
             expect(response.status).toEqual(400);
             expect(response.body).toHaveProperty("errors");
-
-            expect(response.body.errors).toBeInstanceOf(Array);
-            expect(typeof response.body.errors[0] === 'string').toBeTruthy();
         });
 
     });
@@ -453,7 +436,7 @@ describe("Post API endpoints", () => {
                 .set('Authorization', `Bearer ${friendToken}`);
             
             expect(response.status).toEqual(403);
-            expect(response.body).toHaveProperty("message");
+            expect(response.body).toHaveProperty("errors");
 
             const postAfterCommentDelete = await Post.findById(examplePostId);
 

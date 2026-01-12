@@ -10,7 +10,7 @@ export const getImage = async (request, response, next) => {
 
     } catch (err) {
         if (err instanceof ClientError) {
-            response.status(err.statusCode).json({ message: err.message });
+            response.status(err.statusCode).json({ errors: { [err.path]: err.msg } });
 
         } else {
             next(err);
@@ -26,7 +26,7 @@ export const uploadImage = async (request, response, next) => {
 
     } catch (err) {
         if (err instanceof ClientError) {
-            response.status(err.statusCode).json({ message: err.message });
+            response.status(err.statusCode).json({ errors: { [err.path]: err.msg } });
 
         } else {
             next(err);
@@ -42,7 +42,7 @@ export const deleteImage = async (request, response, next) => {
 
     } catch (err) {
         if (err instanceof ClientError) {
-            response.status(err.statusCode).json({ message: err.message });
+            response.status(err.statusCode).json({ errors: { [err.path]: err.msg } });
 
         } else {
             next(err);
@@ -58,7 +58,7 @@ export const likeImage = async (request, response, next) => {
 
     } catch (err) {
         if (err instanceof ClientError) {
-            response.status(err.statusCode).json({ message: err.message });
+            response.status(err.statusCode).json({ errors: { [err.path]: err.msg } });
 
         } else {
             next(err);
@@ -74,7 +74,7 @@ export const unlikeImage = async (request, response, next) => {
 
     } catch (err) {
         if (err instanceof ClientError) {
-            response.status(err.statusCode).json({ message: err.message });
+            response.status(err.statusCode).json({ errors: { [err.path]: err.msg } });
 
         } else {
             next(err);

@@ -48,7 +48,7 @@ test("should respond with 'bad request' to a syntax-malformed json request body"
         .set('Content-Type', 'application/json');
 
     expect(response.status).toEqual(400);
-    expect(response.body).toHaveProperty("message");
+    expect(response.body).toHaveProperty("errors");
 });
 
 
@@ -60,7 +60,7 @@ describe("User API endpoints", () => {
             .get('/users?firstName=unauthorizedTest');
             
         expect(response.status).toEqual(401);
-        expect(response.body).toHaveProperty("message");
+        expect(response.body).toHaveProperty("errors");
     });
         
     test("should respond with 'unauthorized' error due to invalid Bearer token", async () => {
@@ -69,7 +69,7 @@ describe("User API endpoints", () => {
             .set('Authorization', 'Bearer invalidtoken');
         
         expect(response.status).toEqual(401);
-        expect(response.body).toHaveProperty("message");
+        expect(response.body).toHaveProperty("errors");
     });
 
     // Routes testing
@@ -151,10 +151,8 @@ describe("User API endpoints", () => {
 
             expect(response.status).toEqual(400);
             expect(response.body).toHaveProperty("errors");
-
-            expect(response.body.errors).toBeInstanceOf(Array);
-            expect(response.body.errors).toHaveLength(4);
-            expect(typeof response.body.errors[0] === 'string').toBeTruthy();
+            
+            expect(Object.keys(response.body.errors)).toHaveLength(4);
         });
 
         test("should respond with 'unexpected fields' error", async () => {
@@ -170,10 +168,8 @@ describe("User API endpoints", () => {
 
             expect(response.status).toEqual(400);
             expect(response.body).toHaveProperty("errors");
-
-            expect(response.body.errors).toBeInstanceOf(Array);
-            expect(response.body.errors).toHaveLength(1);
-            expect(typeof response.body.errors[0] === 'string').toBeTruthy();
+            
+            expect(Object.keys(response.body.errors)).toHaveLength(1);
         });
 
         test("should respond with 'invalid type' error", async () => {
@@ -188,9 +184,6 @@ describe("User API endpoints", () => {
 
             expect(response.status).toEqual(400);
             expect(response.body).toHaveProperty("errors");
-
-            expect(response.body.errors).toBeInstanceOf(Array);
-            expect(typeof response.body.errors[0] === 'string').toBeTruthy();
         });
 
         test("should respond with 'already exists' error", async () => {
@@ -204,7 +197,9 @@ describe("User API endpoints", () => {
                 });
 
             expect(response.status).toEqual(400);
-            expect(response.body).toHaveProperty("message");
+            expect(response.body).toHaveProperty("errors")
+            
+            expect(Object.keys(response.body.errors)).toHaveLength(1);
         });
         
     });
@@ -233,7 +228,7 @@ describe("User API endpoints", () => {
                 });
 
             expect(response.status).toEqual(404);
-            expect(response.body).toHaveProperty("message");
+            expect(response.body).toHaveProperty("errors");
         });
 
         test("should respond with 'incorrect password' error", async () => {
@@ -245,7 +240,7 @@ describe("User API endpoints", () => {
                 });
 
             expect(response.status).toEqual(401);
-            expect(response.body).toHaveProperty("message");
+            expect(response.body).toHaveProperty("errors");
         });
 
         test("should respond with 'unexpected fields' error", async () => {
@@ -261,9 +256,7 @@ describe("User API endpoints", () => {
             expect(response.status).toEqual(400);
             expect(response.body).toHaveProperty("errors");
 
-            expect(response.body.errors).toBeInstanceOf(Array);
-            expect(response.body.errors).toHaveLength(1);
-            expect(typeof response.body.errors[0] === 'string').toBeTruthy();
+            expect(Object.keys(response.body.errors)).toHaveLength(1);
         });
 
         test("should respond with 'invalid type' error", async () => {
@@ -277,9 +270,7 @@ describe("User API endpoints", () => {
             expect(response.status).toEqual(400);
             expect(response.body).toHaveProperty("errors");
 
-            expect(response.body.errors).toBeInstanceOf(Array);
-            expect(response.body.errors).toHaveLength(1);
-            expect(typeof response.body.errors[0] === 'string').toBeTruthy();
+            expect(Object.keys(response.body.errors)).toHaveLength(1);
         });
 
     });
@@ -319,10 +310,8 @@ describe("User API endpoints", () => {
 
             expect(response.status).toEqual(400);
             expect(response.body).toHaveProperty("errors");
-
-            expect(response.body.errors).toBeInstanceOf(Array);
-            expect(response.body.errors).toHaveLength(1);
-            expect(typeof response.body.errors[0] === 'string').toBeTruthy();
+            
+            expect(Object.keys(response.body.errors)).toHaveLength(1);
         });
 
         test("should respond with 'unexpected fields' error", async () => {
@@ -340,10 +329,8 @@ describe("User API endpoints", () => {
 
             expect(response.status).toEqual(400);
             expect(response.body).toHaveProperty("errors");
-
-            expect(response.body.errors).toBeInstanceOf(Array);
-            expect(response.body.errors).toHaveLength(1);
-            expect(typeof response.body.errors[0] === 'string').toBeTruthy();
+            
+            expect(Object.keys(response.body.errors)).toHaveLength(1);
         });
 
         test("should respond with 'invalid type' error", async () => {
@@ -360,10 +347,8 @@ describe("User API endpoints", () => {
 
             expect(response.status).toEqual(400);
             expect(response.body).toHaveProperty("errors");
-
-            expect(response.body.errors).toBeInstanceOf(Array);
-            expect(response.body.errors).toHaveLength(1);
-            expect(typeof response.body.errors[0] === 'string').toBeTruthy();
+            
+            expect(Object.keys(response.body.errors)).toHaveLength(1);
         });
 
         test("should respond with 'old password required' error", async () => {
@@ -376,10 +361,8 @@ describe("User API endpoints", () => {
 
             expect(response.status).toEqual(400);
             expect(response.body).toHaveProperty("errors");
-
-            expect(response.body.errors).toBeInstanceOf(Array);
-            expect(response.body.errors).toHaveLength(1);
-            expect(typeof response.body.errors[0] === 'string').toBeTruthy();
+            
+            expect(Object.keys(response.body.errors)).toHaveLength(1);
         });
 
         test("should respond with 'incorrect old password' error", async () => {
@@ -392,7 +375,7 @@ describe("User API endpoints", () => {
                 .set('Authorization', `Bearer ${userToken}`);
     
             expect(response.status).toEqual(403);
-            expect(response.body).toHaveProperty("message");
+            expect(response.body).toHaveProperty("errors");
         });
 
     });
@@ -480,7 +463,7 @@ describe("User API endpoints", () => {
                 .set('Authorization', `Bearer ${userToken}`);
 
             expect(response.status).toEqual(400);
-            expect(response.body).toHaveProperty("message");
+            expect(response.body).toHaveProperty("errors");
         });
 
         test("should respond with 'no such user' error", async () => {

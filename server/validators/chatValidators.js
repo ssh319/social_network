@@ -4,7 +4,7 @@ import { body, checkExact, validationResult } from 'express-validator';
 
 export const validateChatId = (request, response, next) => {
     if (!isValidObjectId(request.params.chatId)) {
-        return response.status(400).json({ message: "Invalid chat id provided" });
+        return response.status(400).json({ errors: { chatId: "Invalid chat id provided" }});
     }
 
     next();
@@ -13,7 +13,7 @@ export const validateChatId = (request, response, next) => {
 
 export const validateMessageId = (request, response, next) => {
     if (!isValidObjectId(request.params.messageId)) {
-        return response.status(400).json({ message: "Invalid message id provided" });
+        return response.status(400).json({ errors: { messageId: "Invalid message id provided" }});
     }
 
     next();
@@ -34,7 +34,10 @@ export const validateMessage = [
 
         if (!validationErrors.isEmpty()) {
             return response.status(400).json({
-                errors: validationErrors.errors.map(error => error.msg)
+                errors: validationErrors.errors.reduce((acc, { path, msg }) => {
+                    acc[path] = msg;
+                    return acc;
+                }, {})
             });
         }
 

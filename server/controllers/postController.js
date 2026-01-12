@@ -10,7 +10,7 @@ export const getPostsFeed = async (request, response, next) => {
 
     } catch (err) {
         if (err instanceof ClientError) {
-            response.status(err.statusCode).json({ message: err.message });
+            response.status(err.statusCode).json({ errors: { [err.path]: err.msg } });
 
         } else {
             next(err);
@@ -26,7 +26,7 @@ export const getPost = async (request, response, next) => {
 
     } catch (err) {
         if (err instanceof ClientError) {
-            response.status(err.statusCode).json({ message: err.message });
+            response.status(err.statusCode).json({ errors: { [err.path]: err.msg } });
 
         } else {
             next(err);
@@ -42,7 +42,7 @@ export const createPost = async (request, response, next) => {
 
     } catch (err) {
         if (err instanceof ClientError) {
-            response.status(err.statusCode).json({ message: err.message });
+            response.status(err.statusCode).json({ errors: { [err.path]: err.msg } });
 
         } else {
             next(err);
@@ -58,7 +58,7 @@ export const deletePost = async (request, response, next) => {
 
     } catch (err) {
         if (err instanceof ClientError) {
-            response.status(err.statusCode).json({ message: err.message });
+            response.status(err.statusCode).json({ errors: { [err.path]: err.msg } });
 
         } else {
             next(err);
@@ -74,7 +74,7 @@ export const likePost = async (request, response, next) => {
 
     } catch (err) {
         if (err instanceof ClientError) {
-            response.status(err.statusCode).json({ message: err.message });
+            response.status(err.statusCode).json({ errors: { [err.path]: err.msg } });
 
         } else {
             next(err);
@@ -90,7 +90,7 @@ export const unlikePost = async (request, response, next) => {
 
     } catch (err) {
         if (err instanceof ClientError) {
-            response.status(err.statusCode).json({ message: err.message });
+            response.status(err.statusCode).json({ errors: { [err.path]: err.msg } });
 
         } else {
             next(err);
@@ -106,7 +106,7 @@ export const sendPostComment = async (request, response, next) => {
 
     } catch (err) {
         if (err instanceof ClientError) {
-            response.status(err.statusCode).json({ message: err.message });
+            response.status(err.statusCode).json({ errors: { [err.path]: err.msg } });
 
         } else {
             next(err);
@@ -122,7 +122,7 @@ export const deletePostComment = async (request, response, next) => {
 
     } catch (err) {
         if (err instanceof ClientError) {
-            response.status(err.statusCode).json({ message: err.message });
+            response.status(err.statusCode).json({ errors: { [err.path]: err.msg } });
 
         } else {
             next(err);
@@ -138,7 +138,7 @@ export const likePostComment = async (request, response, next) => {
 
     } catch (err) {
         if (err instanceof ClientError) {
-            response.status(err.statusCode).json({ message: err.message });
+            response.status(err.statusCode).json({ errors: { [err.path]: err.msg } });
 
         } else {
             next(err);
@@ -154,7 +154,7 @@ export const unlikePostComment = async (request, response, next) => {
 
     } catch (err) {
         if (err instanceof ClientError) {
-            response.status(err.statusCode).json({ message: err.message });
+            response.status(err.statusCode).json({ errors: { [err.path]: err.msg } });
 
         } else {
             next(err);

@@ -16,7 +16,7 @@ export const getImage = async (imageId) => {
     });
 
     if (!image) {
-        throw new NoSuchImageError("Such image doesn't exist");
+        throw new NoSuchImageError("Such image doesn't exist", "imageId");
     }
 
     return image;
@@ -55,7 +55,7 @@ export const likeImage = async (userId, imageId) => {
     });
 
     if (!image) {
-        throw new NoSuchImageError("No such image to like");
+        throw new NoSuchImageError("No such image to like", "imageId");
     }
 }
 
@@ -72,6 +72,6 @@ export const unlikeImage = async (userId, imageId) => {
     });
 
     if (!image) {
-        throw new NoSuchImageError("No such image to remove a like from");
+        throw new NoSuchImageError("No such image to remove a like from", "imageId");
     }
 }

@@ -54,7 +54,7 @@ export const getPost = async (postId) => {
     });
 
     if (!post) {
-        throw new NoSuchPostError("Such post doesn't exist");
+        throw new NoSuchPostError("Such post doesn't exist", "postId");
     }
 
     return post;
@@ -127,7 +127,7 @@ export const likePost = async (userId, postId) => {
     });
 
     if (!post) {
-        throw new NoSuchPostError("No such public post to like");
+        throw new NoSuchPostError("No such public post to like", "postId");
     }
 }
 
@@ -144,7 +144,7 @@ export const unlikePost = async (userId, postId) => {
     });
 
     if (!post) {
-        throw new NoSuchPostError("No such public post to remove a like from");
+        throw new NoSuchPostError("No such public post to remove a like from", "postId");
     }
 }
 
@@ -165,7 +165,7 @@ export const sendPostComment = async (userId, postId, comment) => {
     });
 
     if (!post) {
-        throw new NoSuchPostError("No such public post to comment");
+        throw new NoSuchPostError("No such public post to comment", "postId");
     }
 }
 
@@ -194,13 +194,13 @@ export const likePostComment = async (userId, postId, commentId) => {
     const post = await Post.findById(postId);
 
     if (!post) {
-        throw new NoSuchPostError("Provided post doesn't exist");
+        throw new NoSuchPostError("Provided post doesn't exist", "postId");
     }
 
     const comment = post.comments.id(commentId);
 
     if (!comment) {
-        throw new NoSuchCommentError("No such post comment to like");
+        throw new NoSuchCommentError("No such post comment to like", "commentId");
     }
 
     if (!comment.likes.includes(userId)) {
@@ -222,13 +222,13 @@ export const unlikePostComment = async (userId, postId, commentId) => {
     const post = await Post.findById(postId);
 
     if (!post) {
-        throw new NoSuchPostError("Provided post doesn't exist");
+        throw new NoSuchPostError("Provided post doesn't exist", "postId");
     }
 
     const comment = post.comments.id(commentId);
 
     if (!comment) {
-        throw new NoSuchCommentError("No such post comment to like");
+        throw new NoSuchCommentError("No such post comment to like", "commentId");
     }
 
     comment.likes = comment.likes.filter(

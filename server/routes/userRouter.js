@@ -17,6 +17,7 @@ const router = Router();
 router.param('userId', validateUserId);
 
 router.get("/", authenticate, validateSearchQuery, controller.searchUsers);
+router.get("/account", authenticate, controller.getAccountData);
 router.get("/:userId", authenticate, controller.getUser);
 
 router.post("/signup", validateUserData, controller.createUser);

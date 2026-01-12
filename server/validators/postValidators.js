@@ -4,7 +4,7 @@ import { body, checkExact, validationResult } from 'express-validator';
 
 export const validatePostId = (request, response, next) => {
     if (!isValidObjectId(request.params.postId)) {
-        return response.status(400).json({ message: "Invalid post id provided" });
+        return response.status(400).json({ errors: { postId: "Invalid post id provided" }});
     }
 
     next();
@@ -13,7 +13,7 @@ export const validatePostId = (request, response, next) => {
 
 export const validateCommentId = (request, response, next) => {
     if (!isValidObjectId(request.params.commentId)) {
-        return response.status(400).json({ message: "Invalid comment id provided" });
+        return response.status(400).json({ errors: { commentId: "Invalid comment id provided" }});
     }
 
     next();
@@ -39,7 +39,10 @@ export const validatePost = [
 
         if (!validationErrors.isEmpty()) {
             return response.status(400).json({
-                errors: validationErrors.errors.map(error => error.msg)
+                errors: validationErrors.errors.reduce((acc, { path, msg }) => {
+                    acc[path] = msg;
+                    return acc;
+                }, {})
             });
         }
 
@@ -62,7 +65,10 @@ export const validateComment = [
 
         if (!validationErrors.isEmpty()) {
             return response.status(400).json({
-                errors: validationErrors.errors.map(error => error.msg)
+                errors: validationErrors.errors.reduce((acc, { path, msg }) => {
+                    acc[path] = msg;
+                    return acc;
+                }, {})
             });
         }
 

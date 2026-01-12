@@ -20,7 +20,7 @@ app.use(bodyParser.json());
 
 app.use((error, _, response, next) => {
     if (error instanceof SyntaxError) {
-        response.status(400).json({ message: "Malformed JSON syntax" });
+        response.status(400).json({ errors: { globalError: "Malformed JSON syntax" }});
 
     } else {
         next();
@@ -41,7 +41,7 @@ app.use((error, _, response, next) => {
     } else {
         // logger.log(error);
         console.error(error);
-        response.status(500).json({ message: "Unknown internal error occured" });
+        response.status(500).json({ errors: { globalError: "Unknown internal error occured" }});
     }
 });
 

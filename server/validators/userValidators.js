@@ -51,7 +51,7 @@ const checkOldPassword = (value, { req }) => {
 
 export const validateUserId = (request, response, next) => {
     if (!isValidObjectId(request.params.userId)) {
-        return response.status(400).json({ message: "Invalid user id provided" });
+        return response.status(400).json({ errors: { userId: "Invalid user id provided" }});
     }
 
     next();
@@ -75,6 +75,7 @@ export const validateUserData = [
         .optional()
         .isString().withMessage("Invalid data type for password").bail()
         .notEmpty().withMessage("Empty password provided").bail()
+        // make both checks with one .withMessage()
         .matches(/^\S+$/).withMessage("Password cannot include whitespaces")
         .isLength({ min: 8 }).withMessage("Password must contain at least 8 characters"),
         // check is containing lowcase, upcase & symbol
@@ -93,7 +94,7 @@ export const validateUserData = [
         .optional()
         .isString().withMessage("Invalid data type for first name").bail()
         .trim()
-        // accepts latin only yet (use regexp)
+        // accepts latin only yet (use regexp) & one .withMessage()
         .isAlpha().withMessage("First name can contain letters only")
         .isLength({ max: 24 }).withMessage("First name cannot be more than 24 characters in length")
         .customSanitizer(capitalize),
@@ -105,7 +106,7 @@ export const validateUserData = [
         .optional()
         .isString().withMessage("Invalid data type for last name").bail()
         .trim()
-        // accepts latin only yet (use regexp)
+        // accepts latin only yet (use regexp) & one .withMessage()
         .isAlpha().withMessage("Last name can contain letters only")
         .isLength({ max: 24 }).withMessage("Last name cannot be more than 24 characters in length")
         .customSanitizer(capitalize),
@@ -156,7 +157,10 @@ export const validateUserData = [
 
         if (!validationErrors.isEmpty()) {
             return response.status(400).json({
-                errors: validationErrors.errors.map(error => error.msg)
+                errors: validationErrors.errors.reduce((acc, { path, msg }) => {
+                    acc[path] = msg;
+                    return acc;
+                }, {})
             });
         }
         
@@ -185,7 +189,10 @@ export const validateUserAuth = [
         
         if (!validationErrors.isEmpty()) {
             return response.status(400).json({
-                errors: validationErrors.errors.map(error => error.msg)
+                errors: validationErrors.errors.reduce((acc, { path, msg }) => {
+                    acc[path] = msg;
+                    return acc;
+                }, {})
             });
         }
 
@@ -203,7 +210,10 @@ export const validateSearchQuery = [
 
         if (!validationErrors.isEmpty()) {
             return response.status(400).json({
-                errors: validationErrors.errors.map(error => error.msg)
+                errors: validationErrors.errors.reduce((acc, { path, msg }) => {
+                    acc[path] = msg;
+                    return acc;
+                }, {})
             });
         }
 

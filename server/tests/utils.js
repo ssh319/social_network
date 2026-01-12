@@ -168,7 +168,8 @@ export const checkInvalidId = async (method, route, token) => {
         .set('Authorization', `Bearer ${token}`);
 
     expect(response.status).toEqual(400);
-    expect(response.body).toHaveProperty("message");
+    expect(response.body).toHaveProperty("errors")
+    expect(Object.keys(response.body.errors)).toHaveLength(1);
 }
 
 
@@ -178,5 +179,6 @@ export const checkNotFound = async (method, route, token) => {
         .set('Authorization', `Bearer ${token}`);
 
     expect(response.status).toEqual(404);
-    expect(response.body).toHaveProperty("message");
+    expect(response.body).toHaveProperty("errors")
+    expect(Object.keys(response.body.errors)).toHaveLength(1);
 }

@@ -14,7 +14,7 @@ export const searchUsers = async (request, response, next) => {
 
     // } catch (err) {
     //     if (err instanceof ClientError) {
-    //         response.status(err.statusCode).json({ message: err.message });
+    //         response.status(err.statusCode).json({ errors: { [err.path]: err.msg } });
     
     //     } else {
     //         next(err);
@@ -30,7 +30,23 @@ export const getUser = async (request, response, next) => {
 
     } catch (err) {
         if (err instanceof ClientError) {
-            response.status(err.statusCode).json({ message: err.message });
+            response.status(err.statusCode).json({ errors: { [err.path]: err.msg } });
+
+        } else {
+            next(err);
+        }
+    }
+}
+
+
+export const getAccountData = async (request, response, next) => {
+    try {
+        const user = await service.getAccountData(request.user._id);
+        response.json({ user });
+
+    } catch (err) {
+        if (err instanceof ClientError) {
+            response.status(err.statusCode).json({ errors: { [err.path]: err.msg } });
 
         } else {
             next(err);
@@ -48,7 +64,7 @@ export const createUser = async (request, response, next) => {
 
     } catch (err) {
         if (err instanceof ClientError) {
-            response.status(err.statusCode).json({ message: err.message });
+            response.status(err.statusCode).json({ errors: { [err.path]: err.msg } });
 
         } else {
             next(err);
@@ -64,7 +80,7 @@ export const authenticateUser = async (request, response, next) => {
 
     } catch (err) {
         if (err instanceof ClientError) {
-            response.status(err.statusCode).json({ message: err.message });
+            response.status(err.statusCode).json({ errors: { [err.path]: err.msg } });
 
         } else {
             next(err);
@@ -80,7 +96,7 @@ export const updateUser = async (request, response, next) => {
 
     } catch (err) {
         if (err instanceof ClientError) {
-            response.status(err.statusCode).json({ message: err.message });
+            response.status(err.statusCode).json({ errors: { [err.path]: err.msg } });
 
         } else {
             next(err);
@@ -96,7 +112,7 @@ export const deleteUser = async (request, response, next) => {
 
     } catch (err) {
         if (err instanceof ClientError) {
-            response.status(err.statusCode).json({ message: err.message });
+            response.status(err.statusCode).json({ errors: { [err.path]: err.msg } });
 
         } else {
             next(err);
@@ -112,7 +128,7 @@ export const updateOnline = async (request, response, next) => {
 
     } catch (err) {
         if (err instanceof ClientError) {
-            response.status(err.statusCode).json({ message: err.message });
+            response.status(err.statusCode).json({ errors: { [err.path]: err.msg } });
 
         } else {
             next(err);
@@ -128,7 +144,7 @@ export const addFriend = async (request, response, next) => {
 
     } catch (err) {
         if (err instanceof ClientError) {
-            response.status(err.statusCode).json({ message: err.message });
+            response.status(err.statusCode).json({ errors: { [err.path]: err.msg } });
 
         } else {
             next(err);
@@ -144,7 +160,7 @@ export const acceptFriend = async (request, response, next) => {
 
     } catch (err) {
         if (err instanceof ClientError) {
-            response.status(err.statusCode).json({ message: err.message });
+            response.status(err.statusCode).json({ errors: { [err.path]: err.msg } });
 
         } else {
             next(err);
@@ -160,7 +176,7 @@ export const removeFriend = async (request, response, next) => {
 
     } catch (err) {
         if (err instanceof ClientError) {
-            response.status(err.statusCode).json({ message: err.message });
+            response.status(err.statusCode).json({ errors: { [err.path]: err.msg } });
 
         } else {
             next(err);

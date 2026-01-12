@@ -22,6 +22,14 @@ class UserService extends BaseService {
         return response.data.user;
     }
 
+    async getAccountData() {
+        const response = await this.api.get(
+            `${this.baseUrl}/account`
+        );
+
+        return response.data.user;
+    }
+
     async createUser(data) {
         const response = await this.api.post(
             `${this.baseUrl}/signup`,
