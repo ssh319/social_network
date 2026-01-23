@@ -1,15 +1,15 @@
 import { useEffect, useState } from 'react';
 import { useCookies } from 'react-cookie';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
-import '../../App.css';
+import '@styles/App.css';
 import './Auth.css';
 
-import UserService from '../../services/userService';
+import UserService from '@services/userService';
 
-import EyeFill from '../../assets/icons/EyeFill.jsx';
-import EyeSlash from '../../assets/icons/EyeSlash.jsx';
+import EyeFill from '@assets/icons/EyeFill.jsx';
+import EyeSlash from '@assets/icons/EyeSlash.jsx';
 
 
 const SignupPage = () => {
@@ -20,7 +20,9 @@ const SignupPage = () => {
 
     const service = new UserService();
     const navigate = useNavigate();
-    const [ cookies, setCookie ] = useCookies([]);
+    const location = useLocation();
+
+    const [ , setCookie ] = useCookies(["token"]);
 
     const [ email, setEmail ] = useState("");   
     const [ password, setPassword ] = useState("");
@@ -45,16 +47,14 @@ const SignupPage = () => {
         }
 
         try {
-            const createdUser = await service.createUser({ email, password, firstName, lastName });
+            await service.createUser({ email, password, firstName, lastName });
             const token = await service.authenticateUser({ email, password });
+            setCookie("token", token, { path: "/" });
             navigate("/");
 
         } catch (err) {
-            if (err.code === "ERR_NETWORK") {
-                setErrors({ globalError: "Server connection failed" });
-
-            } else if (err.response?.status === 500) {
-                setErrors({ globalError: "Unknown internal error occured" });
+            if (err.code === "ERR_NETWORK" || err.response?.status === 500) {
+                navigate("/error-page", { state: { prevAddress: location.pathname } });
 
             } else {
                 setErrors(err.response.data.errors);
@@ -162,12 +162,6 @@ const SignupPage = () => {
                         }
                         
                     </div>
-
-                    {errors.globalError &&
-                        <span style={{ color: 'red', fontSize: '18px' }}>
-                            {errors.globalError}
-                        </span>
-                    }
 
                     <div style={{ fontSize: '14px', color: '#999' }}>
                         <span>Already have an account? <Link to="/login" style={{ textDecoration: 'none' }}>Sign in</Link></span>

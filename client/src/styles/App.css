@@ -1,0 +1,15 @@
+body {
+    background-color: var(--bs-gray-200);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.loader {
+    width: 18px;
+    height: 18px;
+    border: 2px solid var(--bs-primary);
+    border-bottom-color: transparent;
+    border-radius: 50%;
+    display: inline-block;
+    box-sizing: border-box;
+    animation: rotation 0.7s linear infinite;
+}

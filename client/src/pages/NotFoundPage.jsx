@@ -1,12 +1,12 @@
 import { useEffect } from "react";
 import 'bootstrap/dist/css/bootstrap.min.css';
 
-import '../App.css';
+import '@styles/App.css';
 
 
 const NotFoundPage = () => {
     useEffect(() => {
-        document.title = "Page not found";
+        document.title = "Not Found";
     }, []);
 
     return (

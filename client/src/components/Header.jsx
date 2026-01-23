@@ -1,35 +1,41 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
-import { ClipLoader } from 'react-spinners';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
-import useAuth from '../hooks/useAuth';
-// import UserService from '../services/userService';
+import { useAuth } from '@context/AuthContext';
 
-import '../App.css';
+import '@styles/App.css';
 import './Header.css';
+import testAvatar from '@assets/images/test-avatar.jpg';
 
 
 const Header = () => {
-    const { user, isLoaded } = useAuth();
-    
-    
+    const { loadUser, user, isLoaded, logout } = useAuth();
+
     useEffect(() => {
-        document.title = "Feed";
-    }, []);
+        loadUser();
+    }, [loadUser]);
     
     return (
         <>
-            <header className='header navbar fixed-top border-bottom justify-content-center'>
+            <header className='header navbar fixed-top border-bottom'>
                 <div>
                     <nav className='navbar'>
-                        <div>
+                        <div style={{ display: 'flex' }}>
                             {isLoaded ?
-                                <span>{user.firstName} {user.lastName}</span> :
-                                <span><ClipLoader size={18}/></span>
+                                <div>
+                                    <img alt='usr avatar' height='30' width='30' src={testAvatar} style={{ borderRadius: '50%' }}/>
+                                    <span>{user.firstName} {user.lastName}</span>
+                                </div> :
+                                <span className='loader' />
                             }
                         </div>
-                    </nav> 
+                        <div style={{ display: 'flex' }}>
+                            <button type='button' className='btn btn-outline-danger btn-sm' onClick={logout}>
+                                Logout
+                            </button>
+                        </div>
+                    </nav>
                 </div>
             </header>
     

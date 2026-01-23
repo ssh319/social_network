@@ -3,13 +3,13 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useCookies } from 'react-cookie';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
-import '../../App.css';
+import '@styles/App.css';
 import './Auth.css';
 
-import UserService from '../../services/userService';
+import UserService from '@services/userService';
 
-import EyeFill from '../../assets/icons/EyeFill.jsx';
-import EyeSlash from '../../assets/icons/EyeSlash.jsx';
+import EyeFill from '@assets/icons/EyeFill.jsx';
+import EyeSlash from '@assets/icons/EyeSlash.jsx';
 
 
 const LoginPage = () => {
@@ -22,9 +22,8 @@ const LoginPage = () => {
 
     const navigate = useNavigate();
     const location = useLocation();
-    const [ cookies, setCookie ] = useCookies(["token"]);
 
-    const infoMessage = location.state?.infoMessage;
+    const [ , setCookie ] = useCookies(["token"]);
 
     const [ email, setEmail ] = useState("");   
     const [ password, setPassword ] = useState("");
@@ -46,11 +45,8 @@ const LoginPage = () => {
             navigate("/");
 
         } catch (err) {
-            if (err.code === "ERR_NETWORK") {
-                setErrors({ globalError: "Server connection failed" });
-
-            } else if (err.response?.status === 500) {
-                setErrors({ globalError: "Unknown internal error occured" });
+            if (err.code === "ERR_NETWORK" || err.response?.status === 500) {
+                navigate("/error-page", { state: { prevAddress: location.pathname } });
 
             } else {
                 setErrors(err.response.data.errors);
@@ -100,18 +96,6 @@ const LoginPage = () => {
                         }
 
                     </div>
-
-                    {infoMessage && 
-                        <span style={{ color: '#bbb', fontSize: '18px' }}>
-                            {infoMessage}
-                        </span>
-                    }
-
-                    {errors.globalError &&
-                        <span style={{ color: 'red', fontSize: '18px' }}>
-                            {errors.globalError}
-                        </span>
-                    }
 
                     <div style={{ fontSize: '14px', color: '#999' }}>
                         <span>Do not have an account? <Link to="/signup" style={{ textDecoration: 'none' }}>Sign up</Link></span>

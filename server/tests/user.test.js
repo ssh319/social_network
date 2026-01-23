@@ -100,10 +100,10 @@ describe("User API endpoints", () => {
 
             expect(response.status).toEqual(200);
             expect(response.body).toHaveProperty("user");
+            expect(response.body.user._id).toEqual(exampleUserId);
             expect(response.body.user.firstName).toEqual("User");
             expect(response.body.user).not.toHaveProperty("email");
             expect(response.body.user).not.toHaveProperty("password");
-            expect(response.body.user._id).toEqual(exampleUserId);
         });
 
         test("should respond with 'invalid id' error", async () => {
@@ -112,6 +112,32 @@ describe("User API endpoints", () => {
 
         test("should respond with 'no such user' error", async () => {
             await checkNotFound('get', `/users/${notExistingId}`, userToken);
+        });
+
+    });
+
+
+    describe("getAccountData", () => {
+        test("should return all of the account data except posts, friends, images and chats lists", async () => {
+            const response = await request(app)
+                .get("/users/account")
+                .set("Authorization", `Bearer ${userToken}`);
+
+            expect(response.status).toEqual(200);
+            expect(response.body).toHaveProperty("user");
+            expect(response.body.user._id).toEqual(exampleUserId);
+            expect(response.body.user.email).toEqual("example@testmail.com");
+            expect(response.body.user).not.toHaveProperty("password");
+            expect(response.body.user).not.toHaveProperty("posts");
+            expect(response.body.user).not.toHaveProperty("friends");
+        });
+
+        test("should respond with 'unauthorized' error", async () => {
+            const response = await request(app)
+                .get("/users/account");
+                
+            expect(response.status).toEqual(401);
+            expect(response.body).toHaveProperty("errors");
         });
 
     });
