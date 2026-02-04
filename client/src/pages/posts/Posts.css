@@ -63,8 +63,6 @@
     transition: color 0.3s ease;
 }
 
-.like-button:focus,
 .like-button:hover {
-    fill: var(--bs-red);
     color: var(--bs-red);
 }

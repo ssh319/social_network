@@ -6,6 +6,7 @@ import PostService from '@services/postService';
 import { useAuth } from '@context/AuthContext';
 
 import '@styles/App.css';
+
 import testAvatar from '@assets/images/test-avatar.jpg';
 import LikeHeart from '@assets/icons/LikeHeart';
 import FilledLikeHeart from '@assets/icons/FilledLikeHeart';
@@ -24,30 +25,6 @@ const Feed = ({ posts, isLoaded }) => {
         setFeed(posts);
         setFeedLoaded(isLoaded);
     }, [posts, isLoaded]);
-    
-    
-    // useEffect(() => {
-    //     const fetchPosts = async () => {
-    //         const service = new PostService(cookies.token);
-
-    //         try {
-    //             const fetchedPosts = await service.getPostsFeed();
-
-    //             setFeed(fetchedPosts.map((post) => {
-    //                 post.liked = post.likes.includes(user._id);
-    //                 return post;
-    //             }));
-    //             setFeedLoaded(true);
-
-    //         } catch (err) {
-    //             console.error(err);
-    //         }
-    //     }
-
-    //     fetchPosts();
-    //     console.log("fetchPosts() called");
-
-    // }, [cookies.token, user._id]);
 
     const togglePostLike = async (postId, liked) => {
 
@@ -96,7 +73,11 @@ const Feed = ({ posts, isLoaded }) => {
                                         <span className='post-timestamp'>{new Date(post.timestamp).toLocaleString()}</span>
                                     </div>
                                 </div>
-                                <div className='post-content'>{post.text}</div>
+                                <div className='post-content'>
+                                    <Link to={`/posts/${post._id}`} style={{ all: 'unset', cursor: 'pointer' }}>
+                                        {post.text}
+                                    </Link>
+                                </div>
                                 <div className='post-footer'>
                                     <div className='like-button' onClick={() => { togglePostLike(post._id, post.liked); }}>
                                         {post.liked ? <FilledLikeHeart color='var(--bs-red)'/> : <LikeHeart />}
