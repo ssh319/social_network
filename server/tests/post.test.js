@@ -77,7 +77,7 @@ describe("Post API endpoints", () => {
 
             const examplePost = response.body.posts[0];
 
-            expect(examplePost).toHaveProperty("user.firstName", "User");
+            expect(examplePost).toHaveProperty("user.firstName", "Friend");
             expect(examplePost).toHaveProperty("user.lastName", "Example");
             expect(examplePost).toHaveProperty("user.profilePicture");
 
@@ -164,7 +164,7 @@ describe("Post API endpoints", () => {
             const response = await request(app)
                 .post('/posts')
                 .send({
-                    text: "p".repeat(501)
+                    text: "p".repeat(3001)
                 })
                 .set('Authorization', `Bearer ${userToken}`);
 
@@ -379,7 +379,7 @@ describe("Post API endpoints", () => {
             const response = await request(app)
                 .post(`/posts/${examplePostId}/comments`)
                 .send({
-                    text: "c".repeat(501)
+                    text: "c".repeat(1001)
                 })
                 .set('Authorization', `Bearer ${userToken}`);
 

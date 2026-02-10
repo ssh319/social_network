@@ -8,8 +8,8 @@ import './Auth.css';
 
 import UserService from '@services/userService';
 
-import EyeFill from '@assets/icons/EyeFill.jsx';
-import EyeSlash from '@assets/icons/EyeSlash.jsx';
+import EyeFillIcon from '@assets/icons/EyeFillIcon.jsx';
+import EyeSlashIcon from '@assets/icons/EyeSlashIcon.jsx';
 
 
 const SignupPage = () => {
@@ -64,113 +64,115 @@ const SignupPage = () => {
 
     return (
         <main>
-            <section className="form-control auth-window">
-                <h2 className="auth-header">Sign up</h2>
-                <form onSubmit={registerUser}>
+            <div className='main-auth-container'>
+                <section className="form-control auth-window">
+                    <h2 className="auth-header">Sign up</h2>
+                    <form onSubmit={registerUser}>
 
-                    <div className='input-container'>
-                        <input
-                            onChange={e => { setEmail(e.target.value); }}
-                            className="form-control auth-input"
-                            style={{ borderColor: errors.email ? 'red' : 'var(--bs-border-color)' }}
-                            placeholder="E-mail"
-                            type="text"
-                            required
-                        />
-                        
-                        {errors.email &&
-                            <span className='error-message'>{errors.email}</span>
-                        }
+                        <div className='input-container'>
+                            <input
+                                onChange={e => { setEmail(e.target.value); }}
+                                className="form-control auth-input"
+                                style={{ borderColor: errors.email ? 'red' : 'var(--bs-border-color)' }}
+                                placeholder="E-mail"
+                                type="text"
+                                required
+                            />
+                            
+                            {errors.email &&
+                                <span className='error-message'>{errors.email}</span>
+                            }
 
-                    </div>
+                        </div>
 
-                    <div className='input-container'>
+                        <div className='input-container'>
 
-                        <input
-                            onChange={e => { setPassword(e.target.value) }}
-                            className="form-control auth-input"
-                            style={{
-                                borderColor:
-                                    (errors.password || errors.confirmPassword) ?
-                                    'red' :
-                                    'var(--bs-border-color)'
-                            }}
-                            placeholder="Password"
-                            type={passwordVisibility ? 'text' : 'password'}
-                            required
-                        />
+                            <input
+                                onChange={e => { setPassword(e.target.value) }}
+                                className="form-control auth-input"
+                                style={{
+                                    borderColor:
+                                        (errors.password || errors.confirmPassword) ?
+                                        'red' :
+                                        'var(--bs-border-color)'
+                                }}
+                                placeholder="Password"
+                                type={passwordVisibility ? 'text' : 'password'}
+                                required
+                            />
 
-                        <button type='button' className='eye-icon' onClick={togglePasswordVisibility}>
-                            {passwordVisibility ? <EyeSlash /> : <EyeFill />}
-                        </button>
+                            <button type='button' className='eye-icon' onClick={togglePasswordVisibility}>
+                                {passwordVisibility ? <EyeSlashIcon /> : <EyeFillIcon />}
+                            </button>
 
-                        {errors.password &&
-                            <span className='error-message'>{errors.password}</span>
-                        }
+                            {errors.password &&
+                                <span className='error-message'>{errors.password}</span>
+                            }
 
-                    </div>
+                        </div>
 
-                    <div className='input-container'>
+                        <div className='input-container'>
 
-                        <input
-                            onChange={e => { setConfirmPassword(e.target.value) }}
-                            className="form-control auth-input"
-                            style={{ borderColor: errors.confirmPassword ? 'red' : 'var(--bs-border-color)' }}
-                            placeholder="Confirm password"
-                            type={passwordVisibility ? 'text' : 'password'}
-                            required
-                        />
+                            <input
+                                onChange={e => { setConfirmPassword(e.target.value) }}
+                                className="form-control auth-input"
+                                style={{ borderColor: errors.confirmPassword ? 'red' : 'var(--bs-border-color)' }}
+                                placeholder="Confirm password"
+                                type={passwordVisibility ? 'text' : 'password'}
+                                required
+                            />
 
-                        <button type='button' className='eye-icon' onClick={togglePasswordVisibility}>
-                            {passwordVisibility ? <EyeSlash /> : <EyeFill />}
-                        </button>
+                            <button type='button' className='eye-icon' onClick={togglePasswordVisibility}>
+                                {passwordVisibility ? <EyeSlashIcon /> : <EyeFillIcon />}
+                            </button>
 
-                        {errors.confirmPassword &&
-                            <span className='error-message'>{errors.confirmPassword}</span>
-                        }
+                            {errors.confirmPassword &&
+                                <span className='error-message'>{errors.confirmPassword}</span>
+                            }
 
-                    </div>
+                        </div>
 
-                    <div className='input-container'>
-                        <input
-                            onChange={e => { setFirstName(e.target.value) }}
-                            className="form-control auth-input"
-                            style={{ borderColor: errors.firstName ? 'red' : 'var(--bs-border-color)' }}
-                            placeholder="First name"
-                            type="text"
-                            required
-                        />
+                        <div className='input-container'>
+                            <input
+                                onChange={e => { setFirstName(e.target.value) }}
+                                className="form-control auth-input"
+                                style={{ borderColor: errors.firstName ? 'red' : 'var(--bs-border-color)' }}
+                                placeholder="First name"
+                                type="text"
+                                required
+                            />
 
-                        {errors.firstName &&
-                            <span className='error-message'>{errors.firstName}</span>
-                        }
+                            {errors.firstName &&
+                                <span className='error-message'>{errors.firstName}</span>
+                            }
 
-                    </div>
+                        </div>
 
-                    <div className='input-container'>
-                        <input
-                            onChange={e => { setLastName(e.target.value) }}
-                            className="form-control auth-input"
-                            style={{ borderColor: errors.lastName ? 'red' : 'var(--bs-border-color)' }}
-                            placeholder="Last name"
-                            type="text"
-                            required
-                        />
+                        <div className='input-container'>
+                            <input
+                                onChange={e => { setLastName(e.target.value) }}
+                                className="form-control auth-input"
+                                style={{ borderColor: errors.lastName ? 'red' : 'var(--bs-border-color)' }}
+                                placeholder="Last name"
+                                type="text"
+                                required
+                            />
 
-                        {errors.lastName &&
-                            <span className='error-message'>{errors.lastName}</span>
-                        }
-                        
-                    </div>
+                            {errors.lastName &&
+                                <span className='error-message'>{errors.lastName}</span>
+                            }
+                            
+                        </div>
 
-                    <div style={{ fontSize: '14px', color: '#999' }}>
-                        <span>Already have an account? <Link to="/login" style={{ textDecoration: 'none' }}>Sign in</Link></span>
-                    </div>
+                        <div style={{ fontSize: '14px', color: '#999' }}>
+                            <span>Already have an account? <Link to="/login" style={{ textDecoration: 'none' }}>Sign in</Link></span>
+                        </div>
 
-                    <button type="submit" className="btn btn-primary submit-btn">Submit</button>
+                        <button type="submit" className="btn btn-primary submit-btn">Submit</button>
 
-                </form>
-            </section>
+                    </form>
+                </section>
+            </div>
         </main>
     );
 }

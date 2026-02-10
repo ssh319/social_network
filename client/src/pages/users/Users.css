@@ -1,0 +1,9 @@
+.main-userpage-container {
+    display: flex;
+    justify-content: center;
+}
+
+.profile-container {
+    display: flex;
+    flex-direction: column;
+}

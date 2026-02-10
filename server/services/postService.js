@@ -24,6 +24,8 @@ export const getPostsFeed = async (userId) => {
                 ...user.friends.map(friend => friend.user)
             ]
         }
+    }).sort({
+        timestamp: -1
     }).populate({
         path: 'user',
         select: ['firstName', 'lastName', 'profilePicture']
@@ -54,7 +56,7 @@ export const getPost = async (postId) => {
     });
 
     if (!post) {
-        throw new NoSuchPostError("Such post doesn't exist", "postId");
+        throw new NoSuchPostError("No such post", "postId");
     }
 
     return post;
@@ -72,10 +74,14 @@ export const createPost = async (userId, post) => {
     post.user = userId;
 
     const session = await mongoose.startSession();
-    session.startTransaction();
-
+    
     try {
+        session.startTransaction();
         const [ createdPost ] = await Post.insertMany(post, { session });
+        
+        if (!createdPost) {
+            throw new Error("Failed to create post");
+        }
 
         await User.findByIdAndUpdate(userId, {
             $push: { posts: createdPost._id }
@@ -84,6 +90,9 @@ export const createPost = async (userId, post) => {
         await session.commitTransaction();
 
         return createdPost;
+
+    } catch (err) {
+        await session.abortTransaction();
 
     } finally {
         await session.endSession();
@@ -97,10 +106,16 @@ export const createPost = async (userId, post) => {
  * @param {String} postId `ObjectId` of a post to be deleted.
  */
 export const deletePost = async (postId) => {
-    const session = await mongoose.startSession();
-    session.startTransaction();
 
+    const post = await Post.findById(postId);
+    if (!post) {
+        throw new NoSuchPostError("No such post to delete");
+    }
+
+    const session = await mongoose.startSession();
+    
     try {
+        session.startTransaction();
         const post = await Post.findByIdAndDelete(postId, { session });
 
         await User.findByIdAndUpdate(post.user, {
@@ -108,6 +123,9 @@ export const deletePost = async (postId) => {
         }, { session });
 
         await session.commitTransaction();
+
+    } catch (err) {
+        await session.abortTransaction();
 
     } finally {
         await session.endSession();

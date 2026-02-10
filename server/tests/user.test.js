@@ -129,7 +129,6 @@ describe("User API endpoints", () => {
             expect(response.body.user.email).toEqual("example@testmail.com");
             expect(response.body.user).not.toHaveProperty("password");
             expect(response.body.user).not.toHaveProperty("posts");
-            expect(response.body.user).not.toHaveProperty("friends");
         });
 
         test("should respond with 'unauthorized' error", async () => {

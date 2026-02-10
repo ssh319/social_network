@@ -1,8 +1,13 @@
+.main-auth-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 85vh;
+}
+
 .auth-window {
     position: relative;
-    margin: 0 auto;
     width: 30rem;
-    margin-top: 190px;
     border-radius: 15px;
     text-align: center;
     padding-bottom: 20px;

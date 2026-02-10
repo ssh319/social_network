@@ -21,10 +21,12 @@ class PostService extends BaseService {
     }
 
     async createPost(data) {
-        await this.api.post(
+        const response = await this.api.post(
             this.baseUrl,
             data
         );
+
+        return response.data.createdPost;
     }
 
     async deletePost(postId) {

@@ -3,9 +3,9 @@ import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 
 import User from '../models/userModel.js';
-// import Post from '../models/postModel.js';
-// import Chat from '../models/chatModel.js';
-// import Image from '../models/imageModel.js';
+import Post from '../models/postModel.js';
+import Chat from '../models/chatModel.js';
+import Image from '../models/imageModel.js';
 
 import {
     NoSuchResourceError,
@@ -73,8 +73,13 @@ export const getUser = async (userId) => {
 export const getAccountData = async (userId) => {
     const user = await User.findById(
         userId,
-        { password: 0, chats: 0, posts: 0, images: 0, friends: 0 }
-    );
+        { password: 0, chats: 0, posts: 0, images: 0 }
+    ).populate({
+        path: 'friends.user',
+        select: ['firstName', 'lastName', 'profilePicture']
+    }).populate({
+        path: 'images'
+    });
 
     if (!user) {
         throw new NoSuchResourceError("Such user doesn't exist", "userId");
@@ -188,24 +193,32 @@ export const updateUser = async (userId, data) => {
  */
 export const deleteUser = async (userId) => {
 
+    const user = await User.findById(userId);
+
+    if (!user) {
+        throw new NoSuchResourceError("No such user to delete", "userId");
+    }
+
     const session = await mongoose.startSession();
-    session.startTransaction();
-
+    
     try {
-        // await Post.deleteMany({ user: userId }, { session });
+        session.startTransaction();
 
-        // await Image.deleteMany({ user: userId }, { session });
-
-        // await Chat.deleteMany({
-        //     $or: [
-        //         { primaryUser: userId },
-        //         { secondaryUser: userId }
-        //     ]
-        // }, { session });
+        await Post.deleteMany({ user: userId }, { session });
+        await Image.deleteMany({ user: userId }, { session });
+        await Chat.deleteMany({
+            $or: [
+                { primaryUser: userId },
+                { secondaryUser: userId }
+            ]
+        }, { session });
 
         await User.findByIdAndDelete(userId, { session });
 
         await session.commitTransaction();
+
+    } catch (err) {
+        await session.abortTransaction();
 
     } finally {
         await session.endSession();
@@ -267,9 +280,10 @@ export const addFriend = async (userId, requestReceiverId) => {
     requestReceiver.friends.push({ user: userId, status: 'received' });
 
     const session = await mongoose.startSession();
-    session.startTransaction();
 
     try {
+        session.startTransaction();
+        
         await requestReceiver.save({ session });
 
         await User.findByIdAndUpdate(
@@ -279,6 +293,9 @@ export const addFriend = async (userId, requestReceiverId) => {
         );
 
         await session.commitTransaction();
+    
+    } catch (err) {
+        await session.abortTransaction();
 
     } finally {
         await session.endSession();
@@ -313,13 +330,17 @@ export const acceptFriend = async (userId, requestSenderId) => {
     requestSender.friends.set(sentRequestIndex, { user: userId, status: 'friend' });
 
     const session = await mongoose.startSession();
-    session.startTransaction();
-
+    
     try {
+        session.startTransaction();
+
         await user.save({ session });
         await requestSender.save({ session });
 
         await session.commitTransaction();
+
+    } catch (err) {
+        await session.abortTransaction();
 
     } finally {
         await session.endSession();
@@ -346,9 +367,10 @@ export const removeFriend = async (userId, friendId) => {
     user.friends.pull({ user: friendId });
 
     const session = await mongoose.startSession();
-    session.startTransaction();
-
+    
     try {
+        session.startTransaction();
+
         await user.save({ session });
         await User.findByIdAndUpdate(
             friendId, 
@@ -357,6 +379,9 @@ export const removeFriend = async (userId, friendId) => {
         );
 
         await session.commitTransaction();
+
+    } catch (err) {
+        await session.abortTransaction();
 
     } finally {
         await session.endSession();

@@ -25,7 +25,7 @@ export const validatePost = [
         .exists().withMessage("Text for post required").bail()
         .isString().withMessage("Invalid data type for post text").bail()
         .notEmpty().withMessage("Post text cannot be empty")
-        .isLength({ max: 500 }).withMessage("Post comment cannot be more than 500 characters in length"),
+        .isLength({ max: 3000 }).withMessage("Post comment cannot be more than 3000 characters in length"),
 
     // is array of ObjectId's
     body("images")
@@ -56,7 +56,7 @@ export const validateComment = [
         .exists().withMessage("Text for post comment required").bail()
         .isString().withMessage("Invalid data type for post comment text").bail()
         .notEmpty().withMessage("Empty comment text provided").bail()
-        .isLength({ max: 500 }).withMessage("Post comment cannot be more than 500 characters in length"),
+        .isLength({ max: 1000 }).withMessage("Post comment cannot be more than 1000 characters in length"),
 
     checkExact(),
 

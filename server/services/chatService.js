@@ -89,9 +89,10 @@ export const startChat = async (primaryUser, secondaryUser) => {
     }
 
     const session = await mongoose.startSession();
-    session.startTransaction();
-
+    
     try {
+        session.startTransaction();
+
         const { _id } = await Chat.create([{ primaryUser, secondaryUser }], { session });
 
         await User.findByIdAndUpdate(primaryUser, { $push: { chats: _id } }, { session });
@@ -103,6 +104,9 @@ export const startChat = async (primaryUser, secondaryUser) => {
             chat: _id,
             isNewChat: true
         };
+
+    } catch (err) {
+        await session.abortTransaction();
         
     } finally {
         await session.endSession();
@@ -117,9 +121,10 @@ export const startChat = async (primaryUser, secondaryUser) => {
  */
 export const deleteChat = async (chatId) => {
     const session = await mongoose.startSession();
-    session.startTransaction();
-
+    
     try {
+        session.startTransaction();
+
         const chat = await Chat.findByIdAndDelete(chatId, { session });
 
         await User.findByIdAndUpdate(chat.primaryUser, {
@@ -131,6 +136,9 @@ export const deleteChat = async (chatId) => {
         }, { session });
 
         await session.commitTransaction();
+
+    } catch (err) {
+        await session.abortTransaction();
 
     } finally {
         await session.endSession();

@@ -3,6 +3,10 @@ body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
+main {
+    padding-top: 40px;
+}
+
 .loader {
     width: 18px;
     height: 18px;
@@ -21,4 +25,13 @@ body {
     100% {
         transform: rotate(360deg);
     }
+}
+
+.error-container {
+    display: flex;
+    flex-direction: column;
+    height: 85vh;
+    justify-content: center;
+    align-items: center;
+    font-size: 28px;
 }
