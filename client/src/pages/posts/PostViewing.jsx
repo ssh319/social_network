@@ -5,7 +5,6 @@ import PostService from '@services/postService';
 // import { useAuth } from '@context/AuthContext';
 
 import './Posts.css';
-import '@styles/App.css';
 import { useCookies } from 'react-cookie';
 
 

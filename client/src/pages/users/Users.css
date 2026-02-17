@@ -1,9 +1,151 @@
 .main-userpage-container {
     display: flex;
     justify-content: center;
+    gap: 40px;
 }
 
-.profile-container {
+.userpage-content-container {
     display: flex;
     flex-direction: column;
+    flex: 0 0 46rem;
+    gap: 20px;
+}
+
+.userpage-account {
+    background-color: white;
+    border: 1px solid var(--bs-gray-400);
+    border-radius: 7px;
+    height: 300px;
+    display: flex;
+    flex-direction: column;
+}
+
+.userpage-account-info {
+    display: flex;
+    justify-content: space-between;
+    height: 180px;
+    border-bottom: 1px solid var(--bs-gray-400);
+    position: relative;
+    padding: 0 20px;
+    align-items: center;
+}
+
+.userpage-profile-btn {
+    background: none;
+    border: none;
+    font-size: 13px;
+    color: var(--bs-gray-600);
+    transition: color 0.2s ease;
+}
+
+.userpage-profile-btn.func-btn:hover {
+    color: var(--bs-blue);
+}
+
+.userpage-profile-btn.friend-btn:hover {
+    color: var(--bs-green);
+}
+
+.userpage-profile-btn.unfriend-btn:hover {
+    color: var(--bs-red);
+}
+
+.userpage-account-more {
+    display: flex;
+}
+
+.userpage-sidebar-container {
+    display: inline-flex;
+    flex-direction: column;
+    flex: 0 0 317px;
+    gap: 40px;
+}
+
+.userpage-sidebar-header {
+    font-weight: 600;
+    padding: 20px 20px 15px;
+}
+
+.userpage-sidebar-header > a {
+    text-decoration: none;
+    color: inherit;
+}
+
+.userpage-friends {
+    display: flex;
+    flex-direction: column;
+    background-color: white;
+    border: 1px solid var(--bs-gray-400);
+    border-radius: 7px;
+    height: 305px;
+}
+
+.userpage-friends-list {
+    display: flex;
+    flex-wrap: wrap;
+    list-style-type: none;
+    padding: 0;
+}
+
+.userpage-friends-list > li {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    height: 120px;
+    width: 105px;
+    transition: background 0.15s ease;
+}
+
+.userpage-friends-list > li:hover {
+    background-color: var(--bs-gray-100);
+}
+
+.userpage-friend-name {
+    position: relative;
+    top: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    display: flex;
+    flex-direction: column;
+    width: 70px;
+}
+
+.userpage-friend-name > span {
+    text-align: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.userpage-images {
+    display: flex;
+    flex-direction: column;
+    background-color: white;
+    border: 1px solid var(--bs-gray-400);
+    border-radius: 7px;
+    height: 520px;
+}
+
+.userpage-images-list {
+    padding: 0;
+    list-style-type: none;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.userpage-images-list > li > img {
+    margin: 5px;
+    cursor: pointer;
+    width: 128px;
+    height: 128px;
+    object-fit: cover;
+    transition: width 0.2s ease, height 0.2s ease, margin 0.2s ease;
+}
+
+.userpage-images-list > li > img:hover {
+    margin: 2px;
+    width: 134px;
+    height: 134px;
 }

@@ -1,8 +1,6 @@
 import { useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import 'bootstrap/dist/css/bootstrap.min.css';
 
-import '@styles/App.css';
 import ErrorFaceIcon from '@assets/icons/ErrorFaceIcon';
 
 

@@ -1,10 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Outlet, Link } from 'react-router-dom';
-import 'bootstrap/dist/css/bootstrap.min.css';
 
 import { useAuth } from '@context/AuthContext';
 
-import '@styles/App.css';
 import '@styles/Header.css';
 
 import testAvatar from '@assets/images/test-avatar.jpg';
@@ -21,6 +19,7 @@ import ListIcon from '@assets/icons/ListIcon';
 const Header = () => {
     const { loadUser, user, isLoaded, logout } = useAuth();
 
+    const dropdownRef = useRef(null);
     const [ dropdownActive, setDropdownActive ] = useState(false);
 
     useEffect(() => {
@@ -29,21 +28,19 @@ const Header = () => {
 
     useEffect(() => {
         if (!isLoaded) return;
-
-        const dropdown = document.getElementById("dropdown");
         
         if (!dropdownActive) {
-            dropdown.classList.remove("show");
+            dropdownRef.current.classList.remove("show");
             return;
         }
 
         const handleClick = (e) => {
-            if (!dropdown.contains(e.target)) {
+            if (!dropdownRef.current.contains(e.target)) {
                 setDropdownActive(false);
             }
         }
 
-        dropdown.classList.add("show");
+        dropdownRef.current.classList.add("show");
 
         document.addEventListener("click", handleClick);
 
@@ -66,27 +63,27 @@ const Header = () => {
                     <LogoIcon />
                 </Link>
                 <div className='header-navbar'>
-                    <ul className='header-navbar-links'>
-                        <li>
-                            <Link to='/'><ListIcon color='var(--bs-gray-600)' /></Link>
-                            <span className='tooltip'>Feed</span>
-                        </li>
-                        <li>
-                            <Link to='/users/friends'><UserIcon color='var(--bs-gray-600)' /></Link>
-                            <span className='tooltip'>Friends</span>
-                        </li>
-                        <li>
-                            <Link to='/chats'><ChatsIcon color='var(--bs-gray-600)' /></Link>
-                            <span className='tooltip'>Chats</span>
-                        </li>
-                        <li>
-                            <Link to='/images'><PhotoIcon color='var(--bs-gray-600)' /></Link>
-                            <span className='tooltip'>Images</span>
-                        </li>
-                    </ul>
-                    
                     {isLoaded ?
                         <>
+                            <ul className='header-navbar-links'>
+                                <li>
+                                    <Link to='/'><ListIcon color='var(--bs-gray-600)' /></Link>
+                                    <span className='tooltip'>Feed</span>
+                                </li>
+                                <li>
+                                    <Link to='/users/friends'><UserIcon color='var(--bs-gray-600)' /></Link>
+                                    <span className='tooltip'>Friends</span>
+                                </li>
+                                <li>
+                                    <Link to='/chats'><ChatsIcon color='var(--bs-gray-600)' /></Link>
+                                    <span className='tooltip'>Chats</span>
+                                </li>
+                                <li>
+                                    <Link to={`/users/${user._id}/images`}><PhotoIcon color='var(--bs-gray-600)' /></Link>
+                                    <span className='tooltip'>Images</span>
+                                </li>
+                            </ul>
+                    
                             <div className='dropdown-button' onClick={toggleDropdown}>
                                 <img
                                     className='header-avatar'
@@ -96,7 +93,7 @@ const Header = () => {
                                 <ChevronDownIcon style={{ position: 'relative', top: '1px' }} />
                             </div>
 
-                            <div id='dropdown' className='dropdown'>
+                            <div className='dropdown' ref={dropdownRef}>
                                 <div className='dropdown-header'>
                                     <img
                                         style={{ borderRadius: '50%', margin: '0 auto' }}
@@ -108,14 +105,14 @@ const Header = () => {
                                     <span style={{ color: 'var(--bs-body-color)', margin: '10px auto' }}>
                                         {user.firstName} {user.lastName}
                                     </span>
-                                    <Link to={`/users/${user._id}`}>
+                                    <Link to={`/users/${user._id}`} onClick={ () => { setDropdownActive(false) } }>
                                         <button type='button' className='btn btn-outline-primary dropdown-profile-btn'>
                                             View profile
                                         </button>
                                     </Link>
                                 </div>
 
-                                <Link to='/account' style={{ display: 'flex', alignItems: 'center' }}>
+                                <Link to='/account' onClick={ () => { setDropdownActive(false) } } style={{ display: 'flex', alignItems: 'center' }}>
                                     <SettingsIcon />
                                     <span style={{ position: 'relative', left: '5px', fontWeight: '400' }}>Manage account</span>
                                 </Link>

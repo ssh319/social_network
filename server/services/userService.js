@@ -19,7 +19,7 @@ import {
  * Find users by parameters.
  * 
  * @param {Object} query Search parameters.
- * @returns {Promise<Array>} List of matching users.
+ * @returns {Promise<Array<Object>>} List of matching users.
  * 
  * @todo Implement.
  */
@@ -30,6 +30,72 @@ export const searchUsers = async (query) => {
         // ???
         { limit: 10 }
     );
+
+    return result;
+}
+
+
+/**
+ * Find users with most mutual friends count who are not in friends list yet.
+ * 
+ * @param {String} userId `ObjectId` of a user to find suggestions for.
+ * @param {Array<String>} friends List of users' `ObjectId`s which are already in friends list.
+ * @returns {Promise<Array<Object>>} List of suggested users ordered by descending mutual friends number.
+ */
+export const getSuggestedUsers = async (userId) => {
+
+    const userObjectId = new mongoose.Types.ObjectId(userId);
+
+    const friendsData = await User.findById(userId)
+        .select("friends")
+        .lean();
+
+    const friends = friendsData.friends
+        .filter(friend => friend.status === "friend")
+        .map(friend => friend.user);
+
+    const result = await User.aggregate([
+        { $match: {
+            _id: { $ne: userObjectId },
+            friends: { $not: { $elemMatch: { user: userObjectId, status: "friend" } } }
+        }},
+
+        { $addFields: {
+            mutualFriendsCount: {
+                $size: {
+                    $setIntersection: [
+                        {
+                            $map: {
+                                input: {
+                                    $filter: {
+                                        input: "$friends",
+                                        as: "f",
+                                        cond: { $eq: ["$$f.status", "friend"] }
+                                    }
+                                },
+                                as: "filteredFriend",
+                                in: "$$filteredFriend.user"
+                            }
+                        },
+                        friends
+                    ]
+                }
+            }
+        } },
+
+        { $match: { mutualFriendsCount: { $gt: 0 } } },
+
+        { $sort: { mutualFriendsCount: -1 } },
+
+        { $limit: 6 },
+
+        { $project: {
+            firstName: 1,
+            lastName: 1,
+            profilePicture: 1,
+            mutualFriendsCount: 1
+        } }
+    ]);
 
     return result;
 }
@@ -50,9 +116,11 @@ export const getUser = async (userId) => {
         path: 'friends.user',
         select: ['firstName', 'lastName', 'profilePicture']
     }).populate({
-        path: 'posts'
+        path: 'posts',
+        options: { sort: { timestamp: -1 } }
     }).populate({
-        path: 'images'
+        path: 'images',
+        options: { sort: { timestamp: -1 } }
     });
 
     if (!user) {
@@ -73,13 +141,16 @@ export const getUser = async (userId) => {
 export const getAccountData = async (userId) => {
     const user = await User.findById(
         userId,
-        { password: 0, chats: 0, posts: 0, images: 0 }
+        { password: 0 }
     ).populate({
         path: 'friends.user',
         select: ['firstName', 'lastName', 'profilePicture']
     }).populate({
         path: 'images'
     });
+    // .populate({
+    //     path: 'chats'
+    // });
 
     if (!user) {
         throw new NoSuchResourceError("Such user doesn't exist", "userId");
@@ -223,16 +294,6 @@ export const deleteUser = async (userId) => {
     } finally {
         await session.endSession();
     }
-}
-
-
-/**
- * 
- * @param {String} userId `ObjectId` of a current user.
- */
-export const updateOnline = async (userId) => {
-    // Date.now()
-    await User.findByIdAndUpdate(userId, { lastActive: new Date() });
 }
 
 

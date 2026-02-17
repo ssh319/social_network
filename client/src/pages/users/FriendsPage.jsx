@@ -5,7 +5,6 @@ import { useCookies } from 'react-cookie';
 import { useAuth } from '@context/AuthContext';
 import UserService from '@services/userService';
 
-import '@styles/App.css';
 import './Users.css';
 
 

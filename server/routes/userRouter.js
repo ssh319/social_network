@@ -17,6 +17,7 @@ const router = Router();
 router.param('userId', validateUserId);
 
 router.get("/", authenticate, validateSearchQuery, controller.searchUsers);
+router.get("/suggestions", authenticate, controller.getSuggestedUsers);
 router.get("/account", authenticate, controller.getAccountData);
 router.get("/:userId", authenticate, controller.getUser);
 
@@ -25,8 +26,6 @@ router.post("/login", validateUserAuth, controller.authenticateUser);
 
 router.patch("/account", authenticate, validateUserData, controller.updateUser);
 router.delete("/account", authenticate, controller.deleteUser);
-
-router.patch("/update_online", authenticate, controller.updateOnline);
 
 router.post("/friends/:userId", authenticate, controller.addFriend);
 router.patch("/friends/:userId", authenticate, controller.acceptFriend);

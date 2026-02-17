@@ -1,9 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useCookies } from 'react-cookie';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import 'bootstrap/dist/css/bootstrap.min.css';
 
-import '@styles/App.css';
 import './Auth.css';
 
 import UserService from '@services/userService';
@@ -102,7 +100,7 @@ const SignupPage = () => {
                             />
 
                             <button type='button' className='eye-icon' onClick={togglePasswordVisibility}>
-                                {passwordVisibility ? <EyeSlashIcon /> : <EyeFillIcon />}
+                                {passwordVisibility ? <EyeSlashIcon color='black' /> : <EyeFillIcon color='black' />}
                             </button>
 
                             {errors.password &&
@@ -123,7 +121,7 @@ const SignupPage = () => {
                             />
 
                             <button type='button' className='eye-icon' onClick={togglePasswordVisibility}>
-                                {passwordVisibility ? <EyeSlashIcon /> : <EyeFillIcon />}
+                                {passwordVisibility ? <EyeSlashIcon color='black' /> : <EyeFillIcon color='black' />}
                             </button>
 
                             {errors.confirmPassword &&

@@ -1,5 +1,3 @@
-import '@styles/App.css';
-
 import { useAuth } from '@context/AuthContext';
 
 
@@ -8,7 +6,9 @@ const AccountManagementPage = () => {
 
 
     return (
-        <h1>{user.firstName} {user.lastName} account</h1>
+        <main>
+            <h1>{user.firstName} {user.lastName} account management</h1>
+        </main>
     );
 }
 

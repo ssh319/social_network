@@ -1,9 +1,8 @@
 .header {
     display: flex;
     background-color: white;
-    position: relative;
     border-bottom: 1px solid var(--bs-gray-400);
-    height: 56px;
+    height: var(--header-height);
     align-items: center;
     justify-content: space-between;
 }

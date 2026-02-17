@@ -5,7 +5,6 @@ import { useCookies } from 'react-cookie';
 import PostService from '@services/postService';
 import { useAuth } from '@context/AuthContext';
 
-import '@styles/App.css';
 import '@styles/Feed.css';
 
 import testAvatar from '@assets/images/test-avatar.jpg';
@@ -57,12 +56,6 @@ const Feed = ({ posts, isLoaded }) => {
     }
 
     const deletePost = async (postId) => {
-        const deleteButtons = document.getElementsByClassName('trash-icon');
-
-        for (const btn of deleteButtons) {
-            btn.disabled = true;
-        }
-
         setFeedLoaded(false);
 
         const service = new PostService(cookies.token);
@@ -90,7 +83,7 @@ const Feed = ({ posts, isLoaded }) => {
                                     <div style={{ display: 'flex' }}>
                                         <div style={{ padding: '5px' }}>
                                             <Link to={`/users/${post.user._id}`}>
-                                                <img className='avatar' alt="test avatar" width="40" height="40" src={testAvatar} />
+                                                <img className='feed-avatar' alt='test avatar' src={testAvatar} />
                                             </Link>
                                         </div>
                                         <div className='post-info'>
@@ -104,6 +97,7 @@ const Feed = ({ posts, isLoaded }) => {
                                         <button
                                             className='trash-icon'
                                             onClick={() => { deletePost(post._id) }}
+                                            disabled={!feedLoaded}
                                         >
                                             <TrashIcon />
                                         </button>
@@ -131,7 +125,15 @@ const Feed = ({ posts, isLoaded }) => {
                     }
                 </> :
                 <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '60vh' }}>
-                    <span className="loader" style={{ width: '32px', height: '32px', borderWidth: '3px', animationDuration: '1.3s' }}/>
+                    <span
+                        className="loader"
+                        style={{
+                            width: '32px',
+                            height: '32px',
+                            borderWidth: '3px',
+                            animationDuration: '1.3s'
+                        }}
+                    />
                 </div>
             }
         </div>

@@ -1,6 +1,8 @@
 const SearchUsersPage = () => {
     return (
-        <h2>Search users</h2>
+        <main>
+            <h2>Search users</h2>
+        </main>
     );
 }
 

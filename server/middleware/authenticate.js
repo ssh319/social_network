@@ -22,6 +22,11 @@ const authenticate = async (request, response, next) => {
 
             request.user = { _id };
 
+            if (Date.now() - user.lastActive > 60 * 1000) {
+                user.lastActive = new Date();
+                await user.save();
+            }
+
             next();
 
         } catch (err) {

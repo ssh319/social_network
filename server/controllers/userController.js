@@ -23,6 +23,22 @@ export const searchUsers = async (request, response, next) => {
 }
 
 
+export const getSuggestedUsers = async (request, response, next) => {
+    try {
+        const users = await service.getSuggestedUsers(request.user._id);
+        response.json({ users });
+        
+    } catch (err) {
+        if (err instanceof ClientError) {
+            response.status(err.statusCode).json({ errors: { [err.path]: err.msg } });
+
+        } else {
+            next(err);
+        }
+    }
+}
+
+
 export const getUser = async (request, response, next) => {
     try {
         const user = await service.getUser(request.params.userId);
@@ -108,22 +124,6 @@ export const updateUser = async (request, response, next) => {
 export const deleteUser = async (request, response, next) => {    
     try {
         await service.deleteUser(request.user._id);
-        response.sendStatus(200);
-
-    } catch (err) {
-        if (err instanceof ClientError) {
-            response.status(err.statusCode).json({ errors: { [err.path]: err.msg } });
-
-        } else {
-            next(err);
-        }
-    }
-}
-
-
-export const updateOnline = async (request, response, next) => {
-    try {
-        await service.updateOnline(request.user._id);
         response.sendStatus(200);
 
     } catch (err) {

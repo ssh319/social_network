@@ -429,26 +429,6 @@ describe("User API endpoints", () => {
     });
 
 
-    describe("updateOnline", () => {
-
-        test("should set lastActive value to a new date", async () => {
-            const beforeUpdateUser = await User.findById(exampleUserId);
-
-            const response = await request(app)
-                .patch('/users/update_online')
-                .set('Authorization', `Bearer ${userToken}`);
-
-            expect(response.status).toEqual(200);
-
-            const afterUpdateUser = await User.findById(exampleUserId);
-
-            expect(afterUpdateUser.lastActive).toBeInstanceOf(Date);
-            expect(afterUpdateUser.lastActive > beforeUpdateUser.lastActive).toBeTruthy();
-        });
-
-    });
-
-
     describe("addFriend", () => {
 
         test("should add users' ids to each other's 'friends' array", async () => {

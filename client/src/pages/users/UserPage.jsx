@@ -7,10 +7,14 @@ import FriendService from '@services/friendService';
 import { useAuth } from '@context/AuthContext';
 
 import Feed from '@components/Feed';
-import '@styles/App.css';
 import './Users.css';
 
 import testAvatar from '@assets/images/test-avatar.jpg';
+import testImage from '@assets/images/test-image.jpg';
+import CircleIcon from '@assets/icons/CircleIcon';
+import EditIcon from '@assets/icons/EditIcon';
+import UserPlusIcon from '@assets/icons/UserPlusIcon';
+import UserMinusIcon from '@assets/icons/UsersMinusIcon';
 
 
 const UserPage = () => {
@@ -33,11 +37,17 @@ const UserPage = () => {
                 document.title = `${profile.firstName} ${profile.lastName}`;
 
                 profile.posts = profile.posts.map(post => {
-                    post.user = profile;
+                    post.user = {
+                        _id: post.user,
+                        firstName: profile.firstName,
+                        lastName: profile.lastName,
+                        profilePicture: profile.profilePicture
+                    };
+
                     post.liked = post.likes.includes(user._id);
 
                     return post;
-                }).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+                });
 
                 setUserProfile(profile);
                 setUserLoaded(true);
@@ -52,7 +62,7 @@ const UserPage = () => {
                 console.error(err);
             }
         }
-        
+
         loadProfile(params.userId);
 
     }, [cookies.token, params.userId, user._id, user.friends]);
@@ -97,44 +107,135 @@ const UserPage = () => {
         <main>
             <div className='main-userpage-container'>
                 {userLoaded ?
-                    <div className='profile-container'>
-                        {userProfile._id === user._id &&
-                            <div>
-                                <Link to='/account'>Manage</Link>
-                            </div>
-                        }
+                    <>
+                        <div className='userpage-content-container'>
+                            <div className='userpage-account'>
+                                <div className='userpage-account-info'>
+                                    <div style={{ display: 'flex', alignItems: 'center' }}>
+                                        <img
+                                            alt={`${userProfile.firstName} ${userProfile.lastName}`}
+                                            width='108'
+                                            height='108'
+                                            src={testAvatar}
+                                            style={{ borderRadius: '50%' }}
+                                        />
+                                        <div style={{
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                            gap: '7px',
+                                            position: 'relative',
+                                            left: '12px'
+                                        }}>
+                                            <span style={{ fontWeight: '600' }}>{userProfile.firstName} {userProfile.lastName}</span>
 
-                        {userProfile._id !== user._id &&
-                            <div>
-                                {!friendStatus &&
-                                    <button type='button' className='btn btn-outline-primary' onClick={addFriend}>Add friend</button>
-                                }
-                                {friendStatus === 'sent' &&
-                                    <button type='button' className='btn btn-outline-danger' onClick={removeFriend}>Cancel request</button>
-                                }
-                                {friendStatus === 'received' &&
-                                    <>
-                                        <button type='button' className='btn btn-outline-success' onClick={acceptFriend}>Accept request</button>
-                                        <button type='button' className='btn btn-outline-danger' onClick={removeFriend}>Decline request</button>
-                                    </>
-                                }
-                                {friendStatus === 'friend' &&
-                                    <button type='button' className='btn btn-outline-danger' onClick={removeFriend}>Delete friend</button>
-                                }
-                            </div>
-                        }
+                                            <div style={{ color: 'var(--bs-gray-600)', fontSize: '12px' }}>
+                                                {Date.now() - new Date(userProfile.lastActive) > 1000 * 60 * 3 ?
+                                                    `Last active: ${new Date(userProfile.lastActive).toLocaleString()}` :
+                                                    <span><CircleIcon color='green' /> Online</span>
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
 
-                        <span>{userProfile.firstName} {userProfile.lastName}</span>
-                        {user._id !== userProfile._id ?
-                            <Link to={`/users/${userProfile._id}/friends`}>Friends</Link> :
-                            <Link to='/users/friends'>Friends</Link>
-                        }
-                        <img alt={`${userProfile.firstName} ${userProfile.lastName}`} width="130" height="130" src={testAvatar} />
-                        <span>Last active: {new Date(userProfile.lastActive).toLocaleString()}</span>
-                    </div> :
-                    <span className='loader' />
+                                    {userProfile._id === user._id ?
+                                        <Link to='/account'>
+                                            <div className='userpage-profile-btn func-btn'><EditIcon /></div>
+                                        </Link> :
+                                        <div>
+                                            {!friendStatus &&
+                                                <button type='button' className='userpage-profile-btn friend-btn' onClick={addFriend}>
+                                                    <UserPlusIcon /> Add friend
+                                                </button>
+                                            }
+
+                                            {friendStatus === 'sent' &&
+                                                <button type='button' className='userpage-profile-btn unfriend-btn' onClick={removeFriend}>
+                                                    <UserMinusIcon /> Cancel request
+                                                </button>
+                                            }
+
+                                            {friendStatus === 'received' &&
+                                                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                                                    <button type='button' className='userpage-profile-btn friend-btn' onClick={acceptFriend}>
+                                                        <UserPlusIcon /> Accept request
+                                                    </button>
+
+                                                    <button type='button' className='userpage-profile-btn unfriend-btn' onClick={removeFriend}>
+                                                        <UserMinusIcon /> Decline request
+                                                    </button>
+                                                </div>
+                                            }
+
+                                            {friendStatus === 'friend' &&
+                                                <button type='button' className='userpage-profile-btn unfriend-btn' onClick={removeFriend}>
+                                                    <UserMinusIcon /> Delete friend
+                                                </button>
+                                            }
+                                            
+                                        </div>
+                                    }
+                                </div>
+                                <div className='userpage-account-more'>
+                                    <span>info</span>
+                                </div>
+                            </div>
+                            <Feed posts={userProfile?.posts} isLoaded={userLoaded} />
+                        </div>
+
+                        <div className='userpage-sidebar-container'>
+                            <div className='userpage-friends'>
+                                <div className='userpage-sidebar-header'>
+                                    <Link
+                                        to={user._id !== userProfile._id ?
+                                            `/users/${userProfile._id}/friends` :
+                                            '/users/friends'
+                                        }
+                                    >
+                                        <span>Friends</span>
+                                        <span style={{ color: 'var(--bs-gray-600)', position: 'relative', left: '9px' }}>
+                                            {userProfile.friends.length}
+                                        </span>
+                                    </Link>
+                                </div>
+                                <ul className='userpage-friends-list'>
+                                    {userProfile.friends.slice(0, 6).map(friend => (
+                                        <li key={friend.user._id}>
+                                            <Link to={`/users/${friend.user._id}`} style={{ all: 'inherit' }}>
+                                                <img
+                                                    alt='user'
+                                                    src={testAvatar}
+                                                    width='38'
+                                                    height='38'
+                                                    style={{ borderRadius: '50%' }}
+                                                />
+                                                <div className='userpage-friend-name'>
+                                                    <span>{friend.user.firstName}</span>
+                                                    <span>{friend.user.lastName}</span>
+                                                </div>
+                                            </Link>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                            <div className='userpage-images'>
+                                <div className='userpage-sidebar-header'>
+                                    <Link to={`/users/${userProfile._id}/images`}>Images</Link>
+                                </div>
+                                <ul className='userpage-images-list'>
+                                    {[1, 2, 3, 4, 5, 6].map(img => (
+                                        <li key={img}>
+                                            <img alt='example' src={testImage} />
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        </div>
+                    </> :
+                    <span
+                        className='loader'
+                        style={{ width: '32px', height: '32px', borderWidth: '3px', animationDuration: '1.3s' }}
+                    />
                 }
-                <Feed posts={userProfile?.posts} isLoaded={userLoaded} />
             </div>
         </main>
     );

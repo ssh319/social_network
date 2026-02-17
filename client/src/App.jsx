@@ -1,5 +1,8 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
 
+import 'bootstrap/dist/css/bootstrap.min.css';
+import '@styles/App.css';
+
 import SignupPage from '@pages/auth/SignupPage';
 import LoginPage from '@pages/auth/LoginPage';
 import HomePage from '@pages/posts/HomePage';

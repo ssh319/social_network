@@ -14,6 +14,14 @@ class UserService extends BaseService {
         return response.data.users;
     }
 
+    async getSuggestedUsers() {
+        const response = await this.api.get(
+            `${this.baseUrl}/suggestions`
+        );
+
+        return response.data.users;
+    }
+
     async getUser(userId) {
         const response = await this.api.get(
             `${this.baseUrl}/${userId}`,
