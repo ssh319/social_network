@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 
 import PostService from '@services/postService';
 // import { useAuth } from '@context/AuthContext';
@@ -15,6 +15,7 @@ const PostViewing = () => {
     }, []);
 
     const params = useParams();
+    const navigate = useNavigate();
     const [ cookies ] = useCookies(["token"]);
 
     const [ post, setPost ] = useState(null);
@@ -33,13 +34,17 @@ const PostViewing = () => {
                 setPostLoaded(true);
     
             } catch (err) {
-                console.error(err);
+                if (err.response?.status < 500) {
+                    navigate('/not-found');
+                } else {
+                    console.error(err);
+                }
             }
         }
 
         fetchPost(params.postId);
         
-    }, [cookies.token, params.postId]);
+    }, [cookies.token, params.postId, navigate]);
 
     return (
         <main>

@@ -46,7 +46,15 @@ export const retrieveChats = async (userId) => {
  * @returns {Promise<Object>} Chat info including all of its messages.
  */
 export const getChat = async (chatId) => {
-    const chat = await Chat.findById(chatId);
+    const chat = await Chat.findById(
+        chatId
+    ).populate({
+        path: 'primaryUser',
+        select: ['firstName', 'lastName', 'profilePicture']
+    }).populate({
+        path: 'secondaryUser',
+        select: ['firstName', 'lastName', 'profilePicture']
+    });
 
     return chat;
 }
@@ -59,7 +67,7 @@ export const getChat = async (chatId) => {
  * @param {String} secondaryUser `ObjectId` of a user which to start chat with.
  * @returns {Promise<String>} `ObjectId` of an existing or created chat.
  */
-export const startChat = async (primaryUser, secondaryUser) => {
+export const getOrCreateChat = async (primaryUser, secondaryUser) => {
 
     const existingChat = await Chat.findOne({
         $or: [
@@ -93,15 +101,15 @@ export const startChat = async (primaryUser, secondaryUser) => {
     try {
         session.startTransaction();
 
-        const { _id } = await Chat.create([{ primaryUser, secondaryUser }], { session });
+        const [ chat ] = await Chat.create([{ primaryUser, secondaryUser }], { session });
 
-        await User.findByIdAndUpdate(primaryUser, { $push: { chats: _id } }, { session });
-        await User.findByIdAndUpdate(secondaryUser, { $push: { chats: _id } }, { session });
+        await User.findByIdAndUpdate(primaryUser, { $push: { chats: chat._id } }, { session });
+        await User.findByIdAndUpdate(secondaryUser, { $push: { chats: chat._id } }, { session });
         
         await session.commitTransaction();
 
         return {
-            chat: _id,
+            chat: chat._id,
             isNewChat: true
         };
 
@@ -154,14 +162,20 @@ export const deleteChat = async (chatId) => {
  * @param {String} text Validated message text.
  */
 export const sendMessage = async (userId, chatId, text) => {
-    await Chat.findByIdAndUpdate(chatId, {
-        $push: {
-            messages: {
-                user: userId,
-                text
-            }
-        }
-    });
+    const chat = await Chat.findById(chatId);
+
+    const message = chat.messages.create({
+        user: userId,
+        text
+    })
+
+    chat.messages.push(message);
+
+    await chat.save();
+
+    message.receiverId = chat.primaryUser.equals(userId) ? chat.secondaryUser : chat.primaryUser;
+
+    return message;
 }
 
 

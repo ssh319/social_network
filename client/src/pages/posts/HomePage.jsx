@@ -65,7 +65,7 @@ const HomePage = () => {
 
             setSuggestedUsers(fetchedUsers.map(suggestedUser => {
                 suggestedUser.status = user.friends.find(
-                    friend => friend.user._id === suggestedUser._id
+                    friend => friend.user === suggestedUser._id
                 )?.status || null;
 
                 return suggestedUser;
@@ -182,16 +182,16 @@ const HomePage = () => {
                     <div className='sidenav-content'>
                         <div className='sidenav-summary'>
                             <p>
-                                <strong>{user.posts.length}</strong>
+                                <strong>{user.stats.postsCount}</strong>
                                 <span>Posts</span>
                             </p>
                             <p style={{ borderInline: '1px solid var(--bs-gray-400)' }}>
-                                <strong>{user.friends.filter(f => f.status === "friend").length}</strong>
+                                <strong>{user.stats.friendsCount}</strong>
                                 <span>Friends</span>
                             </p>
                             <p>
-                                <strong>{user.images.length}</strong>
-                                <span>Photos</span>
+                                <strong>{user.stats.imagesCount}</strong>
+                                <span>Images</span>
                             </p>
                         </div>
                     </div>

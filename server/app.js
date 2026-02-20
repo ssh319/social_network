@@ -1,5 +1,6 @@
 import express from 'express';
 import bodyParser from 'body-parser';
+import cors from 'cors';
 
 import corsConfig from './config/cors.js';
 
@@ -14,7 +15,7 @@ import imageRouter from './routes/imageRouter.js';
 const app = express();
 
 // CORS conf. to server.js
-app.use(corsConfig);
+app.use(cors(corsConfig));
 
 app.use(bodyParser.json());
 

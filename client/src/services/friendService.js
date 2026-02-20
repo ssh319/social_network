@@ -4,6 +4,14 @@ import BaseService from "./baseService";
 class FriendService extends BaseService {
     baseUrl = '/users/friends';
 
+    async getFriendsList(userId) {
+        const response = await this.api.get(
+            `${this.baseUrl}/${userId}`
+        );
+
+        return response.data;
+    }
+
     async addFriend(userId) {
         await this.api.post(
             `${this.baseUrl}/${userId}`

@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useCookies } from 'react-cookie';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams, useNavigate } from 'react-router-dom';
 
 import UserService from '@services/userService';
 import FriendService from '@services/friendService';
+import ChatService from '@services/chatService';
 import { useAuth } from '@context/AuthContext';
 
 import Feed from '@components/Feed';
@@ -15,18 +16,46 @@ import CircleIcon from '@assets/icons/CircleIcon';
 import EditIcon from '@assets/icons/EditIcon';
 import UserPlusIcon from '@assets/icons/UserPlusIcon';
 import UserMinusIcon from '@assets/icons/UsersMinusIcon';
+import ChatsIcon from '@assets/icons/ChatsIcon';
+import ChevronDownIcon from '@assets/icons/ChevronDownIcon';
 
 
 const UserPage = () => {
 
     const [ cookies ] = useCookies(["token"]);
     const params = useParams();
+    const navigate = useNavigate();
 
     const [ userProfile, setUserProfile ] = useState(null);
     const [ userLoaded, setUserLoaded ] = useState(false);
     const [ friendStatus, setFriendStatus ] = useState(null);
+    
+    const profileAboutRef = useRef(null);
 
     const { user } = useAuth();
+
+    const formatDate = (value) => {
+        if (!value) return;
+
+        const monthsList = [
+            "January",
+            "February",
+            "March",
+            "April",
+            "May",
+            "June",
+            "July",
+            "August",
+            "September",
+            "October",
+            "November",
+            "December"
+        ]
+
+        const date = new Date(value);
+        
+        return `${date.getDate()} ${monthsList[date.getMonth()]} ${date.getFullYear()}`
+    }
 
     useEffect(() => {
         const loadProfile = async (userId) => {
@@ -54,18 +83,23 @@ const UserPage = () => {
 
                 setFriendStatus(
                     user.friends.find(friend => (
-                        friend.user._id === profile._id
+                        friend.user === profile._id
                     ))?.status || null
                 );
 
             } catch (err) {
-                console.error(err);
+                if (err.response?.status < 500) {
+                    navigate('/not-found');
+
+                } else {
+                    console.error(err);
+                }
             }
         }
 
         loadProfile(params.userId);
 
-    }, [cookies.token, params.userId, user._id, user.friends]);
+    }, [cookies.token, params.userId, user._id, user.friends, user.chats, navigate]);
 
     const addFriend = async () => {
         const service = new FriendService(cookies.token);
@@ -103,6 +137,18 @@ const UserPage = () => {
         }
     }
 
+    const startChat = async () => {
+        try {
+            const service = new ChatService(cookies.token);
+
+            const chat = await service.getOrCreateChat(userProfile._id);
+            navigate(`/chats/${chat}`);
+
+        } catch (err) {
+            console.error(err);
+        }
+    }
+
     return (
         <main>
             <div className='main-userpage-container'>
@@ -119,6 +165,7 @@ const UserPage = () => {
                                             src={testAvatar}
                                             style={{ borderRadius: '50%' }}
                                         />
+
                                         <div style={{
                                             display: 'flex',
                                             flexDirection: 'column',
@@ -130,7 +177,7 @@ const UserPage = () => {
 
                                             <div style={{ color: 'var(--bs-gray-600)', fontSize: '12px' }}>
                                                 {Date.now() - new Date(userProfile.lastActive) > 1000 * 60 * 3 ?
-                                                    `Last active: ${new Date(userProfile.lastActive).toLocaleString()}` :
+                                                    `Last active: ${formatDate(userProfile.lastActive)}, ${new Date(userProfile.lastActive).toLocaleTimeString()}` :
                                                     <span><CircleIcon color='green' /> Online</span>
                                                 }
                                             </div>
@@ -139,9 +186,16 @@ const UserPage = () => {
 
                                     {userProfile._id === user._id ?
                                         <Link to='/account'>
-                                            <div className='userpage-profile-btn func-btn'><EditIcon /></div>
+                                            <button className='userpage-profile-btn func-btn'><EditIcon /> Edit profile</button>
                                         </Link> :
-                                        <div>
+                                        <div className='userpage-options'>
+                                            <button
+                                                type='button'
+                                                className='userpage-profile-btn func-btn'
+                                                onClick={startChat}
+                                            >
+                                                <ChatsIcon /> Message
+                                            </button>
                                             {!friendStatus &&
                                                 <button type='button' className='userpage-profile-btn friend-btn' onClick={addFriend}>
                                                     <UserPlusIcon /> Add friend
@@ -155,7 +209,7 @@ const UserPage = () => {
                                             }
 
                                             {friendStatus === 'received' &&
-                                                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                                                <>
                                                     <button type='button' className='userpage-profile-btn friend-btn' onClick={acceptFriend}>
                                                         <UserPlusIcon /> Accept request
                                                     </button>
@@ -163,7 +217,7 @@ const UserPage = () => {
                                                     <button type='button' className='userpage-profile-btn unfriend-btn' onClick={removeFriend}>
                                                         <UserMinusIcon /> Decline request
                                                     </button>
-                                                </div>
+                                                </>
                                             }
 
                                             {friendStatus === 'friend' &&
@@ -171,12 +225,31 @@ const UserPage = () => {
                                                     <UserMinusIcon /> Delete friend
                                                 </button>
                                             }
-                                            
+
                                         </div>
                                     }
                                 </div>
-                                <div className='userpage-account-more'>
-                                    <span>info</span>
+                                <div ref={profileAboutRef} className='userpage-account-more'>
+                                    <span><strong>Status:</strong> {userProfile.publicStatus || 'None'}</span>
+                                    <div id='userpage-additional-info'>
+                                        <span><strong>Country:</strong> {userProfile.country || 'Not specified'}</span>
+                                        <span><strong>City:</strong> {userProfile.city || 'Not specified'}</span>
+                                        <span><strong>Date of Bitrh:</strong> {formatDate(userProfile.birthDate) || 'Not specified'}</span>
+                                        <span><strong>About:</strong> {userProfile.aboutMe || 'None'}</span>
+                                    </div>
+                                    <button
+                                        type='button'
+                                        className='userpage-profile-btn func-btn'
+                                        style={{
+                                            fontSize: '13px',
+                                            position: 'absolute',
+                                            bottom: '10px',
+                                            transform: 'translateX(-50%)',
+                                            left: '50%'
+                                        }}
+                                        onClick={() => { profileAboutRef.current.classList.toggle('expanded') }}
+                                    >Expand <ChevronDownIcon style={{ position: 'relative', bottom: '0.5px' }} />
+                                    </button>
                                 </div>
                             </div>
                             <Feed posts={userProfile?.posts} isLoaded={userLoaded} />

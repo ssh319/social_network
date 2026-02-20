@@ -24,7 +24,7 @@ router.param('userId', validateUserId);
 router.get("/", controller.retrieveChats);
 router.get("/:chatId", controller.getChat);
 
-router.post("/:userId", controller.startChat);
+router.post("/:userId", controller.getOrCreateChat);
 router.delete("/:chatId", controller.deleteChat);
 
 router.post("/:chatId/messages", validateMessage, controller.sendMessage);

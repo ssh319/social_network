@@ -1,4 +1,9 @@
+// import { useEffect } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
+// import { useCookies } from 'react-cookie';
+
+// import socket from './socket';
+// import { useAuth } from '@context/AuthContext';
 
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '@styles/App.css';
@@ -15,6 +20,7 @@ import NotFoundPage from '@pages/NotFoundPage';
 import ErrorPage from '@pages/ErrorPage';
 import ProtectedRoute from '@context/ProtectedRoute';
 import PostViewing from '@pages/posts/PostViewing';
+import ChatsPage from '@pages/chats/ChatsPage';
 
 
 const App = () => (
@@ -26,13 +32,16 @@ const App = () => (
             <Route index element={<ProtectedRoute><HomePage /></ProtectedRoute>} />
             <Route path="users">
                 <Route index element={<ProtectedRoute><SearchUsersPage /></ProtectedRoute>} />
-                <Route path="friends" element={<ProtectedRoute><FriendsPage /></ProtectedRoute>} />
                 <Route path=":userId" element={<ProtectedRoute><UserPage /></ProtectedRoute>} />
                 <Route path=":userId/friends" element={<ProtectedRoute><FriendsPage /></ProtectedRoute>} />
             </Route>
             <Route path="posts">
                 <Route index element={<Navigate to="/" />} />
                 <Route path=":postId" element={<ProtectedRoute><PostViewing /></ProtectedRoute>} />
+            </Route>
+            <Route path="chats">
+                <Route index element={<ProtectedRoute><ChatsPage /></ProtectedRoute>} />
+                <Route path=":chatId" element={<ProtectedRoute><ChatsPage /></ProtectedRoute>} />
             </Route>
             <Route path="account" element={<ProtectedRoute><AccountManagementPage /></ProtectedRoute>} />
         </Route>

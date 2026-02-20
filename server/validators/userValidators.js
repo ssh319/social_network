@@ -44,9 +44,9 @@ const checkOldPassword = (value, { req }) => {
 }
 
 
-// const isValidBirthDate = (value) => {
-//     return value > new Date('1900-01-01') && value < new Date();
-// }
+const isValidBirthDate = (value) => {
+    return (value > new Date('1900-01-01')) && (value < new Date());
+}
 
 
 export const validateUserId = (request, response, next) => {
@@ -137,11 +137,10 @@ export const validateUserData = [
     // validate incorrect dates
     body("birthDate")
         .optional()
-        // ?
-        .isDate().withMessage("Invalid data type for birth date").bail(),
-        // .toDate()
+        .isISO8601().withMessage("Invalid data format for birth date").bail()
+        .toDate()
         // .customSanitizer(toLocalDate)
-        // .custom(isValidBirthDate).withMessage("Invalid birth date provided")
+        .custom(isValidBirthDate).withMessage("Invalid birth date provided"),
 
     body("aboutMe")
         .optional()

@@ -1,10 +1,11 @@
 import dotenv from 'dotenv';
-import mongoose from 'mongoose';
+import http from 'http';
 // import https from 'https';
 // import fs from 'fs';
 
 import app from './app.js';
-import connectToDatabase from './config/db.js';
+import { connectDatabase, disconnectDatabase } from './config/db.js';
+import { initSocket } from './socket/index.js';
 
 dotenv.config();
 
@@ -16,12 +17,16 @@ const HOST = process.env.HOST || '127.0.0.1';
 // const httpsServer = https.createServer({ key, cert }, app);
 // httpsServer.listen(PORT, HOST, () => {});
 
+const server = http.createServer(app);
+let io;
 
 (async () => {
     try {
-        await connectToDatabase();
+        await connectDatabase();
+
+        io = initSocket(server);
         
-        app.listen(PORT, HOST, () => {
+        server.listen(PORT, HOST, () => {
             console.log(`Listening on ${HOST}:${PORT}`);
         });
 
@@ -36,7 +41,17 @@ process.on("SIGINT", async () => {
 
     console.log("\nInterrupt signal received..");
 
-    await mongoose.connection.close();
-    console.log("MongoDB connection has been closed.");
+    // not printing server and io closure if client is connected
+    server.close(() => {
+        console.log("HTTP server closed.");
+    })
+
+    io.close(() => {
+        console.log("IO socket closed.");
+    })
+
+    await disconnectDatabase();
+    console.log("MongoDB connection closed.");
+
     process.exit(0);
 });

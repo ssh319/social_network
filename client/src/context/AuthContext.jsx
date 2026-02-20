@@ -29,13 +29,15 @@ export const AuthProvider = ({ children }) => {
         const service = new UserService(cookies.token);
 
         if (!cookies.token) {
-            navigate("/login");
-            return;
+            return navigate("/login");
         }
 
         try {
             const fetchedUser = await service.getAccountData();
-            setUser(fetchedUser);
+
+            const { _id, firstName, lastName, profilePicture, publicStatus, stats, friends } = fetchedUser;
+            setUser({ _id, firstName, lastName, profilePicture, publicStatus, stats, friends });
+
             setLoaded(true);
 
         } catch (err) {
@@ -46,7 +48,9 @@ export const AuthProvider = ({ children }) => {
     const logout = useCallback(() => {
         setUser(null);
         setLoaded(false);
+
         removeCookie("token", { path: "/" });
+        
         navigate("/login", { replace: true });
     }, [removeCookie, navigate]);
 

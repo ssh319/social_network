@@ -27,6 +27,7 @@ router.post("/login", validateUserAuth, controller.authenticateUser);
 router.patch("/account", authenticate, validateUserData, controller.updateUser);
 router.delete("/account", authenticate, controller.deleteUser);
 
+router.get("/friends/:userId", authenticate, controller.getFriendsList);
 router.post("/friends/:userId", authenticate, controller.addFriend);
 router.patch("/friends/:userId", authenticate, controller.acceptFriend);
 router.delete("/friends/:userId", authenticate, controller.removeFriend);

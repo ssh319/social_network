@@ -41,7 +41,7 @@ export const getSuggestedUsers = async (request, response, next) => {
 
 export const getUser = async (request, response, next) => {
     try {
-        const user = await service.getUser(request.params.userId);
+        const user = await service.getUser(request.user._id, request.params.userId);
         response.json({ user });
 
     } catch (err) {
@@ -125,6 +125,22 @@ export const deleteUser = async (request, response, next) => {
     try {
         await service.deleteUser(request.user._id);
         response.sendStatus(200);
+
+    } catch (err) {
+        if (err instanceof ClientError) {
+            response.status(err.statusCode).json({ errors: { [err.path]: err.msg } });
+
+        } else {
+            next(err);
+        }
+    }
+}
+
+
+export const getFriendsList = async (request, response, next) => {
+    try {
+        const friends = await service.getFriendsList(request.user._id, request.params.userId);
+        response.json(friends);
 
     } catch (err) {
         if (err instanceof ClientError) {

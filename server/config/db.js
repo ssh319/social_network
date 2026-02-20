@@ -1,11 +1,13 @@
 import mongoose from 'mongoose';
 
 
-const connectToDatabase = async () => {
+export const connectDatabase = async () => {
     const mongoUri = process.env.MONGODB_URI;
 
     await mongoose.connect(mongoUri);
 }
 
 
-export default connectToDatabase;
+export const disconnectDatabase = async () => {
+    await mongoose.connection.close();
+}

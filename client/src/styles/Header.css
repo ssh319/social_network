@@ -75,18 +75,19 @@
     opacity: 0;
     position: absolute;
     font-weight: 600;
-    top: 100%;
+    top: 85%;
     color: var(--bs-gray-600);
     background-color: white;
     border: 1px solid var(--bs-gray-400);
     border-radius: 4px;
     padding: 3px 15px;
     pointer-events: none;
-    transition: opacity 0.15s ease;
+    transition: opacity 0.2s ease, top 0.2s ease;
 }
 
 .header-navbar-links > li:hover .tooltip {
     opacity: 1;
+    top: 100%;
 }
 
 .dropdown {
@@ -97,7 +98,7 @@
     width: 220px;
     flex-direction: column;
     position: absolute;
-    top: 100%;
+    top: 50%;
     left: 50%;
     /* z-index: 10; */
     background-color: white;
@@ -105,11 +106,12 @@
     border: 1px solid var(--bs-gray-400);
     border-radius: 7px;
     color: var(--bs-gray-600);
-    transition: opacity 0.15s ease;
+    transition: visibility 0.15s ease, opacity 0.15s ease, top 0.15s ease;
 }
 
 .dropdown.show {
     opacity: 1;
+    top: 100%;
     visibility: visible;
     pointer-events: auto;
 }

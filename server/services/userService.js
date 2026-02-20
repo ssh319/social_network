@@ -104,30 +104,31 @@ export const getSuggestedUsers = async (userId) => {
 /**
  * Get all of the public user data by its `ObjectId`.
  * 
+ * @param {String} viewerId `ObjectId` of user who's requesting the data.
  * @param {String} userId User's `ObjectId`
  * @returns {Promise<Object>} Public data of the requested user.
  */
-export const getUser = async (userId) => {
+export const getUser = async (viewerId, userId) => {
     
     const user = await User.findById(
         userId,
         { email: 0, password: 0, createdAt: 0, chats: 0 }
     ).populate({
-        path: 'friends.user',
-        select: ['firstName', 'lastName', 'profilePicture']
+        path: "friends.user",
+        select: ["firstName", "lastName", "profilePicture"]
     }).populate({
-        path: 'posts',
+        path: "posts",
         options: { sort: { timestamp: -1 } }
     }).populate({
-        path: 'images',
+        path: "images",
         options: { sort: { timestamp: -1 } }
-    });
+    }).lean();
 
     if (!user) {
         throw new NoSuchResourceError("Such user doesn't exist", "userId");
     }
-    
-    user.friends = user.friends.filter(friend => friend.status === 'friend');
+
+    user.friends = user.friends.filter(f => f.status === "friend");
 
     return user;
 }
@@ -136,25 +137,28 @@ export const getUser = async (userId) => {
 /**
  * Get all of the account's personal data.
  * 
- * @param {String} userId User's `ObjectId`
+ * @param {String} userId User's `ObjectId`.
+ * @returns {Promise<Object>} Account data object.
  */
 export const getAccountData = async (userId) => {
-    const user = await User.findById(
+
+    let user = await User.findById(
         userId,
-        { password: 0 }
-    ).populate({
-        path: 'friends.user',
-        select: ['firstName', 'lastName', 'profilePicture']
-    }).populate({
-        path: 'images'
-    });
-    // .populate({
-    //     path: 'chats'
-    // });
+        { password: 0, chats: 0 }
+    ).lean();
 
     if (!user) {
         throw new NoSuchResourceError("Such user doesn't exist", "userId");
     }
+
+    user.stats = {
+        postsCount: user.posts.length,
+        friendsCount: user.friends.filter(f => f.status === "friend").length,
+        imagesCount: user.images.length
+    };
+    
+    delete user.posts;
+    delete user.images;
 
     return user;
 }
@@ -294,6 +298,32 @@ export const deleteUser = async (userId) => {
     } finally {
         await session.endSession();
     }
+}
+
+
+/**
+ * Get user's friends list, including sent and
+ * received requests if the viewer owns the account.
+ * 
+ * @param {String} viewerId `ObjectId` of friends list requester.
+ * @param {String} userId `ObjectId` of the user which to get friends list of.
+ * @returns {Promise<Array<Object>>} List of friend list's user objects.
+ */
+export const getFriendsList = async (viewerId, userId) => {
+
+    let { friends } = await User.findById(
+        userId,
+        { friends: 1 }
+    ).populate({
+        path: 'friends.user',
+        select: ['firstName', 'lastName', 'profilePicture']
+    });
+
+    if (viewerId !== userId) {
+        friends = friends.filter(friend => friend.status === "friend");
+    }
+
+    return friends;
 }
 
 

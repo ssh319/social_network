@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from 'react';
 import { Outlet, Link } from 'react-router-dom';
 
 import { useAuth } from '@context/AuthContext';
+import { useSocket } from '@context/SocketContext';
 
 import '@styles/Header.css';
 
@@ -18,6 +19,8 @@ import ListIcon from '@assets/icons/ListIcon';
 
 const Header = () => {
     const { loadUser, user, isLoaded, logout } = useAuth();
+    const { notifications } = useSocket();
+    console.log('Header.jsx -> Notifications', notifications);
 
     const dropdownRef = useRef(null);
     const [ dropdownActive, setDropdownActive ] = useState(false);
@@ -71,7 +74,7 @@ const Header = () => {
                                     <span className='tooltip'>Feed</span>
                                 </li>
                                 <li>
-                                    <Link to='/users/friends'><UserIcon color='var(--bs-gray-600)' /></Link>
+                                    <Link to={`/users/${user._id}/friends`}><UserIcon color='var(--bs-gray-600)' /></Link>
                                     <span className='tooltip'>Friends</span>
                                 </li>
                                 <li>

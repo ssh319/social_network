@@ -1,4 +1,6 @@
 import * as service from '../services/chatService.js';
+import { emitMessage } from '../socket/chat.js';
+import { emitNotification } from '../socket/notifications.js';
 
 import ClientError from '../errors/clientError.js';
 
@@ -35,9 +37,9 @@ export const getChat = async (request, response, next) => {
 }
 
 
-export const startChat = async (request, response, next) => {
+export const getOrCreateChat = async (request, response, next) => {
     try {
-        const { chat, isNewChat } = await service.startChat(request.user._id, request.params.userId);
+        const { chat, isNewChat } = await service.getOrCreateChat(request.user._id, request.params.userId);
         response.status(isNewChat ? 201 : 200).json({ chat });
 
     } catch (err) {
@@ -69,8 +71,10 @@ export const deleteChat = async (request, response, next) => {
 
 export const sendMessage = async (request, response, next) => {
     try {
-        await service.sendMessage(request.user._id, request.params.chatId, request.body.text);
-        response.sendStatus(201);
+        const newMessage = await service.sendMessage(request.user._id, request.params.chatId, request.body.text);
+        emitNotification(newMessage.receiverId, { type: 'message', text: request.body.text, user: request.user._id });
+        emitMessage(newMessage.receiverId, newMessage);
+        response.status(201).json({ newMessage });
 
     } catch (err) {
         if (err instanceof ClientError) {

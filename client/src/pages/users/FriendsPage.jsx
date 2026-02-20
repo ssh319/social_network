@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useCookies } from 'react-cookie';
 
 import { useAuth } from '@context/AuthContext';
-import UserService from '@services/userService';
+import FriendService from '@services/friendService';
 
 import './Users.css';
 
@@ -12,6 +12,7 @@ const FriendsPage = () => {
 
     const [ cookies ] = useCookies(["token"]);
     const params = useParams();
+    const navigate = useNavigate();
 
     const [ friends, setFriends ] = useState([]);
     const [ friendsLoaded, setFriendsLoaded ] = useState(false);
@@ -19,31 +20,30 @@ const FriendsPage = () => {
     const { user } = useAuth();
 
     useEffect(() => {
-        const loadFriends = async (userId) => {
-            const service = new UserService(cookies.token);
+        const loadFriends = async () => {
+            const service = new FriendService(cookies.token);
 
             try {
-                let profile;
+                const friends = await service.getFriendsList(params.userId);
 
-                if (userId) {
-                    profile = await service.getUser(userId);
-                } else {
-                    profile = await service.getAccountData();
-                }
+                // document.title = `${profile.firstName}'s friends`;
 
-                document.title = `${profile.firstName}'s friends`;
-
-                setFriends(profile.friends);
+                setFriends(friends);
                 setFriendsLoaded(true);
 
             } catch (err) {
-                console.error(err);
+                if (err.response?.status < 500) {
+                    navigate('/not-found');
+
+                } else {
+                    console.error(err);
+                }
             }
         }
 
-        loadFriends(params.userId);
+        loadFriends();
 
-    }, [cookies.token, params.userId, user._id]);
+    }, [cookies.token, params.userId, user._id, navigate]);
 
     return (
         <main>

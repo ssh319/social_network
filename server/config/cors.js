@@ -1,14 +1,15 @@
-import cors from 'cors';
+// import cors from 'cors';
 // import dotenv from 'dotenv';
 
 // dotenv.config();
 
 
-const corsOptions = {
+const corsConfig = {
     // ...
-    origin: "http://localhost:3000"
+    origin: "http://localhost:3000",
+    credentials: true
     // origin: `http://${process.env.HOST}:3000`
 }
 
 
-export default cors(corsOptions);
+export default corsConfig;

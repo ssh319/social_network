@@ -20,7 +20,7 @@ class ChatService extends BaseService {
         return response.data.chat;
     }
 
-    async startChat(userId) {
+    async getOrCreateChat(userId) {
         const response = await this.api.post(
             `${this.baseUrl}/${userId}`
         );
@@ -35,10 +35,12 @@ class ChatService extends BaseService {
     }
 
     async sendMessage(chatId, data) {
-        await this.api.post(
+        const response = await this.api.post(
             `${this.baseUrl}/${chatId}/messages`,
             data
         );
+
+        return response.data.newMessage;
     }
 
     async editMessage(chatId, messageId, data) {
