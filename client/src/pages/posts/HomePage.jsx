@@ -198,31 +198,29 @@ const HomePage = () => {
                 </nav>
 
                 <div className='homepage-content-container'>
-                    <form onSubmit={createPost}>
-                        <div className='posting-form-container'>
-                            <div className='post-edit-container'>
-                                <Link to={`/users/${user._id}`}>
-                                    <img className='post-avatar' alt='author' src={testAvatar} />
-                                </Link>
-                                <textarea
-                                    ref={postTextareaRef}
-                                    onChange={handlePostChange}
-                                    maxLength={MAX_POST_LENGTH}
-                                    className='posting-textarea'
-                                    placeholder='Create new post...'
-                                    required
-                                />
-                            </div>
-                            <div className='post-panel'>
-                                <label htmlFor='post-image-upload' className='image-attachment-btn'>
-                                    <input type='file' id='post-image-upload' accept='image/*' disabled={!feedLoaded} hidden />
-                                    <PhotoIcon color='var(--bs-gray-600)' />
-                                </label>
-                                <span className='chars-counter'>{postText.length} / {MAX_POST_LENGTH}</span>
-                                <button type='submit' className='posting-submit-btn' disabled={!feedLoaded}>
-                                    <SpeakerIcon color='white' />
-                                </button>
-                            </div>
+                    <form className='posting-form-container' onSubmit={createPost}>
+                        <div className='post-edit-container'>
+                            <Link to={`/users/${user._id}`}>
+                                <img className='post-avatar' alt='author' src={testAvatar} />
+                            </Link>
+                            <textarea
+                                ref={postTextareaRef}
+                                onChange={handlePostChange}
+                                maxLength={MAX_POST_LENGTH}
+                                className='posting-textarea'
+                                placeholder='Create new post...'
+                                required
+                            />
+                        </div>
+                        <div className='post-panel'>
+                            <label htmlFor='post-image-upload' className='image-attachment-btn'>
+                                <input type='file' id='post-image-upload' accept='image/*' disabled={!feedLoaded} hidden />
+                                <PhotoIcon color='var(--bs-gray-600)' />
+                            </label>
+                            <span className='chars-counter'>{postText.length} / {MAX_POST_LENGTH}</span>
+                            <button type='submit' className='posting-submit-btn' disabled={!feedLoaded}>
+                                <SpeakerIcon color='white' />
+                            </button>
                         </div>
                     </form>
 

@@ -20,7 +20,7 @@ export const SocketProvider = ({ children }) => {
             socket.connect();
     
             socket.on('notification', data => {
-                setNotifications(prev => [...prev, data]);
+                setNotifications(prev => [data, ...prev]);
             });
         }
 

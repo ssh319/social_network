@@ -1,19 +1,20 @@
 .main-chatspage-container {
     display: flex;
-    flex: 0 0 1;
-    justify-content: center;
     align-items: center;
-    height: 75vh;
+    height: 77vh;
+    max-width: 1000px;
+    width: 100%;
 }
 
 .chats-section {
+    display: flex;
     background-color: white;
     border: 1px solid var(--bs-gray-400);
     border-radius: 9px;
-    width: 64rem;
-    height: 38rem;
+    width: 100%;
+    max-height: 39rem;
+    height: 100%;
     position: relative;
-    display: flex;
 }
 
 .chats-list-sidenav {
@@ -23,10 +24,8 @@
     font-size: 15px;
     padding: 0;
     border-right: 1px solid var(--bs-gray-400);
-    width: 16rem;
+    flex: 0 0 13rem;
     height: 100%;
-    display: flex;
-    flex-direction: column;
 }
 
 .chats-list-sidenav > li {
@@ -35,7 +34,7 @@
     align-items: center;
     border-bottom: 1px solid var(--bs-gray-400);
     padding: 10px;
-    height: 70px;
+    height: 65px;
     cursor: pointer;
     transition: background 0.2s ease;
 }
@@ -52,27 +51,45 @@
     display: flex;
     flex-direction: column;
     position: relative;
-    overflow-y: scroll;
-    flex: 1;
+    width: 100%;
+    flex: 1 1 0;
 }
 
 .convo-messages {
+    overflow-y: auto;
     display: flex;
+    flex-direction: column-reverse;
     position: relative;
-    flex: 1;
-    gap: 10px;
-    flex-direction: column;
-    justify-content: flex-end;
+    height: 100%;
+    margin-bottom: 50px;
 }
 
 .message-container {
     display: flex;
     flex-direction: column;
+    padding: 20px;
+    gap: 10px;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    white-space: pre-wrap;
 }
 
 .message-container.from-me {
     background-color: var(--bs-gray-100);
     text-align: right;
+    align-items: flex-end;
+}
+
+.message-sender {
+    display: flex;
+    align-items: center;
+    font-size: 14px;
+    font-weight: 600;
+    gap: 10px;
+}
+
+.message-sender.me {
+    flex-direction: row-reverse;
 }
 
 .loader.chat-loader {
@@ -90,14 +107,18 @@
     align-items: center;
     justify-content: center;
     gap: 9px;
-    height: 45px;
-    position: relative;
+    height: 50px;
+    bottom: 0;
+    position: absolute;
+    background-color: white;
+    width: 100%;
+    border-bottom-right-radius: 9px;
     border-top: 1px solid var(--bs-gray-400);
 }
 
 .message-input {
     width: 90%;
-    font-size: 15px;
+    font-size: 16px;
     padding: 5px;
     border: none;
 }
@@ -122,4 +143,10 @@
 .send-btn:hover {
     background-color: #0e61de;
     border-color: #0e61de;
+}
+
+@media (max-width: 768px) {
+    .chats-list-sidenav {
+        flex: 0 0 9rem;
+    }
 }

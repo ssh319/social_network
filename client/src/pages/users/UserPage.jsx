@@ -177,7 +177,7 @@ const UserPage = () => {
 
                                             <div style={{ color: 'var(--bs-gray-600)', fontSize: '12px' }}>
                                                 {Date.now() - new Date(userProfile.lastActive) > 1000 * 60 * 3 ?
-                                                    `Last active: ${formatDate(userProfile.lastActive)}, ${new Date(userProfile.lastActive).toLocaleTimeString()}` :
+                                                    `Last active: ${formatDate(userProfile.lastActive)}, ${new Date(userProfile.lastActive).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` :
                                                     <span><CircleIcon color='green' /> Online</span>
                                                 }
                                             </div>
@@ -306,7 +306,15 @@ const UserPage = () => {
                     </> :
                     <span
                         className='loader'
-                        style={{ width: '32px', height: '32px', borderWidth: '3px', animationDuration: '1.3s' }}
+                        style={{
+                            width: '32px',
+                            height: '32px',
+                            borderWidth: '3px',
+                            animationDuration: '1.3s',
+                            position: 'absolute',
+                            left: '50%',
+                            top: '50%'
+                        }}
                     />
                 }
             </div>

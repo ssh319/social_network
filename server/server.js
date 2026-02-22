@@ -41,14 +41,15 @@ process.on("SIGINT", async () => {
 
     console.log("\nInterrupt signal received..");
 
-    // not printing server and io closure if client is connected
-    server.close(() => {
-        console.log("HTTP server closed.");
-    })
+    for (const socket of io.sockets.sockets.values()) {
+        socket.disconnect(true);
+    }
 
-    io.close(() => {
-        console.log("IO socket closed.");
-    })
+    await new Promise(resolve => io.close(resolve));
+    console.log("IO socket closed.");
+
+    await new Promise(resolve => server.close(resolve));
+    console.log("HTTP server closed.");
 
     await disconnectDatabase();
     console.log("MongoDB connection closed.");

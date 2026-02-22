@@ -108,7 +108,7 @@ export const getSuggestedUsers = async (userId) => {
  * @param {String} userId User's `ObjectId`
  * @returns {Promise<Object>} Public data of the requested user.
  */
-export const getUser = async (viewerId, userId) => {
+export const getUser = async (userId) => {
     
     const user = await User.findById(
         userId,

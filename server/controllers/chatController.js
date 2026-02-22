@@ -72,7 +72,7 @@ export const deleteChat = async (request, response, next) => {
 export const sendMessage = async (request, response, next) => {
     try {
         const newMessage = await service.sendMessage(request.user._id, request.params.chatId, request.body.text);
-        emitNotification(newMessage.receiverId, { type: 'message', text: request.body.text, user: request.user._id });
+        emitNotification(newMessage.receiverId, { type: 'message', messageText: request.body.text, sender: newMessage.sender });
         emitMessage(newMessage.receiverId, newMessage);
         response.status(201).json({ newMessage });
 

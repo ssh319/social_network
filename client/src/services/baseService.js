@@ -1,8 +1,6 @@
 import axios from 'axios';
 
 
-const BASE_URL = "http://localhost:8080";
-
 class BaseService {
     constructor(authToken) {
         if (authToken) {
@@ -10,7 +8,7 @@ class BaseService {
         }
 
         this.api = axios.create({
-            baseURL: BASE_URL,
+            baseURL: process.env.REACT_APP_API_BASE_URL,
             headers: {
                 'Content-Type': 'application/json',
                 Authorization: this.authHeader

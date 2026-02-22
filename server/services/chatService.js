@@ -18,23 +18,31 @@ import {
  * @todo Get last message from array. (For chat preview)
  */
 export const retrieveChats = async (userId) => {
-    const chats = await Chat.find(
+    let chats = await Chat.find(
         { $or: [
             { primaryUser: userId },
             { secondaryUser: userId }
         ] },
 
-        // not include all the messages for every chat
-        { messages: 0 }
-
-    ).populate({
+    ).select({
+        primaryUser: 1,
+        secondaryUser: 1,
+        messages: { $slice: -1 }
+    }).populate({
         path: 'primaryUser',
         select: ['firstName', 'lastName', 'profilePicture']
     }).populate({
         path: 'secondaryUser',
         select: ['firstName', 'lastName', 'profilePicture']
-    });
+    }).lean();
 
+    chats = chats.map(({ _id, primaryUser, secondaryUser, messages }) => ({
+        _id,
+        primaryUser,
+        secondaryUser,
+        lastMessage: messages[0]
+    }));
+    
     return chats;
 }
 
@@ -55,6 +63,8 @@ export const getChat = async (chatId) => {
         path: 'secondaryUser',
         select: ['firstName', 'lastName', 'profilePicture']
     });
+
+    chat.messages.sort((a, b) => b.timestamp - a.timestamp);
 
     return chat;
 }
@@ -163,6 +173,10 @@ export const deleteChat = async (chatId) => {
  */
 export const sendMessage = async (userId, chatId, text) => {
     const chat = await Chat.findById(chatId);
+    const sender = await User.findById(
+        userId,
+        { firstName: 1, lastName: 1, profilePicture: 1 }
+    ).lean();
 
     const message = chat.messages.create({
         user: userId,
@@ -170,10 +184,11 @@ export const sendMessage = async (userId, chatId, text) => {
     })
 
     chat.messages.push(message);
-
+    
     await chat.save();
 
     message.receiverId = chat.primaryUser.equals(userId) ? chat.secondaryUser : chat.primaryUser;
+    message.sender = sender;
 
     return message;
 }

@@ -15,15 +15,18 @@ import ChatsIcon from '@assets/icons/ChatsIcon';
 import PhotoIcon from '@assets/icons/PhotoIcon';
 import UserIcon from '@assets/icons/UserIcon';
 import ListIcon from '@assets/icons/ListIcon';
+import BellIcon from '@assets/icons/BellIcon';
 
 
 const Header = () => {
     const { loadUser, user, isLoaded, logout } = useAuth();
     const { notifications } = useSocket();
-    console.log('Header.jsx -> Notifications', notifications);
 
-    const dropdownRef = useRef(null);
-    const [ dropdownActive, setDropdownActive ] = useState(false);
+    const accountDropdownRef = useRef(null);
+    const [ accountDropdownActive, setAccountDropdownActive ] = useState(false);
+
+    const notifDropdownRef = useRef(null);
+    const [ notifDropdownActive, setNotifDropdownActive ] = useState(false);
 
     useEffect(() => {
         loadUser();
@@ -32,18 +35,18 @@ const Header = () => {
     useEffect(() => {
         if (!isLoaded) return;
         
-        if (!dropdownActive) {
-            dropdownRef.current.classList.remove("show");
+        if (!accountDropdownActive) {
+            accountDropdownRef.current.classList.remove("show");
             return;
         }
 
         const handleClick = (e) => {
-            if (!dropdownRef.current.contains(e.target)) {
-                setDropdownActive(false);
+            if (!accountDropdownRef.current.contains(e.target)) {
+                setAccountDropdownActive(false);
             }
         }
 
-        dropdownRef.current.classList.add("show");
+        accountDropdownRef.current.classList.add("show");
 
         document.addEventListener("click", handleClick);
 
@@ -51,12 +54,44 @@ const Header = () => {
             document.removeEventListener("click", handleClick);
         }
 
-    }, [dropdownActive, isLoaded]);
+    }, [accountDropdownActive, isLoaded]);
+
+    useEffect(() => {
+        if (!isLoaded) return;
+
+        if (!notifDropdownActive) {
+            notifDropdownRef.current.classList.remove("show");
+            return;
+        }
+
+        const handleClick = (e) => {
+            if (!notifDropdownRef.current.contains(e.target)) {
+                setNotifDropdownActive(false);
+            }
+        }
+
+        notifDropdownRef.current.classList.add("show");
+
+        document.addEventListener("click", handleClick);
+
+        return () => {
+            document.removeEventListener("click", handleClick);
+        }
+
+    }, [notifDropdownActive, isLoaded]);
     
-    const toggleDropdown = (event) => {
+    const toggleAccountDropdown = (event) => {
         event.stopPropagation();
 
-        setDropdownActive(!dropdownActive);
+        setAccountDropdownActive(!accountDropdownActive);
+        setNotifDropdownActive(false);
+    }
+
+    const toggleNotifDropdown = (event) => {
+        event.stopPropagation();
+
+        setNotifDropdownActive(!notifDropdownActive);
+        setAccountDropdownActive(false);
     }
     
     return (
@@ -69,6 +104,39 @@ const Header = () => {
                     {isLoaded ?
                         <>
                             <ul className='header-navbar-links'>
+                                <li>
+                                    <button onClick={toggleNotifDropdown} type='button' style={{ border: 'none' }}>
+                                        <BellIcon color='var(--bs-gray-600)' />
+                                        {notifications.length > 0 &&
+                                            <span className='notification-number'>{notifications.length}</span>
+                                        }
+                                    </button>
+                                    <span className='tooltip'>Notifications</span>
+                                </li>
+
+                                <div id='notifications-dropdown' className='dropdown' ref={notifDropdownRef}>
+                                    {notifications.length ?
+                                        <ul className='notifications-list'>
+                                            {notifications.map((notif, index) => (
+                                                <li key={index}>
+                                                    <div>
+                                                        <img alt='notif user' src={testAvatar} width={20} height={20} style={{ borderRadius: '50%' }} />
+                                                        <span style={{ fontSize: '13px', color: 'var(--bs-gray-600)', position: 'relative', left: '7px' }}>
+                                                            <strong style={{ color: 'var(--bs-body-color)' }}>
+                                                                {notif.sender.firstName} {notif.sender.lastName}
+                                                            </strong> sent you a message:
+                                                        </span>
+                                                    </div>
+                                                    <span style={{ fontSize: '16px' }}>{notif.messageText}</span>
+                                                </li>
+                                            ))}
+                                        </ul> :
+                                        <span style={{ color: 'var(--bs-gray-500)', margin: '0 auto' }}>
+                                            No notifications yet
+                                        </span>
+                                    }
+                                </div>
+
                                 <li>
                                     <Link to='/'><ListIcon color='var(--bs-gray-600)' /></Link>
                                     <span className='tooltip'>Feed</span>
@@ -87,16 +155,20 @@ const Header = () => {
                                 </li>
                             </ul>
                     
-                            <div className='dropdown-button' onClick={toggleDropdown}>
+                            <div className='dropdown-button' onClick={toggleAccountDropdown}>
                                 <img
                                     className='header-avatar'
                                     alt={`${user.firstName} ${user.lastName}`}
                                     src={testAvatar}
                                 />
-                                <ChevronDownIcon style={{ position: 'relative', top: '1px' }} />
+                                <ChevronDownIcon style={{ position: 'relative', top: '1px', color: 'var(--bs-gray-600)' }} />
                             </div>
 
-                            <div className='dropdown' ref={dropdownRef}>
+                            <div
+                                id='account-dropdown'
+                                className='dropdown'
+                                ref={accountDropdownRef}
+                            >
                                 <div className='dropdown-header'>
                                     <img
                                         style={{ borderRadius: '50%', margin: '0 auto' }}
@@ -108,14 +180,18 @@ const Header = () => {
                                     <span style={{ color: 'var(--bs-body-color)', margin: '10px auto' }}>
                                         {user.firstName} {user.lastName}
                                     </span>
-                                    <Link to={`/users/${user._id}`} onClick={ () => { setDropdownActive(false) } }>
+                                    <Link to={`/users/${user._id}`} onClick={ () => { setAccountDropdownActive(false) } }>
                                         <button type='button' className='btn btn-outline-primary dropdown-profile-btn'>
                                             View profile
                                         </button>
                                     </Link>
                                 </div>
 
-                                <Link to='/account' onClick={ () => { setDropdownActive(false) } } style={{ display: 'flex', alignItems: 'center' }}>
+                                <Link
+                                    to='/account'
+                                    onClick={() => { setAccountDropdownActive(false) }}
+                                    style={{ display: 'flex', alignItems: 'center', color: 'var(--bs-gray-600)' }}
+                                >
                                     <SettingsIcon />
                                     <span style={{ position: 'relative', left: '5px', fontWeight: '400' }}>Manage account</span>
                                 </Link>

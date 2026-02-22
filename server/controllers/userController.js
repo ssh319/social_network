@@ -41,7 +41,7 @@ export const getSuggestedUsers = async (request, response, next) => {
 
 export const getUser = async (request, response, next) => {
     try {
-        const user = await service.getUser(request.user._id, request.params.userId);
+        const user = await service.getUser(request.params.userId);
         response.json({ user });
 
     } catch (err) {

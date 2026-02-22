@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { useCookies } from 'react-cookie';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, Link } from 'react-router-dom';
 
 import ChatService from '@services/chatService';
 import { useAuth } from '@context/AuthContext';
@@ -32,9 +32,12 @@ const ChatsPage = () => {
 
     
     useEffect(() => {
+        
+        document.title = "Messages";
+
         if (convo) {
             socket.on("newMessage", msg => {
-                setConvo({ ...convo, messages: [ ...convo.messages, msg ] });
+                setConvo({ ...convo, messages: [ msg, ...convo.messages ] });
             });
 
             return () => {
@@ -75,7 +78,7 @@ const ChatsPage = () => {
                 setConvoLoaded(true);
 
             } catch (err) {
-                if (err.response.status < 500) {
+                if (err.response?.status < 500) {
                     navigate('/not-found');
 
                 } else {
@@ -105,7 +108,7 @@ const ChatsPage = () => {
 
         try {
             const newMessage = await service.sendMessage(convo._id, { text: messageText });
-            setConvo({ ...convo, messages: [ ...convo.messages, newMessage ] });
+            setConvo({ ...convo, messages: [ newMessage, ...convo.messages ] });
 
         } catch (err) {
             console.error(err);
@@ -120,11 +123,12 @@ const ChatsPage = () => {
                     <ul className='chats-list-sidenav'>
                         {chatsLoaded ?
                             <>
-                                {chats.map(chat => (
+                                {chats.map((chat, index) => (
                                     <li
                                         key={chat._id}
                                         className={convo?._id === chat._id ? 'focused' : ''}
                                         onClick={() => navigate(`/chats/${chat._id}`)}
+                                        style={{ borderTopLeftRadius: index === 0 ? '9px' : '' }}
                                     >
                                         <img
                                             alt='test'
@@ -133,12 +137,19 @@ const ChatsPage = () => {
                                             height={28}
                                             style={{ borderRadius: '50%' }}
                                         />
-                                        <span>
-                                            {chat.primaryUser._id === user._id ?
-                                                `${chat.secondaryUser.firstName} ${chat.secondaryUser.lastName}` :
-                                                `${chat.primaryUser.firstName} ${chat.primaryUser.lastName}`
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                                            <span>
+                                                {chat.primaryUser._id === user._id ?
+                                                    `${chat.secondaryUser.firstName} ${chat.secondaryUser.lastName}` :
+                                                    `${chat.primaryUser.firstName} ${chat.primaryUser.lastName}`
+                                                }
+                                            </span>
+                                            {chat.lastMessage &&
+                                                <span style={{ fontSize: '13px', color: 'var(--bs-gray-600)' }}>
+                                                    {chat.lastMessage.text}
+                                                </span>
                                             }
-                                        </span>
+                                        </div>
                                     </li>
                                 ))}
                             </> :
@@ -155,23 +166,49 @@ const ChatsPage = () => {
                                     <>
                                         <div className='convo-messages'>
                                             {convo && convo.messages.map(msg => (
-                                                <div key={msg._id} className={`message-container ${msg.user === convo.me._id ? 'from-me' : ''}`}>
-                                                    {msg.user === convo.me._id ?
-                                                        <div>
-                                                            <img alt='me' src={testAvatar} width={28} height={28} style={{ borderRadius: '50%' }} />
-                                                            <span>{convo.me.firstName} {convo.me.lastName}</span>
-                                                        </div> :
-                                                        <div>
-                                                            <img alt='peer' src={testAvatar} width={28} height={28} style={{ borderRadius: '50%' }} />
-                                                            <span>{convo.peer.firstName} {convo.peer.lastName}</span>
-                                                        </div>
+                                                <div
+                                                    key={msg._id}
+                                                    className={
+                                                        `message-container ${msg.user === convo.me._id ? 'from-me' : ''}`
                                                     }
-                                                    <span>{msg.text}</span>
+                                                >
+                                                    <div className={`message-sender ${msg.user === convo.me._id ? 'me' : ''}`}>
+                                                        <Link to={`/users/${msg.user}`}>
+                                                            <img 
+                                                                alt='msg sender'
+                                                                src={testAvatar}
+                                                                width={28}
+                                                                height={28}
+                                                                style={{ borderRadius: '50%' }}
+                                                            />
+                                                        </Link>
+
+                                                        <Link to={`/users/${msg.user}`} style={{ textDecoration: 'none' }}>
+                                                            <span style={{ color: 'var(--bs-body-color)' }}>
+                                                                {msg.user === convo.me._id ?
+                                                                    `${convo.me.firstName} ${convo.me.lastName}` :
+                                                                    `${convo.peer.firstName} ${convo.peer.lastName}`
+                                                                }
+                                                            </span>
+                                                        </Link>
+                                                    </div>
+
+                                                    <span style={{ /* width: '70%' */ }}>{msg.text}</span>
+
+                                                    <span style={{ fontSize: '11px', color: 'var(--bs-gray-500)' }}>
+                                                        {new Date(msg.timestamp).toLocaleString()}
+                                                    </span>
                                                 </div>
                                             ))}
                                         </div>
                                         <form className='convo-message-form' onSubmit={sendMessage}>
-                                            <input ref={messageInputRef} type='text' onChange={handleMessageChange} className='message-input' placeholder='Enter your message...' />
+                                            <input
+                                                ref={messageInputRef}
+                                                type='text'
+                                                onChange={handleMessageChange}
+                                                className='message-input'
+                                                placeholder='Enter your message...'
+                                            />
                                             <button type='submit' className='send-btn'>
                                                 <SendIcon style={{ position: 'relative', top: '0.5px', left: '1px' }} />
                                             </button>
