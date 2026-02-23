@@ -50,7 +50,9 @@
     font-size: 15px;
     padding: 5px;
     padding-bottom: 18px;
-    overflow-wrap: break-word;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    white-space: pre-wrap;
 }
 
 .post-content > a {
