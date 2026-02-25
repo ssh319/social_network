@@ -7,7 +7,7 @@ import app from './app.js';
 import { connectDatabase, disconnectDatabase } from './config/db.js';
 import { initSocket } from './socket/index.js';
 
-dotenv.config();
+dotenv.config({ path: `.env.${process.env.NODE_ENV}` });
 
 const PORT = process.env.PORT || 8080;
 const HOST = process.env.HOST || '127.0.0.1';

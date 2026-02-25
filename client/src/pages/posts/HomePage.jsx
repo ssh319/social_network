@@ -6,15 +6,13 @@ import './Posts.css';
 
 import PostService from '@services/postService';
 import UserService from '@services/userService';
-import FriendService from '@services/friendService';
 import { useAuth } from '@context/AuthContext';
 
 import testAvatar from '@assets/images/test-avatar.jpg';
 import Feed from '@components/Feed';
 import SpeakerIcon from '@assets/icons/SpeakerIcon';
 import PhotoIcon from '@assets/icons/PhotoIcon';
-import PlusIcon from '@assets/icons/PlusIcon';
-import CheckIcon from '@assets/icons/CheckIcon';
+import SuggestedUsers from '@components/SuggestedUsers';
 
 
 const HomePage = () => {
@@ -107,56 +105,6 @@ const HomePage = () => {
         }
     }
 
-    const addSuggestedFriend = async (suggestion) => {
-        const service = new FriendService(cookies.token);
-
-        try {
-            if (!suggestion.status) {
-                await service.addFriend(suggestion._id);
-
-                setSuggestedUsers(
-                    suggestedUsers.map(usr =>
-                        usr._id === suggestion._id ?
-                        { ...usr, status: "sent" } :
-                        usr
-                    )
-                );
-
-            } else if (suggestion.status === "received") {
-                await service.acceptFriend(suggestion._id);
-
-                setSuggestedUsers(
-                    suggestedUsers.map(usr => 
-                        usr._id === suggestion._id ?
-                        { ...usr, status: "friend" } :
-                        usr
-                    )
-                );
-            }
-
-        } catch (err) {
-            console.error(err);
-        }
-    }
-
-    const cancelSuggestedFriend = async (suggestion) => {
-        const service = new FriendService(cookies.token);
-
-        try {
-            await service.removeFriend(suggestion._id);
-
-            setSuggestedUsers(
-                suggestedUsers.map(usr =>
-                    usr._id === suggestion._id ?
-                    { ...usr, status: null } :
-                    usr
-                )
-            );
-
-        } catch (err) {
-            console.error(err);
-        }
-    }
 
     return (
         <main>
@@ -224,73 +172,16 @@ const HomePage = () => {
                         </div>
                     </form>
 
+                    <div className='sidebar-container-mobile'>
+                        <SuggestedUsers users={suggestedUsers} isLoaded={suggestionsLoaded} />
+                    </div>
+
                     <Feed posts={feed} isLoaded={feedLoaded} />
 
                 </div>
 
                 <div className='sidebar-container'>
-                    <span className='sidebar-header'>People you may know</span>
-                    <ul className='sidebar-suggestions'> 
-                        {suggestionsLoaded ?
-                            <>
-                                {suggestedUsers.length ?
-                                    <>
-                                        {suggestedUsers.slice(0, 6).map(suggestion => (
-                                            <li key={suggestion._id}>
-                                                <Link to={`/users/${suggestion._id}`}>
-                                                    <img
-                                                        alt='user'
-                                                        src={testAvatar}
-                                                        width='32'
-                                                        height='32'
-                                                        style={{ borderRadius: '50%' }}
-                                                    />
-                                                </Link>
-                                                <div className='suggested-user-info'>
-                                                    <Link to={`/users/${suggestion._id}`}>
-                                                        <span style={{ fontSize: '13px', fontWeight: '600' }}>
-                                                            {suggestion.firstName} {suggestion.lastName}
-                                                        </span>
-                                                    </Link>
-                                                    <span style={{ fontSize: '10px', color: 'var(--bs-gray-600)' }}>
-                                                        Mutual friends: {suggestion.mutualFriendsCount}
-                                                    </span>
-                                                </div>
-
-                                                {(!suggestion.status || suggestion.status === 'received') ?
-                                                    <div
-                                                        className='add-user-btn'
-                                                        onClick={() => { addSuggestedFriend(suggestion) }}
-                                                    >
-                                                        <PlusIcon />
-                                                    </div> :
-
-                                                    <div
-                                                        className='add-user-btn checked'
-                                                        onClick={() => { cancelSuggestedFriend(suggestion) } }
-                                                    >
-                                                        <CheckIcon />
-                                                    </div>
-                                                }
-                                            </li>
-                                        ))}
-                                    </> :
-                                    <span style={{
-                                        fontSize: '17px',
-                                        color: 'var(--bs-gray-500)',
-                                        textAlign: 'center',
-                                        position: 'relative',
-                                        top: '7rem',
-                                    }}>
-                                        No suggestions yet.
-                                        <br />
-                                        Try to <Link to='/users/friends/' style={{ color: 'inherit' }}>search new friends</Link>.
-                                    </span>
-                                }
-                            </> :
-                            <span className='loader' style={{ margin: '0 auto', position: 'relative', top: '9rem' }} />
-                        }
-                    </ul>
+                    <SuggestedUsers users={suggestedUsers} isLoaded={suggestionsLoaded} />
                 </div>
             </div>
         </main>

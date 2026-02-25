@@ -21,6 +21,7 @@ const ChatsPage = () => {
     const { socket } = useSocket();
 
     const messageInputRef = useRef(null);
+    const sendButtonRef = useRef(null);
     
     const [ chats, setChats ] = useState([]);
     const [ chatsLoaded, setChatsLoaded ] = useState(false);
@@ -100,6 +101,8 @@ const ChatsPage = () => {
     const sendMessage = async (event) => {
         event.preventDefault();
 
+        sendButtonRef.current.disabled = true;
+
         messageInputRef.current.value = "";
 
         if (!messageText.trim()) return;
@@ -109,6 +112,7 @@ const ChatsPage = () => {
         try {
             const newMessage = await service.sendMessage(convo._id, { text: messageText });
             setConvo({ ...convo, messages: [ newMessage, ...convo.messages ] });
+            sendButtonRef.current.disabled = false;
 
         } catch (err) {
             console.error(err);
@@ -209,7 +213,7 @@ const ChatsPage = () => {
                                                 className='message-input'
                                                 placeholder='Enter your message...'
                                             />
-                                            <button type='submit' className='send-btn'>
+                                            <button ref={sendButtonRef} type='submit' className='send-btn'>
                                                 <SendIcon style={{ position: 'relative', top: '0.5px', left: '1px' }} />
                                             </button>
                                         </form>

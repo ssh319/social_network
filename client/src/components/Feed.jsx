@@ -124,7 +124,7 @@ const Feed = ({ posts, isLoaded }) => {
                         ))
                     }
                 </> :
-                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '60vh' }}>
+                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '60vh', width: '100%' }}>
                     <span
                         className="loader"
                         style={{

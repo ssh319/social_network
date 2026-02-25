@@ -1,4 +1,5 @@
 import express from 'express';
+import path from 'path';
 import bodyParser from 'body-parser';
 import cors from 'cors';
 
@@ -11,11 +12,11 @@ import postRouter from './routes/postRouter.js';
 import chatRouter from './routes/chatRouter.js';
 import imageRouter from './routes/imageRouter.js';
 
-
 const app = express();
 
-// CORS conf. to server.js
-app.use(cors(corsConfig));
+if (process.env.NODE_ENV === 'development') {
+    app.use(cors(corsConfig));
+}
 
 app.use(bodyParser.json());
 
@@ -28,12 +29,10 @@ app.use((error, _, response, next) => {
     }
 });
 
-// api access?
-
-app.use("/users", userRouter);
-app.use("/posts", authenticate, postRouter);
-app.use("/chats", authenticate, chatRouter);
-app.use("/images", authenticate, imageRouter);
+app.use("/api/users", userRouter);
+app.use("/api/posts", authenticate, postRouter);
+app.use("/api/chats", authenticate, chatRouter);
+app.use("/api/images", authenticate, imageRouter);
 
 app.use((error, _, response, next) => {
     if (!error) {
@@ -45,6 +44,17 @@ app.use((error, _, response, next) => {
         response.status(500).json({ errors: { globalError: "Unknown internal error occured" }});
     }
 });
+
+
+if (process.env.NODE_ENV === 'production') {
+    const __dirname = path.resolve();
+
+    app.use(express.static(path.join(__dirname, "client", "build")));
+
+    app.get("*", (_, response) => {
+        response.sendFile(path.join(__dirname, "client", "build", "index.html"));
+    });
+}
 
 
 export default app;

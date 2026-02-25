@@ -62,9 +62,9 @@ export const getChat = async (chatId) => {
     }).populate({
         path: 'secondaryUser',
         select: ['firstName', 'lastName', 'profilePicture']
-    });
+    }).lean();
 
-    chat.messages.sort((a, b) => b.timestamp - a.timestamp);
+    chat.messages.reverse();
 
     return chat;
 }
@@ -184,7 +184,7 @@ export const sendMessage = async (userId, chatId, text) => {
     })
 
     chat.messages.push(message);
-    
+
     await chat.save();
 
     message.receiverId = chat.primaryUser.equals(userId) ? chat.secondaryUser : chat.primaryUser;

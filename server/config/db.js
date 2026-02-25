@@ -4,7 +4,7 @@ import mongoose from 'mongoose';
 export const connectDatabase = async () => {
     const mongoUri = process.env.MONGODB_URI;
 
-    await mongoose.connect(mongoUri);
+    await mongoose.connect(mongoUri, { family: 4 });
 }
 
 

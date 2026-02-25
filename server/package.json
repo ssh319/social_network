@@ -23,6 +23,7 @@
     "transform": {}
   },
   "scripts": {
+    "start": "node server.js",
     "test": "NODE_OPTIONS=--experimental-vm-modules jest --runInBand"
   }
 }

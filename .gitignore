@@ -1,4 +1,7 @@
 .vscode/
 node_modules/
 .env
+.env.production
+.env.development
 ssl/
+build/

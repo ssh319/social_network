@@ -1,12 +1,9 @@
 import dotenv from 'dotenv';
 
-dotenv.config();
-
+dotenv.config({ path: `.env.${process.env.NODE_ENV}` });
 
 const corsConfig = {
-    // ...
-    // origin: "http://localhost:3000",
-    origin: 'http://192.168.1.10:3000',
+    origin: `http://${process.env.HOST}:3000`,
     credentials: true
 }
 

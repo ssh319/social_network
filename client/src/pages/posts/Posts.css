@@ -9,7 +9,6 @@
     display: flex;
     flex-direction: column;
     max-width: 42rem;
-    /* flex: 1; */
     width: 100%;
     gap: 20px;
     align-items: center;
@@ -120,7 +119,7 @@
     flex-direction: column;
     max-width: 16rem;
     width: 100%;
-    max-height: 600px;
+    height: 33rem;
 }
 
 .sidenav-header {
@@ -175,8 +174,18 @@
     flex-direction: column;
     max-width: 16rem;
     width: 100%;
-    max-height: 26.5rem;
+    height: 26.5rem;
     background-color: white;
+    border: 1px solid var(--bs-gray-400);
+    border-radius: 7px;
+}
+
+.sidebar-container-mobile {
+    display: none;
+    flex-direction: column;
+    background-color: white;
+    width: 100%;
+    height: 14rem;
     border: 1px solid var(--bs-gray-400);
     border-radius: 7px;
 }
@@ -189,6 +198,8 @@
 .sidebar-suggestions {
     display: flex;
     flex-direction: column;
+    position: relative;
+    height: 100%;
     list-style-type: none;
     padding: 0;
 }
@@ -214,10 +225,18 @@
 }
 
 .suggested-user-info > a {
+    display: flex;
     text-decoration: none;
     color: inherit;
     cursor: pointer;
     transition: color 0.15s ease;
+}
+
+.suggested-user-info > a > span {
+    font-size: 13px;
+    font-weight: 600;
+    text-overflow: ellipsis;
+    overflow: hidden;
 }
 
 .suggested-user-info > a:hover {
@@ -254,7 +273,46 @@
     .sidenav-container {
         display: none;
     }
+
     .sidebar-container {
         display: none;
+    }
+
+    .sidebar-container-mobile {
+        display: flex;
+    }
+
+    .sidebar-suggestions {
+        flex-direction: row;
+        overflow: scroll hidden;
+        margin: 0;
+    }
+
+    .sidebar-suggestions > li {
+        flex-direction: column;
+        gap: 5px;
+        flex-shrink: 0;
+        height: 100%;
+        width: 120px;
+        padding: 15px;
+        text-align: center;
+        justify-content: space-between;
+        align-content: center;
+    }
+
+    .suggested-user-info {
+        gap: 3px;
+    }
+
+    .suggested-user-info > a {
+        flex-direction: column;
+    }
+
+    .suggested-user-info > a > span {
+        margin-left: 0 !important;
+    }
+
+    .homepage-content-container {
+        margin: 0 auto;
     }
 }
