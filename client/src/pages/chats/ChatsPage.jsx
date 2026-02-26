@@ -9,6 +9,7 @@ import { useSocket } from '@context/SocketContext';
 import './Chats.css';
 import testAvatar from '@assets/images/test-avatar.jpg';
 import SendIcon from '@assets/icons/SendIcon';
+import ArrowIcon from '@assets/icons/ArrowIcon';
 
 
 const ChatsPage = () => {
@@ -22,6 +23,8 @@ const ChatsPage = () => {
 
     const messageInputRef = useRef(null);
     const sendButtonRef = useRef(null);
+    const chatsList = useRef(null);
+    const convoSection = useRef(null);
     
     const [ chats, setChats ] = useState([]);
     const [ chatsLoaded, setChatsLoaded ] = useState(false);
@@ -53,6 +56,9 @@ const ChatsPage = () => {
         setConvoLoaded(false);
 
         const service = new ChatService(cookies.token);
+
+        const chatsListElement = chatsList.current;
+        const convoSectionElement = convoSection.current;
 
         const loadChats = async () => {
             try {
@@ -89,7 +95,14 @@ const ChatsPage = () => {
         }
 
         if (params.chatId) {
+            chatsListElement.classList.add('mobile-chat');
+            convoSectionElement.classList.add('mobile-chat');
             loadConvo(params.chatId);
+        }
+
+        return () => {
+            chatsListElement.classList.remove('mobile-chat');
+            convoSectionElement.classList.remove('mobile-chat');
         }
 
     }, [cookies.token, params.chatId, navigate, user._id]);
@@ -124,7 +137,7 @@ const ChatsPage = () => {
         <main>
             <div className='main-chatspage-container'>
                 <div className='chats-section'>
-                    <ul className='chats-list-sidenav'>
+                    <ul ref={chatsList} className='chats-list-sidenav'>
                         {chatsLoaded ?
                             <>
                                 {chats.map((chat, index) => (
@@ -160,12 +173,15 @@ const ChatsPage = () => {
                             <span className='loader chat-loader' />
                         }
                     </ul>
-                    <div className='convo-section'>
+                    <div ref={convoSection} className='convo-section'>
                         {!params.chatId ?
                             <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
                                 <span style={{ fontSize: '21px', color: 'var(--bs-gray-500)' }}>Select chat.</span>
                             </div> :
                             <>
+                                <Link to='/chats' className='mobile-back-button'>
+                                    <ArrowIcon style={{ transform: 'rotate(180deg)' }} />
+                                </Link>
                                 {convoLoaded ?
                                     <>
                                         <div className='convo-messages'>

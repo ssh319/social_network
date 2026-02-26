@@ -55,6 +55,28 @@
     flex: 1 1 0;
 }
 
+.mobile-back-button {
+    display: none;
+    position: absolute;
+    transform: translate(-50%, -50%);
+    top: 30px;
+    left: 30px;
+    z-index: 1;
+    background-color: var(--bs-gray-200);
+    color: var(--bs-gray-600);
+    border: none;
+    width: 38px;
+    height: 32px;
+    justify-content: center;
+    align-items: center;
+    border-radius: 4px;
+    transition: background 0.15s ease;
+}
+
+.mobile-back-button:hover {
+    background-color: var(--bs-gray-300);
+}
+
 .convo-messages {
     overflow-y: auto;
     display: flex;
@@ -147,6 +169,22 @@
 
 @media (max-width: 768px) {
     .chats-list-sidenav {
-        flex: 0 0 9rem;
+        flex: 1;
+    }
+
+    .convo-section {
+        display: none;
+    }
+
+    .chats-list-sidenav.mobile-chat {
+        display: none;
+    }
+
+    .convo-section.mobile-chat {
+        display: flex;
+    }
+
+    .mobile-back-button {
+        display: flex;
     }
 }
