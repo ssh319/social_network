@@ -204,23 +204,47 @@
     right: 4px;
 }
 
+.request-btn {
+    padding: 2px 7px;
+    margin: 0 5px;
+    font-size: 14px;
+}
+
 @media (max-width: 768px) {
     .logo {
-        flex-shrink: 0;
-        width: 36px;
-        height: 32px;
+        display: none;
     }
     
     .header {
-        padding: 0 7px;
+        padding: 0 12px;
+    }
+
+    .header-navbar {
+        width: 100%;
+    }
+
+    .header-navbar-links {
+        width: 85%;
+        justify-content: space-between;
+        margin: 0;
+        padding: 0;
+    }
+
+    .header-navbar-links > li {
+        width: 100%;
+    }
+
+    .header-navbar-links > li > a,
+    .hedaer-navbar-links > li > button {
+        flex: 1;
     }
 
     #account-dropdown {
-        left: 35%;
+        left: 40%;
     }
 
     #notifications-dropdown {
-        right: 25%;
+        right: 20%;
     }
 
     .header-navbar-links > li:hover .tooltip {

@@ -1,8 +1,9 @@
 services:
   app:
-    image: social_network-app:latest
+    # image: social_network-app:latest
+    build: .
     ports:
-      - "80:5000"
+      - "443:5000"
     env_file:
       - .env.production
     restart:

@@ -10,6 +10,7 @@ import './Chats.css';
 import testAvatar from '@assets/images/test-avatar.jpg';
 import SendIcon from '@assets/icons/SendIcon';
 import ArrowIcon from '@assets/icons/ArrowIcon';
+import LastActive from '@components/LastActive';
 
 
 const ChatsPage = () => {
@@ -19,7 +20,7 @@ const ChatsPage = () => {
     const params = useParams();
 
     const { user } = useAuth();
-    const { socket } = useSocket();
+    const { socket, setNotifications } = useSocket();
 
     const messageInputRef = useRef(null);
     const sendButtonRef = useRef(null);
@@ -39,16 +40,22 @@ const ChatsPage = () => {
         
         document.title = "Messages";
 
-        if (convo) {
-            socket.on("newMessage", msg => {
+        socket.on("newMessage", msg => {
+            if (convo && convo._id === msg.chat) {
                 setConvo({ ...convo, messages: [ msg, ...convo.messages ] });
-            });
+            };
 
-            return () => {
-                socket.off("newMessage");
-            }
+            setChats([
+                { ...chats.find(chat => chat._id === msg.chat), lastMessage: msg },
+                ...chats.filter(chat => chat._id !== msg.chat)
+            ]);
+        });
+
+        return () => {
+            socket.off("newMessage");
         }
-    }, [socket, convo, user._id]);
+
+    }, [socket, convo, user._id, chats]);
 
 
     useEffect(() => {
@@ -63,6 +70,8 @@ const ChatsPage = () => {
         const loadChats = async () => {
             try {
                 let chats = await service.retrieveChats();
+
+                chats.sort((a, b) => new Date(b.lastMessage?.timestamp) - new Date(a.lastMessage?.timestamp));
 
                 setChats(chats);
                 setChatsLoaded(true);
@@ -83,6 +92,7 @@ const ChatsPage = () => {
                 
                 setConvo(chat);
                 setConvoLoaded(true);
+                setNotifications(prev => prev.filter(n => n.type !== 'message' || n.sender._id !== chat.peer._id));
 
             } catch (err) {
                 if (err.response?.status < 500) {
@@ -105,7 +115,7 @@ const ChatsPage = () => {
             convoSectionElement.classList.remove('mobile-chat');
         }
 
-    }, [cookies.token, params.chatId, navigate, user._id]);
+    }, [cookies.token, params.chatId, navigate, user._id, setNotifications]);
 
     const handleMessageChange = (event) => {
         setMessageText(event.target.value);
@@ -117,14 +127,22 @@ const ChatsPage = () => {
         sendButtonRef.current.disabled = true;
 
         messageInputRef.current.value = "";
-
-        if (!messageText.trim()) return;
-
+        
+        if (!messageText.trim()) {
+            sendButtonRef.current.disabled = false;
+            return;
+        }
+        
         const service = new ChatService(cookies.token);
-
+        
         try {
             const newMessage = await service.sendMessage(convo._id, { text: messageText });
             setConvo({ ...convo, messages: [ newMessage, ...convo.messages ] });
+            setChats([
+                { ...chats.find(chat => chat._id === convo._id), lastMessage: newMessage },
+                ...chats.filter(chat => chat._id !== convo._id)
+            ]);
+            setMessageText("");
             sendButtonRef.current.disabled = false;
 
         } catch (err) {
@@ -154,7 +172,7 @@ const ChatsPage = () => {
                                             height={28}
                                             style={{ borderRadius: '50%' }}
                                         />
-                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                                        <div style={{ display: 'flex', overflow: 'hidden', flexDirection: 'column', gap: '3px' }}>
                                             <span>
                                                 {chat.primaryUser._id === user._id ?
                                                     `${chat.secondaryUser.firstName} ${chat.secondaryUser.lastName}` :
@@ -162,7 +180,7 @@ const ChatsPage = () => {
                                                 }
                                             </span>
                                             {chat.lastMessage &&
-                                                <span style={{ fontSize: '13px', color: 'var(--bs-gray-600)' }}>
+                                                <span style={{ color: 'var(--bs-gray-600)', overflow: 'hidden', textOverflow: 'ellipsis', width: '100%' }}>
                                                     {chat.lastMessage.text}
                                                 </span>
                                             }
@@ -179,11 +197,19 @@ const ChatsPage = () => {
                                 <span style={{ fontSize: '21px', color: 'var(--bs-gray-500)' }}>Select chat.</span>
                             </div> :
                             <>
-                                <Link to='/chats' className='mobile-back-button'>
-                                    <ArrowIcon style={{ transform: 'rotate(180deg)' }} />
-                                </Link>
                                 {convoLoaded ?
                                     <>
+                                        <Link to='/chats' className='mobile-back-button'>
+                                            <ArrowIcon style={{ transform: 'rotate(180deg)' }} />
+                                        </Link>
+                                        <div className='peer-info'>
+                                            <img alt='Peer avatar' src={testAvatar} width={28} height={28} style={{ borderRadius: '50%' }} />
+                                            <div>
+                                                <Link to={`/users/${convo.peer._id}`} style={{ color: 'inherit', textDecoration: 'none' }}>{convo.peer.firstName} {convo.peer.lastName}</Link>
+                                                <span style={{ fontWeight: '400' }}><LastActive lastActive={convo.peer.lastActive} /></span>
+                                            </div>
+                                            
+                                        </div>
                                         <div className='convo-messages'>
                                             {convo && convo.messages.map(msg => (
                                                 <div
@@ -213,11 +239,19 @@ const ChatsPage = () => {
                                                         </Link>
                                                     </div>
 
-                                                    <span style={{ /* width: '70%' */ }}>{msg.text}</span>
+                                                    <span style={{ width: '85%' }}>{msg.text}</span>
 
                                                     <span style={{ fontSize: '11px', color: 'var(--bs-gray-500)' }}>
                                                         {new Date(msg.timestamp).toLocaleString()}
                                                     </span>
+                                                    {/* {msg.user === convo.me._id &&
+                                                        <div>
+                                                            {msg.isRead ? 
+                                                                <span>read</span> :
+                                                                <span>not read</span>
+                                                            }
+                                                        </div>
+                                                    } */}
                                                 </div>
                                             ))}
                                         </div>

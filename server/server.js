@@ -1,7 +1,7 @@
 import dotenv from 'dotenv';
 import http from 'http';
-// import https from 'https';
-// import fs from 'fs';
+import https from 'https';
+import fs from 'fs';
 
 import app from './app.js';
 import { connectDatabase, disconnectDatabase } from './config/db.js';
@@ -12,12 +12,19 @@ dotenv.config({ path: `.env.${process.env.NODE_ENV}` });
 const PORT = process.env.PORT || 8080;
 const HOST = process.env.HOST || '127.0.0.1';
 
-// const key = fs.readFileSync('./ssl/cert.key');
-// const cert = fs.readFileSync('./ssl/cert.crt');
-// const httpsServer = https.createServer({ key, cert }, app);
-// httpsServer.listen(PORT, HOST, () => {});
 
-const server = http.createServer(app);
+let server;
+
+if (process.env.NODE_ENV === 'development') {
+    server = http.createServer(app);
+    
+} else if (process.env.NODE_ENV === 'production') {
+    const key = fs.readFileSync('./ssl/cert.key');
+    const cert = fs.readFileSync('./ssl/cert.crt');
+    
+    server = https.createServer({ key, cert }, app);
+}
+
 let io;
 
 (async () => {

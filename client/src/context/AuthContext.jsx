@@ -23,7 +23,6 @@ export const AuthProvider = ({ children }) => {
     const navigate = useNavigate();
     const location = useLocation();
 
-
     const loadUser = useCallback(async () => {
 
         const service = new UserService(cookies.token);

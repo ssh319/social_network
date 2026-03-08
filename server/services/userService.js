@@ -316,7 +316,7 @@ export const getFriendsList = async (viewerId, userId) => {
         { friends: 1 }
     ).populate({
         path: 'friends.user',
-        select: ['firstName', 'lastName', 'profilePicture']
+        select: ['firstName', 'lastName', 'profilePicture', 'lastActive', 'country', 'city']
     });
 
     if (viewerId !== userId) {
@@ -377,13 +377,15 @@ export const addFriend = async (userId, requestReceiverId) => {
         
         await requestReceiver.save({ session });
 
-        await User.findByIdAndUpdate(
+        const requestSender = await User.findByIdAndUpdate(
             userId,
             { $push: { friends: { user: requestReceiverId, status: 'sent' } } },
             { session }
-        );
+        ).select("firstName lastName profilePicture").lean();
 
         await session.commitTransaction();
+
+        return { sender: requestSender, receiver: requestReceiver };
     
     } catch (err) {
         await session.abortTransaction();

@@ -58,10 +58,10 @@ export const getChat = async (chatId) => {
         chatId
     ).populate({
         path: 'primaryUser',
-        select: ['firstName', 'lastName', 'profilePicture']
+        select: ['firstName', 'lastName', 'profilePicture', 'lastActive']
     }).populate({
         path: 'secondaryUser',
-        select: ['firstName', 'lastName', 'profilePicture']
+        select: ['firstName', 'lastName', 'profilePicture', 'lastActive']
     }).lean();
 
     chat.messages.reverse();
@@ -165,7 +165,7 @@ export const deleteChat = async (chatId) => {
 
 
 /**
- * Add message to the provided chat.
+ * Add new message to the provided chat.
  * 
  * @param {String} userId `ObjectId` of the messsage sender.
  * @param {String} chatId `ObjectId` of the chat.
@@ -181,16 +181,18 @@ export const sendMessage = async (userId, chatId, text) => {
     const message = chat.messages.create({
         user: userId,
         text
-    })
+    });
 
     chat.messages.push(message);
 
     await chat.save();
 
-    message.receiverId = chat.primaryUser.equals(userId) ? chat.secondaryUser : chat.primaryUser;
-    message.sender = sender;
+    const newMessage = message.toObject();
 
-    return message;
+    newMessage.receiverId = chat.primaryUser.equals(userId) ? chat.secondaryUser : chat.primaryUser;
+    newMessage.sender = sender;
+    
+    return newMessage;
 }
 
 

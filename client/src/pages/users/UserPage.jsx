@@ -8,11 +8,11 @@ import ChatService from '@services/chatService';
 import { useAuth } from '@context/AuthContext';
 
 import Feed from '@components/Feed';
+import LastActive from '@components/LastActive';
 import './Users.css';
 
 import testAvatar from '@assets/images/test-avatar.jpg';
 import testImage from '@assets/images/test-image.jpg';
-import CircleIcon from '@assets/icons/CircleIcon';
 import EditIcon from '@assets/icons/EditIcon';
 import UserPlusIcon from '@assets/icons/UserPlusIcon';
 import UserMinusIcon from '@assets/icons/UsersMinusIcon';
@@ -175,12 +175,7 @@ const UserPage = () => {
                                         }}>
                                             <span style={{ fontWeight: '600' }}>{userProfile.firstName} {userProfile.lastName}</span>
 
-                                            <div style={{ color: 'var(--bs-gray-600)', fontSize: '12px' }}>
-                                                {Date.now() - new Date(userProfile.lastActive) > 1000 * 60 * 3 ?
-                                                    `Last active: ${formatDate(userProfile.lastActive)}, ${new Date(userProfile.lastActive).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` :
-                                                    <span><CircleIcon color='green' /> Online</span>
-                                                }
-                                            </div>
+                                            <LastActive lastActive={userProfile.lastActive} />
                                         </div>
                                     </div>
 
@@ -234,7 +229,7 @@ const UserPage = () => {
                                     <div id='userpage-additional-info'>
                                         <span><strong>Country:</strong> {userProfile.country || 'Not specified'}</span>
                                         <span><strong>City:</strong> {userProfile.city || 'Not specified'}</span>
-                                        <span><strong>Date of Bitrh:</strong> {formatDate(userProfile.birthDate) || 'Not specified'}</span>
+                                        <span><strong>Date of Birth:</strong> {formatDate(userProfile.birthDate) || 'Not specified'}</span>
                                         <span><strong>About:</strong> {userProfile.aboutMe || 'None'}</span>
                                     </div>
                                     <button
@@ -252,18 +247,44 @@ const UserPage = () => {
                                     </button>
                                 </div>
                             </div>
+
+                            <div className='userpage-friends-mobile'>
+                                <div className='userpage-sidebar-header'>
+                                    <Link to={`/users/${userProfile._id}/friends`}>
+                                        <span>Friends</span>
+                                        <span style={{ color: 'var(--bs-gray-600)', position: 'relative', left: '9px' }}>
+                                            {userProfile.friends.length}
+                                        </span>
+                                    </Link>
+                                </div>
+                                <ul className='userpage-friends-list'>
+                                    {userProfile.friends.slice(0, 6).map(friend => (
+                                        <li key={friend.user._id}>
+                                            <Link to={`/users/${friend.user._id}`} style={{ all: 'inherit' }}>
+                                                <img
+                                                    alt='user'
+                                                    src={testAvatar}
+                                                    width='38'
+                                                    height='38'
+                                                    style={{ borderRadius: '50%' }}
+                                                />
+                                                <div className='userpage-friend-name'>
+                                                    <span>{friend.user.firstName}</span>
+                                                    <span>{friend.user.lastName}</span>
+                                                </div>
+                                            </Link>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+
                             <Feed posts={userProfile?.posts} isLoaded={userLoaded} />
                         </div>
 
                         <div className='userpage-sidebar-container'>
                             <div className='userpage-friends'>
                                 <div className='userpage-sidebar-header'>
-                                    <Link
-                                        to={user._id !== userProfile._id ?
-                                            `/users/${userProfile._id}/friends` :
-                                            '/users/friends'
-                                        }
-                                    >
+                                    <Link to={`/users/${userProfile._id}/friends`}>
                                         <span>Friends</span>
                                         <span style={{ color: 'var(--bs-gray-600)', position: 'relative', left: '9px' }}>
                                             {userProfile.friends.length}

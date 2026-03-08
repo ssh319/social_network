@@ -1,8 +1,11 @@
 import { useEffect, useState, useRef } from 'react';
 import { Outlet, Link } from 'react-router-dom';
+import { useCookies } from 'react-cookie';
 
 import { useAuth } from '@context/AuthContext';
 import { useSocket } from '@context/SocketContext';
+import FriendService from '@services/friendService';
+import UserService from '@services/userService';
 
 import '@styles/Header.css';
 
@@ -16,21 +19,64 @@ import PhotoIcon from '@assets/icons/PhotoIcon';
 import UserIcon from '@assets/icons/UserIcon';
 import ListIcon from '@assets/icons/ListIcon';
 import BellIcon from '@assets/icons/BellIcon';
+import CheckIcon from '@assets/icons/CheckIcon';
+import CrossIcon from '@assets/icons/CrossIcon';
 
 
 const Header = () => {
     const { loadUser, user, isLoaded, logout } = useAuth();
-    const { notifications } = useSocket();
+    const { notifications, setNotifications } = useSocket();
+    const [ cookies ] = useCookies(["token"]);
 
+    const prevNotificationsRef = useRef(notifications);
+    
     const accountDropdownRef = useRef(null);
     const [ accountDropdownActive, setAccountDropdownActive ] = useState(false);
-
+    
     const notifDropdownRef = useRef(null);
     const [ notifDropdownActive, setNotifDropdownActive ] = useState(false);
-
+    
     useEffect(() => {
         loadUser();
     }, [loadUser]);
+    
+    useEffect(() => {
+        if (!isLoaded) return;
+
+        const fetchRequests = async () => {
+            const service = new UserService(cookies.token);
+
+            const requests = user.friends.filter(friend => friend.status === 'received');
+
+            try {
+                const notifList = await Promise.all(
+                    requests.map(async request => {
+                        const { _id, firstName, lastName, profilePicture } = await service.getUser(request.user);
+                        return (
+                            { type: 'request', sender: { _id, firstName, lastName, profilePicture } }
+                        );
+                    })
+                );
+
+                setNotifications(prev => {
+                    const filtered = notifList.filter(n => 
+                        !prev.some(p =>
+                            p.type === n.type &&
+                            p.sender._id === n.sender._id
+                        )
+                    );
+
+                    return prev.concat(filtered);
+                });
+
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        fetchRequests();
+
+    }, [user, isLoaded, cookies.token, setNotifications, prevNotificationsRef]);
 
     useEffect(() => {
         if (!isLoaded) return;
@@ -93,6 +139,34 @@ const Header = () => {
         setNotifDropdownActive(!notifDropdownActive);
         setAccountDropdownActive(false);
     }
+
+    const acceptRequest = async (event, userId) => {
+        event.stopPropagation();
+
+        const service = new FriendService(cookies.token);
+
+        try {
+            setNotifications(prev => prev.filter(n => n.type !== 'request' || n.sender._id !== userId));
+            await service.acceptFriend(userId);
+
+        } catch (err) {
+            console.error(err);
+        }
+    }
+
+    const declineRequest = async (event, userId) => {
+        event.stopPropagation();
+
+        const service = new FriendService(cookies.token);
+
+        try {
+            setNotifications(prev => prev.filter(n => n.type !== 'request' || n.sender._id !== userId));
+            await service.removeFriend(userId);
+
+        } catch (err) {
+            console.error(err);
+        }
+    }
     
     return (
         <>
@@ -119,15 +193,40 @@ const Header = () => {
                                         <ul className='notifications-list'>
                                             {notifications.map((notif, index) => (
                                                 <li key={index}>
-                                                    <div>
-                                                        <img alt='notif user' src={testAvatar} width={20} height={20} style={{ borderRadius: '50%' }} />
-                                                        <span style={{ fontSize: '13px', color: 'var(--bs-gray-600)', position: 'relative', left: '7px' }}>
-                                                            <strong style={{ color: 'var(--bs-body-color)' }}>
-                                                                {notif.sender.firstName} {notif.sender.lastName}
-                                                            </strong> sent you a message:
-                                                        </span>
-                                                    </div>
-                                                    <span style={{ fontSize: '16px' }}>{notif.messageText}</span>
+                                                    {notif.type === 'message' &&
+                                                        <>
+                                                            <div>
+                                                                <img alt='Message sender' src={testAvatar} width={20} height={20} style={{ borderRadius: '50%' }} />
+                                                                <span style={{ fontSize: '13px', color: 'var(--bs-gray-600)', position: 'relative', left: '7px' }}>
+                                                                    <strong style={{ color: 'var(--bs-body-color)' }}>
+                                                                        <Link to={`/users/${notif.sender._id}`} style={{ color: 'inherit', textDecoration: 'none' }}>
+                                                                            {notif.sender.firstName} {notif.sender.lastName}
+                                                                        </Link>
+                                                                    </strong> sent you a message:
+                                                                </span>
+                                                            </div>
+                                                            <span style={{ fontSize: '16px' }}>
+                                                                <Link to={`/chats/${notif.chat}`} style={{ color: 'inherit', textDecoration: 'none' }}>
+                                                                    {notif.messageText}
+                                                                </Link>
+                                                            </span>
+                                                        </>
+                                                    }
+
+                                                    {notif.type === 'request' &&
+                                                        <>
+                                                            <div>
+                                                                <img alt='Request sender' src={testAvatar} width={20} height={20} style={{ borderRadius: '50%' }} />
+                                                                <span style={{ position: 'relative', left: '7px' }}>
+                                                                    You have new friend request from <Link to={`/users/${notif.sender._id}`} style={{ textDecoration: 'none', color: 'inherit', fontWeight: '600' }}>{notif.sender.firstName} {notif.sender.lastName}</Link>
+                                                                </span>
+                                                            </div>
+                                                            <div style={{ display: 'flex', justifyContent: '', marginTop: '7px' }}>
+                                                                <button type='button' onClick={event => { acceptRequest(event, notif.sender._id) }} className='btn btn-outline-success request-btn'>Accept <CheckIcon /></button>
+                                                                <button type='button' onClick={event => { declineRequest(event, notif.sender._id) }} className='btn btn-outline-danger request-btn'>Decline <CrossIcon /></button>
+                                                            </div>
+                                                        </>
+                                                    }
                                                 </li>
                                             ))}
                                         </ul> :

@@ -44,3 +44,9 @@ main {
     align-items: center;
     font-size: 28px;
 }
+
+@media (max-width: 768px) {
+    main {
+        padding-top: 25px;
+    }
+}

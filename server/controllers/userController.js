@@ -1,6 +1,7 @@
 import * as service from '../services/userService.js';
 
 import ClientError from '../errors/clientError.js';
+import { emitNotification } from '../socket/notifications.js';
 
 
 export const searchUsers = async (request, response, next) => {
@@ -155,7 +156,14 @@ export const getFriendsList = async (request, response, next) => {
 
 export const addFriend = async (request, response, next) => {
     try {
-        await service.addFriend(request.user._id, request.params.userId);
+        const friendRequest = await service.addFriend(request.user._id, request.params.userId);
+        emitNotification(
+            friendRequest.receiver._id,
+            {
+                type: 'request',
+                sender: friendRequest.sender
+            }
+        );
         response.sendStatus(201);
 
     } catch (err) {
