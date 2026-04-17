@@ -111,8 +111,6 @@ export const validateUserData = [
         .isLength({ max: 24 }).withMessage("Last name cannot be more than 24 characters in length")
         .customSanitizer(capitalize),
 
-    // allow requests with null for field (custom sanitizer only sets empty strings to null)
-
     body("publicStatus")
         .optional()
         .isString().withMessage("Invalid data type for public status").bail()
@@ -126,20 +124,17 @@ export const validateUserData = [
         .isLength({ max: 30 }).withMessage("Country name cannot be more than 30 characters in length")
         .customSanitizer(deleteOptionalField),
 
-    // city?
     body("city")
         .optional()
         .isString().withMessage("Invalid data type for city").bail()
-        // 
         .isLength({ max: 30 }).withMessage("City name cannot be more than 30 characters in length")
         .customSanitizer(deleteOptionalField),
 
-    // validate incorrect dates
     body("birthDate")
-        .optional()
+        .customSanitizer(deleteOptionalField)
+        .optional({ values: 'null' })
         .isISO8601().withMessage("Invalid data format for birth date").bail()
         .toDate()
-        // .customSanitizer(toLocalDate)
         .custom(isValidBirthDate).withMessage("Invalid birth date provided"),
 
     body("aboutMe")

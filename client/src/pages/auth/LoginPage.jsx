@@ -39,7 +39,7 @@ const LoginPage = () => {
 
         try {
             const token = await service.authenticateUser({ email, password });
-            setCookie("token", token, { path: "/" });
+            setCookie("token", token, { path: "/", maxAge: 60 * 60 * 24 * 7 });
             navigate("/");
 
         } catch (err) {

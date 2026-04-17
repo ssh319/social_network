@@ -270,6 +270,47 @@
     font-size: 14px;
 }
 
+.main-params-container {
+    max-width: 800px;
+    width: 100%;
+    border: 1px solid var(--bs-gray-400);
+    border-radius: 7px;
+    background-color: white;
+    min-height: 800px;
+    margin-bottom: 20px;
+}
+
+.params-header {
+    font-size: 16px;
+    color: var(--bs-gray-600);
+    padding: 20px 15px 5px 15px;
+}
+
+.params-options {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+    list-style-type: none;
+    font-size: 14px;
+    color: var(--bs-gray-700);
+    padding: 30px;
+}
+
+.params-options > li {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.params-option-field {
+    height: 2rem;
+}
+
+.params-option-field:focus {
+    box-shadow: none;
+    border-color: var(--bs-gray-500);
+}
+
 @media (max-width: 768px) {
     .userpage-sidebar-container {
         display: none;
@@ -296,5 +337,9 @@
 
     .friend-func-btn > span {
         display: none;
+    }
+
+    .main-params-container {
+        width: 95%;
     }
 }
