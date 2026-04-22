@@ -2,6 +2,11 @@ import { useEffect, useState } from 'react';
 import { useCookies } from 'react-cookie';
 
 import UserService from '@services/userService';
+import ImageService from '@services/imageService';
+
+import getImageUrl from '@utils/getImageUrl';
+
+import avatarPlaceholder from '@assets/images/avatar-placeholder.jpg';
 
 
 const AccountManagementPage = () => {
@@ -13,6 +18,7 @@ const AccountManagementPage = () => {
     const [ submitResult, setSubmitResult ] = useState({});
     const [ passwordConfirm, setPasswordConfirm ] = useState("");
     const [ birthDate, setBirthDate ] = useState({});
+    const [ image, setImage ] = useState(null);
 
     const editableUserData = {
         firstName: "First name",
@@ -48,6 +54,10 @@ const AccountManagementPage = () => {
             try {
                 const fetchedData = await service.getAccountData();
                 setUserData(fetchedData);
+
+                if (fetchedData.profilePicture) {
+                    setImage(getImageUrl(fetchedData.profilePicture.path));
+                }
                 
                 if (fetchedData.birthDate) {
                     const fetchedBirthDate = new Date(fetchedData.birthDate);
@@ -145,123 +155,150 @@ const AccountManagementPage = () => {
         }
     }
 
+    const handleImageUpload = async (event) => {
+        const formData = new FormData();
+        formData.append('image', event.target.files[0]);
+
+        const imageService = new ImageService(cookies.token);
+        const userService = new UserService(cookies.token);
+
+        try {
+            const newImage = await imageService.uploadImage(formData);
+            await userService.updateUser({ profilePicture: newImage._id });
+
+            setImage(getImageUrl(newImage.path));
+
+        } catch (err) {
+            console.error(err);
+        }
+    }
+
     return (
         <main>
             <div className='main-params-container'>
                 <div className='params-header'>Account management</div>
                 {userLoaded ?
-                    <ul className='params-options'>
-                        {Object.entries(editableUserData).map(([key, label]) =>
-                            <li key={key}>
-                                <span style={{ width: '7rem' }}>{label}</span>
-                                {!['aboutMe', 'password', 'birthDate'].includes(key) ?
-                                    <input
-                                        className='form-control params-option-field'
-                                        defaultValue={userData[key]}
-                                        placeholder="Not specified"
-                                        onChange={event => { editField(event.target.value, key) }}
-                                    /> :
-                                    <>
-                                        {key === 'password' &&
-                                            <div style={{ display: 'flex', flexDirection: 'column', width: '100%', gap: '25px' }}>
-                                                <input
-                                                    type='password'
+                    <>
+                        <div style={{ padding: '15px 30px' }}>
+                            <img alt='profile pic' src={image || avatarPlaceholder} width={128} height={128} />
+                            <label htmlFor='profile-pic-upload'>
+                                <input type='file' id='profile-pic-upload' accept='image/*' onChange={handleImageUpload} hidden />
+                                <span className='btn btn-outline-primary' style={{ position: 'relative', left: '30px' }}>Upload profile picture</span>
+                            </label>
+                        </div>
+                        <ul className='params-options'>
+                            {Object.entries(editableUserData).map(([key, label]) =>
+                                <li key={key}>
+                                    <span style={{ width: '7rem' }}>{label}</span>
+                                    {!['aboutMe', 'password', 'birthDate'].includes(key) ?
+                                        <input
+                                            className='form-control params-option-field'
+                                            defaultValue={userData[key]}
+                                            placeholder="Not specified"
+                                            onChange={event => { editField(event.target.value, key) }}
+                                        /> :
+                                        <>
+                                            {key === 'password' &&
+                                                <div style={{ display: 'flex', flexDirection: 'column', width: '100%', gap: '25px' }}>
+                                                    <input
+                                                        type='password'
+                                                        className='form-control params-option-field'
+                                                        placeholder="Enter your old password"
+                                                        onChange={event => { editField(event.target.value, 'oldPassword') }}
+                                                    />
+                                                    <input
+                                                        type='password'
+                                                        className='form-control params-option-field'
+                                                        placeholder="New password"
+                                                        onChange={event => { editField(event.target.value, key) }}
+                                                    />
+                                                    <input
+                                                        type='password'
+                                                        className='form-control params-option-field'
+                                                        placeholder="Confirm new password"
+                                                        onChange={handlePasswordConfirmChange}
+                                                    />
+                                                </div>
+                                            }
+
+                                            {key === 'birthDate' &&
+                                                <div style={{ display: 'flex', gap: '10px', width: '100%' }}>
+                                                    <input
+                                                        className='form-control params-option-field'
+                                                        placeholder='Year'
+                                                        type='number'
+                                                        min={1900}
+                                                        max={2100}
+                                                        defaultValue={birthDate.year}
+                                                        onChange={event => setBirthDate(prev => {
+                                                            editField(
+                                                                { year: event.target.value, month: birthDate.month, day: birthDate.day },
+                                                                key
+                                                            );
+                                                            return { ...prev, year: event.target.value };
+                                                        })}
+                                                    />
+                                                    <select
+                                                        className='form-control params-option-field'
+                                                        style={{ fontSize: '14px', lineHeight: '110%', cursor: 'pointer' }}
+                                                        onChange={event => setBirthDate(prev => {
+                                                            editField(
+                                                                { year: birthDate.year, month: event.target.value, day: birthDate.day },
+                                                                key
+                                                            );
+                                                            return { ...prev, month: event.target.value }
+                                                        })}
+                                                        defaultValue={birthDate.month}
+                                                    >
+                                                        <option value=''>Select month</option>
+                                                        {months.map((month, index) => (
+                                                            <option key={index} value={index}>
+                                                                {month}
+                                                            </option>
+                                                        ))}
+                                                    </select>
+                                                    <input
+                                                        className='form-control params-option-field'
+                                                        placeholder='Day'
+                                                        type='number'
+                                                        min={1}
+                                                        max={31}
+                                                        defaultValue={birthDate.day}
+                                                        onChange={event => setBirthDate(prev => {
+                                                            editField(
+                                                                { year: birthDate.year, month: birthDate.month, day: event.target.value },
+                                                                key
+                                                            );
+                                                            return { ...prev, day: event.target.value };
+                                                        })}
+                                                    />
+                                                </div>
+                                            }
+
+                                            {key === 'aboutMe' &&
+                                                <textarea
                                                     className='form-control params-option-field'
-                                                    placeholder="Enter your old password"
-                                                    onChange={event => { editField(event.target.value, 'oldPassword') }}
-                                                />
-                                                <input
-                                                    type='password'
-                                                    className='form-control params-option-field'
-                                                    placeholder="New password"
+                                                    defaultValue={userData[key]}
+                                                    placeholder="Not specified"
+                                                    style={{ height: '100px', resize: 'none' }}
                                                     onChange={event => { editField(event.target.value, key) }}
                                                 />
-                                                <input
-                                                    type='password'
-                                                    className='form-control params-option-field'
-                                                    placeholder="Confirm new password"
-                                                    onChange={handlePasswordConfirmChange}
-                                                />
-                                            </div>
-                                        }
+                                            }
+                                        </>
+                                    }
+                                </li>
+                            )}
 
-                                        {key === 'birthDate' &&
-                                            <div style={{ display: 'flex', gap: '10px', width: '100%' }}>
-                                                <input
-                                                    className='form-control params-option-field'
-                                                    placeholder='Year'
-                                                    type='number'
-                                                    min={1900}
-                                                    max={2999}
-                                                    defaultValue={birthDate.year}
-                                                    onChange={event => setBirthDate(prev => {
-                                                        editField(
-                                                            { year: event.target.value, month: birthDate.month, day: birthDate.day },
-                                                            key
-                                                        );
-                                                        return { ...prev, year: event.target.value };
-                                                    })}
-                                                />
-                                                <select
-                                                    className='form-control params-option-field'
-                                                    style={{ fontSize: '14px', lineHeight: '110%' }}
-                                                    onChange={event => setBirthDate(prev => {
-                                                        editField(
-                                                            { year: birthDate.year, month: event.target.value, day: birthDate.day },
-                                                            key
-                                                        );
-                                                        return { ...prev, month: event.target.value }
-                                                    })}
-                                                    defaultValue={birthDate.month}
-                                                >
-                                                    <option value=''>Select month</option>
-                                                    {months.map((month, index) => (
-                                                        <option key={index} value={index}>
-                                                            {month}
-                                                        </option>
-                                                    ))}
-                                                </select>
-                                                <input
-                                                    className='form-control params-option-field'
-                                                    placeholder='Day'
-                                                    type='number'
-                                                    min={1}
-                                                    max={31}
-                                                    defaultValue={birthDate.day}
-                                                    onChange={event => setBirthDate(prev => {
-                                                        editField(
-                                                            { year: birthDate.year, month: birthDate.month, day: event.target.value },
-                                                            key
-                                                        );
-                                                        return { ...prev, day: event.target.value };
-                                                    })}
-                                                />
-                                            </div>
-                                        }
-
-                                        {key === 'aboutMe' &&
-                                            <textarea
-                                                className='form-control params-option-field'
-                                                defaultValue={userData[key]}
-                                                placeholder="Not specified"
-                                                style={{ height: '100px', resize: 'none' }}
-                                                onChange={event => { editField(event.target.value, key) }}
-                                            />
-                                        }
-                                    </>
-                                }
-                            </li>
-                        )}
-
-                        <div style={{ margin: '10px auto 0 auto', display: 'flex', alignItems: 'center', gap: '25px' }}>
-                            <button
-                                onClick={applyNewData}
-                                className='btn btn-primary'
-                                style={{ width: '130px' }}
-                            >Submit</button>
-                            <span style={{ color: submitResult.success ? 'green' : 'red' }}>{submitResult.message}</span>
-                        </div>
-                    </ul> :
+                            <div style={{ margin: '10px auto 0 auto', display: 'flex', alignItems: 'center', gap: '25px' }}>
+                                <button
+                                    onClick={applyNewData}
+                                    className='btn btn-primary'
+                                    style={{ width: '130px' }}
+                                >Submit</button>
+                                <span style={{ color: submitResult.success ? 'green' : 'red' }}>{submitResult.message}</span>
+                            </div>
+                        </ul>
+                    </> :
                     <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '90%' }}>
                         <span className='loader' style={{ width: '28px', height: '28px', borderWidth: '3px' }} />
                     </div>

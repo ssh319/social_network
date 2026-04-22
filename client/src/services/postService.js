@@ -49,7 +49,8 @@ class PostService extends BaseService {
 
     async sendPostComment(postId, data) {
         await this.api.post(
-            `${this.baseUrl}/${postId}/comments`
+            `${this.baseUrl}/${postId}/comments`,
+            data
         );
     }
 
@@ -63,6 +64,18 @@ class PostService extends BaseService {
     async deletePostComment(postId, commentId) {
         await this.api.delete(
             `${this.baseUrl}/${postId}/comments/${commentId}`
+        );
+    }
+
+    async likePostComment(postId, commentId) {
+        await this.api.post(
+            `${this.baseUrl}/${postId}/comments/${commentId}/likes`
+        );
+    }
+
+    async unlikePostComment(postId, commentId) {
+        await this.api.delete(
+            `${this.baseUrl}/${postId}/comments/${commentId}/likes`
         );
     }
 }

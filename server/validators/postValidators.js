@@ -22,7 +22,6 @@ export const validateCommentId = (request, response, next) => {
 
 export const validatePost = [
     body("text")
-        .exists().withMessage("Text for post required").bail()
         .isString().withMessage("Invalid data type for post text").bail()
         .notEmpty().withMessage("Post text cannot be empty")
         .isLength({ max: 3000 }).withMessage("Post comment cannot be more than 3000 characters in length"),
@@ -53,7 +52,6 @@ export const validatePost = [
 
 export const validateComment = [
     body("text")
-        .exists().withMessage("Text for post comment required").bail()
         .isString().withMessage("Invalid data type for post comment text").bail()
         .notEmpty().withMessage("Empty comment text provided").bail()
         .isLength({ max: 1000 }).withMessage("Post comment cannot be more than 1000 characters in length"),

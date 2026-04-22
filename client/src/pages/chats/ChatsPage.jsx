@@ -5,9 +5,12 @@ import { useNavigate, useParams, Link } from 'react-router-dom';
 import ChatService from '@services/chatService';
 import { useAuth } from '@context/AuthContext';
 import { useSocket } from '@context/SocketContext';
+import getImageUrl from '@utils/getImageUrl';
 
 import './Chats.css';
-import testAvatar from '@assets/images/test-avatar.jpg';
+
+import avatarPlaceholder from '@assets/images/avatar-placeholder.jpg';
+
 import SendIcon from '@assets/icons/SendIcon';
 import ArrowIcon from '@assets/icons/ArrowIcon';
 import LastActive from '@components/LastActive';
@@ -167,7 +170,12 @@ const ChatsPage = () => {
                                     >
                                         <img
                                             alt='test'
-                                            src={testAvatar}
+                                            src={
+                                                (chat.primaryUser._id === user._id ?
+                                                    getImageUrl(chat.secondaryUser.profilePicture?.path) :
+                                                    getImageUrl(chat.primaryUser.profilePicture?.path)
+                                                ) || avatarPlaceholder
+                                            }
                                             width={28}
                                             height={28}
                                             style={{ borderRadius: '50%' }}
@@ -203,7 +211,7 @@ const ChatsPage = () => {
                                             <ArrowIcon style={{ transform: 'rotate(180deg)' }} />
                                         </Link>
                                         <div className='peer-info'>
-                                            <img alt='Peer avatar' src={testAvatar} width={28} height={28} style={{ borderRadius: '50%' }} />
+                                            <img alt='Peer avatar' src={getImageUrl(convo.peer.profilePicture?.path) || avatarPlaceholder} width={28} height={28} style={{ borderRadius: '50%' }} />
                                             <div>
                                                 <Link to={`/users/${convo.peer._id}`} style={{ color: 'inherit', textDecoration: 'none' }}>{convo.peer.firstName} {convo.peer.lastName}</Link>
                                                 <span style={{ fontWeight: '400' }}><LastActive lastActive={convo.peer.lastActive} /></span>
@@ -222,7 +230,12 @@ const ChatsPage = () => {
                                                         <Link to={`/users/${msg.user}`}>
                                                             <img 
                                                                 alt='msg sender'
-                                                                src={testAvatar}
+                                                                src={
+                                                                    (msg.user === convo.me._id ?
+                                                                        getImageUrl(convo.me.profilePicture?.path) :
+                                                                        getImageUrl(convo.peer.profilePicture?.path)
+                                                                    ) || avatarPlaceholder
+                                                                }
                                                                 width={28}
                                                                 height={28}
                                                                 style={{ borderRadius: '50%' }}

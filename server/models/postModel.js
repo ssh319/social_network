@@ -8,11 +8,6 @@ const postSchema = new mongoose.Schema({
     text: { type: String, required: true },
     
     images: { type: [mongoose.Schema.Types.ObjectId], ref: 'Image' },
-    
-    // images: [{
-    //     contentType: { type: String, enum: ['image/png', 'image/jpeg'], required: true },
-    //     path: { type: String, required: true }
-    // }],
 
     // Set?
     likes: { type: [mongoose.Schema.Types.ObjectId], ref: 'User' },

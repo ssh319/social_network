@@ -3,8 +3,10 @@ import { Link } from 'react-router-dom';
 import { useCookies } from 'react-cookie';
 
 import FriendService from '@services/friendService';
+import getImageUrl from '@utils/getImageUrl';
 
-import testAvatar from '@assets/images/test-avatar.jpg';
+import avatarPlaceholder from '@assets/images/avatar-placeholder.jpg';
+
 import PlusIcon from '@assets/icons/PlusIcon';
 import CheckIcon from '@assets/icons/CheckIcon';
 
@@ -86,7 +88,7 @@ const SuggestedUsers = ({ users, isLoaded }) => {
                                         <Link to={`/users/${suggestion._id}`}>
                                             <img
                                                 alt='user'
-                                                src={testAvatar}
+                                                src={getImageUrl(suggestion.profilePicture?.path) || avatarPlaceholder}
                                                 width='32'
                                                 height='32'
                                                 style={{ borderRadius: '50%' }}

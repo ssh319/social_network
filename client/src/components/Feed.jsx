@@ -1,13 +1,15 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useCookies } from 'react-cookie';
 
 import PostService from '@services/postService';
 import { useAuth } from '@context/AuthContext';
+import getImageUrl from '@utils/getImageUrl';
 
 import '@styles/Feed.css';
 
-import testAvatar from '@assets/images/test-avatar.jpg';
+import avatarPlaceholder from '@assets/images/avatar-placeholder.jpg';
+
 import HeartIcon from '@assets/icons/HeartIcon';
 import FilledHeartIcon from '@assets/icons/FilledHeartIcon';
 import CommentsIcon from '@assets/icons/CommentsIcon';
@@ -17,6 +19,7 @@ import TrashIcon from '@assets/icons/TrashIcon';
 const Feed = ({ posts, isLoaded }) => {
 
     const [ cookies ] = useCookies(["token"]);
+    const navigate = useNavigate();
 
     const [ feed, setFeed ] = useState(posts);
     const [ feedLoaded, setFeedLoaded ] = useState(isLoaded);
@@ -24,9 +27,12 @@ const Feed = ({ posts, isLoaded }) => {
     const { user } = useAuth();
 
     useEffect(() => {
-        setFeed(posts);
+        setFeed(posts.map(post => {
+            post.liked = post.likes.includes(user._id);
+            return post;
+        }));
         setFeedLoaded(isLoaded);
-    }, [posts, isLoaded]);
+    }, [posts, isLoaded, user._id]);
 
     const togglePostLike = async (postId, liked) => {
 
@@ -83,7 +89,7 @@ const Feed = ({ posts, isLoaded }) => {
                                     <div style={{ display: 'flex' }}>
                                         <div style={{ padding: '5px' }}>
                                             <Link to={`/users/${post.user._id}`}>
-                                                <img className='feed-avatar' alt='test avatar' src={testAvatar} />
+                                                <img className='feed-avatar' alt='post creator' src={getImageUrl(post.user.profilePicture?.path) || avatarPlaceholder} />
                                             </Link>
                                         </div>
                                         <div className='post-info'>
@@ -105,9 +111,7 @@ const Feed = ({ posts, isLoaded }) => {
                                 </div>
 
                                 <div className='post-content'>
-                                    <Link to={`/posts/${post._id}`}>
-                                        <span>{post.text}</span>
-                                    </Link>
+                                    <span>{post.text}</span>
                                 </div>
 
                                 <div className='post-footer'>
@@ -115,7 +119,7 @@ const Feed = ({ posts, isLoaded }) => {
                                         {post.liked ? <FilledHeartIcon color='var(--bs-red)'/> : <HeartIcon />}
                                         <span style={{ padding: '0 3px' }}>{post.likes.length}</span>
                                     </div>
-                                    <div className='comment-button' /* onClick={() => { expandComments(post._id) }} */>
+                                    <div className='comment-button' onClick={() => { navigate(`/posts/${post._id}`) }} /* onClick={() => { modalView(post._id) }} */>
                                         <CommentsIcon />
                                         <span style={{ padding: '0 3px' }}>{post.comments.length}</span>
                                     </div>

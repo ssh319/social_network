@@ -6,9 +6,11 @@ import './Posts.css';
 
 import PostService from '@services/postService';
 import UserService from '@services/userService';
+import getImageUrl from '@utils/getImageUrl';
 import { useAuth } from '@context/AuthContext';
 
-import testAvatar from '@assets/images/test-avatar.jpg';
+import avatarPlaceholder from '@assets/images/avatar-placeholder.jpg';
+
 import Feed from '@components/Feed';
 import SpeakerIcon from '@assets/icons/SpeakerIcon';
 import PhotoIcon from '@assets/icons/PhotoIcon';
@@ -41,19 +43,14 @@ const HomePage = () => {
     
         try {
             const fetchedPosts = await service.getPostsFeed();
-    
-            setFeed(fetchedPosts.map(post => {
-                post.liked = post.likes.includes(user._id);
 
-                return post;
-            }));
-
+            setFeed(fetchedPosts);
             setFeedLoaded(true);
     
         } catch (err) {
             console.error(err);
         }
-    }, [cookies.token, user._id]);
+    }, [cookies.token]);
 
     const fetchSuggestedUsers = useCallback(async () => {
         const service = new UserService(cookies.token);
@@ -115,7 +112,7 @@ const HomePage = () => {
                             alt={`${user.firstName} ${user.lastName}`}
                             width='64'
                             height='64'
-                            src={testAvatar}
+                            src={getImageUrl(user.profilePicture?.path) || avatarPlaceholder}
                             style={{ borderRadius: '50%' }}
                         />
 
@@ -149,7 +146,7 @@ const HomePage = () => {
                     <form className='posting-form-container' onSubmit={createPost}>
                         <div className='post-edit-container'>
                             <Link to={`/users/${user._id}`}>
-                                <img className='post-avatar' alt='author' src={testAvatar} />
+                                <img className='post-avatar' alt='author' src={getImageUrl(user.profilePicture?.path) || avatarPlaceholder} />
                             </Link>
                             <textarea
                                 ref={postTextareaRef}

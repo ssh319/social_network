@@ -34,6 +34,8 @@ app.use("/api/posts", authenticate, postRouter);
 app.use("/api/chats", authenticate, chatRouter);
 app.use("/api/images", authenticate, imageRouter);
 
+app.use('/uploads', express.static(path.join(path.resolve(), '/uploads')));
+
 app.use((error, _, response, next) => {
     if (!error) {
         next();

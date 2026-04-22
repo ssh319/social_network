@@ -30,10 +30,18 @@ export const retrieveChats = async (userId) => {
         messages: { $slice: -1 }
     }).populate({
         path: 'primaryUser',
-        select: ['firstName', 'lastName', 'profilePicture']
+        select: ['firstName', 'lastName', 'profilePicture'],
+        populate: {
+            path: 'profilePicture',
+            select: ['path']
+        }
     }).populate({
         path: 'secondaryUser',
-        select: ['firstName', 'lastName', 'profilePicture']
+        select: ['firstName', 'lastName', 'profilePicture'],
+        populate: {
+            path: 'profilePicture',
+            select: ['path']
+        }
     }).lean();
 
     chats = chats.map(({ _id, primaryUser, secondaryUser, messages }) => ({
@@ -58,10 +66,18 @@ export const getChat = async (chatId) => {
         chatId
     ).populate({
         path: 'primaryUser',
-        select: ['firstName', 'lastName', 'profilePicture', 'lastActive']
+        select: ['firstName', 'lastName', 'profilePicture', 'lastActive'],
+        populate: {
+            path: 'profilePicture',
+            select: 'path'
+        }
     }).populate({
         path: 'secondaryUser',
-        select: ['firstName', 'lastName', 'profilePicture', 'lastActive']
+        select: ['firstName', 'lastName', 'profilePicture', 'lastActive'],
+        populate: {
+            path: 'profilePicture',
+            select: ['path']
+        }
     }).lean();
 
     chat.messages.reverse();
@@ -176,7 +192,10 @@ export const sendMessage = async (userId, chatId, text) => {
     const sender = await User.findById(
         userId,
         { firstName: 1, lastName: 1, profilePicture: 1 }
-    ).lean();
+    ).populate({
+        path: 'profilePicture',
+        select: ['path']
+    }).lean();
 
     const message = chat.messages.create({
         user: userId,

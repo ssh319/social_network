@@ -143,6 +143,10 @@ export const validateUserData = [
         .isLength({ max: 500 }).withMessage("'About' information text cannot be more than 500 characters in length")
         .customSanitizer(deleteOptionalField),
 
+    body("profilePicture")
+        .optional()
+        .customSanitizer(deleteOptionalField),
+
     checkExact(),
 
     (request, response, next) => {

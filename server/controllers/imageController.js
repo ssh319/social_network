@@ -21,8 +21,8 @@ export const getImage = async (request, response, next) => {
 
 export const uploadImage = async (request, response, next) => {
     try {
-        await service.uploadImage(request.user._id, request.body);
-        response.sendStatus(201);
+        const image = await service.uploadImage(request.user._id, request.file);
+        response.status(201).json(image);
 
     } catch (err) {
         if (err instanceof ClientError) {

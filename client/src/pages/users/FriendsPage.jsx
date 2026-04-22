@@ -7,10 +7,12 @@ import UserService from '@services/userService';
 import FriendService from '@services/friendService';
 import ChatService from '@services/chatService';
 import LastActive from '@components/LastActive';
+import getImageUrl from '@utils/getImageUrl';
 
 import './Users.css';
 
-import testAvatar from '@assets/images/test-avatar.jpg';
+import avatarPlaceholder from '@assets/images/avatar-placeholder.jpg';
+
 import ChatsIcon from '@assets/icons/ChatsIcon';
 import UserPlusIcon from '@assets/icons/UserPlusIcon';
 import UserMinusIcon from '@assets/icons/UsersMinusIcon';
@@ -147,7 +149,7 @@ const FriendsPage = () => {
                             {friends.map(friend => (
                                 <li key={friend.user._id}>
                                     <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
-                                        <img alt='Friend avatar' src={testAvatar} className='friend-avatar' />
+                                        <img alt='Friend avatar' src={getImageUrl(friend.user.profilePicture?.path) || avatarPlaceholder} className='friend-avatar' />
                                         <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }} className='friend-info'>
                                             <Link to={`/users/${friend.user._id}`}>
                                                 {friend.user.firstName} {friend.user.lastName}

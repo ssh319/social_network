@@ -6,10 +6,12 @@ import { useAuth } from '@context/AuthContext';
 import { useSocket } from '@context/SocketContext';
 import FriendService from '@services/friendService';
 import UserService from '@services/userService';
+import getImageUrl from '@utils/getImageUrl';
 
 import '@styles/Header.css';
 
-import testAvatar from '@assets/images/test-avatar.jpg';
+import avatarPlaceholder from '@assets/images/avatar-placeholder.jpg';
+
 import LogoIcon from '@assets/icons/LogoIcon';
 import SettingsIcon from '@assets/icons/SettingsIcon';
 import LogoutIcon from '@assets/icons/LogoutIcon';
@@ -196,7 +198,7 @@ const Header = () => {
                                                     {notif.type === 'message' &&
                                                         <>
                                                             <div>
-                                                                <img alt='Message sender' src={testAvatar} width={20} height={20} style={{ borderRadius: '50%' }} />
+                                                                <img alt='Message sender' src={getImageUrl(notif.sender.profilePicture?.path) || avatarPlaceholder} width={20} height={20} style={{ borderRadius: '50%' }} />
                                                                 <span style={{ fontSize: '13px', color: 'var(--bs-gray-600)', position: 'relative', left: '7px' }}>
                                                                     <strong style={{ color: 'var(--bs-body-color)' }}>
                                                                         <Link to={`/users/${notif.sender._id}`} style={{ color: 'inherit', textDecoration: 'none' }}>
@@ -216,7 +218,7 @@ const Header = () => {
                                                     {notif.type === 'request' &&
                                                         <>
                                                             <div>
-                                                                <img alt='Request sender' src={testAvatar} width={20} height={20} style={{ borderRadius: '50%' }} />
+                                                                <img alt='Request sender' src={getImageUrl(notif.sender.profilePicture?.path) || avatarPlaceholder} width={20} height={20} style={{ borderRadius: '50%' }} />
                                                                 <span style={{ position: 'relative', left: '7px' }}>
                                                                     You have new friend request from <Link to={`/users/${notif.sender._id}`} style={{ textDecoration: 'none', color: 'inherit', fontWeight: '600' }}>{notif.sender.firstName} {notif.sender.lastName}</Link>
                                                                 </span>
@@ -258,7 +260,7 @@ const Header = () => {
                                 <img
                                     className='header-avatar'
                                     alt={`${user.firstName} ${user.lastName}`}
-                                    src={testAvatar}
+                                    src={getImageUrl(user.profilePicture?.path) || avatarPlaceholder}
                                 />
                                 <ChevronDownIcon style={{ position: 'relative', top: '1px', color: 'var(--bs-gray-600)' }} />
                             </div>
@@ -274,7 +276,7 @@ const Header = () => {
                                         alt={`${user.firstName} ${user.lastName}`}
                                         height='48'
                                         width='48'
-                                        src={testAvatar}
+                                        src={getImageUrl(user.profilePicture?.path) || avatarPlaceholder}
                                     />
                                     <span style={{ color: 'var(--bs-body-color)', margin: '10px auto' }}>
                                         {user.firstName} {user.lastName}

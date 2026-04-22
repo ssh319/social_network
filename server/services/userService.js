@@ -94,6 +94,25 @@ export const getSuggestedUsers = async (userId) => {
             lastName: 1,
             profilePicture: 1,
             mutualFriendsCount: 1
+        } },
+
+        { $lookup: {
+            from: 'images',
+            localField: 'profilePicture',
+            foreignField: '_id',
+            as: 'profilePicture'
+        } },
+
+        { $unwind: {
+            path: '$profilePicture',
+            preserveNullAndEmptyArrays: true
+        } },
+
+        { $project: {
+            firstName: 1,
+            lastName: 1,
+            'profilePicture.path': 1,
+            mutualFriendsCount: 1
         } }
     ]);
 
@@ -115,10 +134,17 @@ export const getUser = async (userId) => {
         { email: 0, password: 0, createdAt: 0, chats: 0 }
     ).populate({
         path: "friends.user",
-        select: ["firstName", "lastName", "profilePicture"]
+        select: ["firstName", "lastName", "profilePicture"],
+        populate: {
+            path: "profilePicture",
+            select: ["path"]
+        }
     }).populate({
         path: "posts",
         options: { sort: { timestamp: -1 } }
+    }).populate({
+        path: "profilePicture",
+        select: ["path"]
     }).populate({
         path: "images",
         options: { sort: { timestamp: -1 } }
@@ -145,7 +171,10 @@ export const getAccountData = async (userId) => {
     let user = await User.findById(
         userId,
         { password: 0, chats: 0 }
-    ).lean();
+    ).populate({
+        path: "profilePicture",
+        select: ["path"]
+    }).lean();
 
     if (!user) {
         throw new NoSuchResourceError("Such user doesn't exist", "userId");
@@ -316,7 +345,11 @@ export const getFriendsList = async (viewerId, userId) => {
         { friends: 1 }
     ).populate({
         path: 'friends.user',
-        select: ['firstName', 'lastName', 'profilePicture', 'lastActive', 'country', 'city']
+        select: ['firstName', 'lastName', 'profilePicture', 'lastActive', 'country', 'city'],
+        populate: {
+            path: 'profilePicture',
+            select: ['path']
+        }
     });
 
     if (viewerId !== userId) {
@@ -381,7 +414,12 @@ export const addFriend = async (userId, requestReceiverId) => {
             userId,
             { $push: { friends: { user: requestReceiverId, status: 'sent' } } },
             { session }
-        ).select("firstName lastName profilePicture").lean();
+        ).select(
+            "firstName lastName profilePicture"
+        ).populate({
+            path: 'profilePicture',
+            select: ['path']
+        }).lean();
 
         await session.commitTransaction();
 

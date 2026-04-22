@@ -9,10 +9,11 @@ import { useAuth } from '@context/AuthContext';
 
 import Feed from '@components/Feed';
 import LastActive from '@components/LastActive';
+import getImageUrl from '@utils/getImageUrl';
 import './Users.css';
 
-import testAvatar from '@assets/images/test-avatar.jpg';
-import testImage from '@assets/images/test-image.jpg';
+import avatarPlaceholder from '@assets/images/avatar-placeholder.jpg';
+
 import EditIcon from '@assets/icons/EditIcon';
 import UserPlusIcon from '@assets/icons/UserPlusIcon';
 import UserMinusIcon from '@assets/icons/UsersMinusIcon';
@@ -64,7 +65,7 @@ const UserPage = () => {
             try {
                 let profile = await service.getUser(userId);
                 document.title = `${profile.firstName} ${profile.lastName}`;
-
+                
                 profile.posts = profile.posts.map(post => {
                     post.user = {
                         _id: post.user,
@@ -72,8 +73,6 @@ const UserPage = () => {
                         lastName: profile.lastName,
                         profilePicture: profile.profilePicture
                     };
-
-                    post.liked = post.likes.includes(user._id);
 
                     return post;
                 });
@@ -162,7 +161,7 @@ const UserPage = () => {
                                             alt={`${userProfile.firstName} ${userProfile.lastName}`}
                                             width='108'
                                             height='108'
-                                            src={testAvatar}
+                                            src={getImageUrl(userProfile.profilePicture?.path) || avatarPlaceholder}
                                             style={{ borderRadius: '50%' }}
                                         />
 
@@ -263,7 +262,7 @@ const UserPage = () => {
                                             <Link to={`/users/${friend.user._id}`} style={{ all: 'inherit' }}>
                                                 <img
                                                     alt='user'
-                                                    src={testAvatar}
+                                                    src={getImageUrl(friend.user.profilePicture?.path) || avatarPlaceholder}
                                                     width='38'
                                                     height='38'
                                                     style={{ borderRadius: '50%' }}
@@ -297,7 +296,7 @@ const UserPage = () => {
                                             <Link to={`/users/${friend.user._id}`} style={{ all: 'inherit' }}>
                                                 <img
                                                     alt='user'
-                                                    src={testAvatar}
+                                                    src={getImageUrl(friend.user.profilePicture?.path) || avatarPlaceholder}
                                                     width='38'
                                                     height='38'
                                                     style={{ borderRadius: '50%' }}
@@ -314,11 +313,14 @@ const UserPage = () => {
                             <div className='userpage-images'>
                                 <div className='userpage-sidebar-header'>
                                     <Link to={`/users/${userProfile._id}/images`}>Images</Link>
+                                    <span style={{ color: 'var(--bs-gray-600)', position: 'relative', left: '9px' }}>
+                                        {userProfile.images.length}
+                                    </span>
                                 </div>
                                 <ul className='userpage-images-list'>
-                                    {[1, 2, 3, 4, 5, 6].map(img => (
-                                        <li key={img}>
-                                            <img alt='example' src={testImage} />
+                                    {userProfile.images.slice(0, 6).map(img => (
+                                        <li key={img._id}>
+                                            <img alt='example' src={getImageUrl(img.path)} />
                                         </li>
                                     ))}
                                 </ul>

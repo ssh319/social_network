@@ -28,7 +28,11 @@ export const getPostsFeed = async (userId) => {
         timestamp: -1
     }).populate({
         path: 'user',
-        select: ['firstName', 'lastName', 'profilePicture']
+        select: ['firstName', 'lastName', 'profilePicture'],
+        populate: {
+            path: 'profilePicture',
+            select: ['path']
+        }
     });
 
     return feed;
@@ -46,10 +50,18 @@ export const getPost = async (postId) => {
         postId
     ).populate({
         path: 'user',
-        select: ['firstName', 'lastName', 'profilePicture']
+        select: ['firstName', 'lastName', 'profilePicture'],
+        populate: {
+            path: 'profilePicture',
+            select: ['path']
+        }
     }).populate({
         path: 'comments.user',
-        select: ['firstName', 'lastName', 'profilePicture']
+        select: ['firstName', 'lastName', 'profilePicture'],
+        populate: {
+            path: 'profilePicture',
+            select: ['path']
+        }
     }).populate({
         path: 'likes',
         select: ['firstName', 'lastName', 'profilePicture']

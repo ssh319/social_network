@@ -1,4 +1,5 @@
 import Image from '../models/imageModel.js';
+import User from '../models/userModel.js';
 
 import { NoSuchImageError } from '../errors/imageErrors.js';
 
@@ -29,7 +30,20 @@ export const getImage = async (imageId) => {
  * @param {String} userId `ObjectId` of image author.
  * @param {Object} image Image data, containing its storage path and MIME content type.
  */
-export const uploadImage = async (userId, image) => {}
+export const uploadImage = async (userId, image) => {
+    const newImage = await Image.create({
+        user: userId,
+        path: image.path,
+        mimeType: image.mimetype,
+        size: image.size
+    });
+
+    await User.findByIdAndUpdate(userId, {
+        $push: { images: newImage._id }
+    });
+
+    return newImage;
+}
 
 
 /**

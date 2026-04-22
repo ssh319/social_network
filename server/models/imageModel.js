@@ -7,7 +7,9 @@ const imageSchema = new mongoose.Schema({
     
     // unique name generation
     path: { type: String, required: true },
-    contentType: { type: String, enum: ['image/png', 'image/jpeg'], required: true },
+    mimeType: { type: String, enum: ['image/png', 'image/jpeg'], required: true },
+
+    size: { type: Number, required: true },
     
     likes: { type: [mongoose.Schema.Types.ObjectId], ref: 'User' }
 });

@@ -13,10 +13,12 @@ class ImageService extends BaseService {
     }
 
     async uploadImage(data) {
-        await this.api.post(
+        const response = await this.api.post(
             this.baseUrl,
             data
         );
+        
+        return response.data;
     }
 
     async deleteImage(imageId) {
