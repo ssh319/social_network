@@ -4,15 +4,16 @@ import { useCookies } from 'react-cookie';
 
 import PostService from '@services/postService';
 import { useAuth } from '@context/AuthContext';
+import getImageUrl from '@utils/getImageUrl';
 
-import './Posts.css';
+import '@styles/Posts.css';
+import '@styles/Feed.css';
+
 import avatarPlaceholder from '@assets/images/avatar-placeholder.jpg';
-
 import TrashIcon from '@assets/icons/TrashIcon';
 import HeartIcon from '@assets/icons/HeartIcon';
 import FilledHeartIcon from '@assets/icons/FilledHeartIcon';
 import SendIcon from '@assets/icons/SendIcon';
-import getImageUrl from '@utils/getImageUrl';
 
 
 const PostViewing = () => {
@@ -189,7 +190,11 @@ const PostViewing = () => {
                                     <div style={{ display: 'flex' }}>
                                         <div style={{ padding: '5px' }}>
                                             <Link to={`/users/${post.user._id}`}>
-                                                <img className='feed-avatar' alt='test avatar' src={getImageUrl(post.user.profilePicture?.path) || avatarPlaceholder} />
+                                                <img
+                                                    className='feed-avatar'
+                                                    alt='test avatar'
+                                                    src={getImageUrl(post.user.profilePicture?.path) || avatarPlaceholder}
+                                                />
                                             </Link>
                                         </div>
                                         <div className='post-info'>
@@ -200,7 +205,7 @@ const PostViewing = () => {
                                         </div>
                                     </div>
                                     {post.user._id === user._id &&
-                                        <button className='trash-icon' onClick={() => { deletePost() }}>
+                                        <button className='trash-icon' onClick={deletePost}>
                                             <TrashIcon />
                                         </button>
                                     }
@@ -223,8 +228,18 @@ const PostViewing = () => {
                                 </div>
 
                                 <form className='postview-newcomment-form' onSubmit={sendComment}>
-                                    <img className='post-avatar' style={{ cursor: 'default' }} alt='me' src={getImageUrl(user.profilePicture?.path) || avatarPlaceholder} />
-                                    <input onChange={handleCommentChange} className='form-control' placeholder='Add new comment...' required />
+                                    <img
+                                        className='post-avatar'
+                                        style={{ cursor: 'default', flexShrink: '0' }}
+                                        alt='me'
+                                        src={getImageUrl(user.profilePicture?.path) || avatarPlaceholder}
+                                    />
+                                    <input
+                                        onChange={handleCommentChange}
+                                        className='form-control'
+                                        placeholder='Add new comment...'
+                                        required
+                                    />
                                     <button type='submit' className='btn btn-primary'>
                                         <SendIcon />
                                     </button>
@@ -239,14 +254,20 @@ const PostViewing = () => {
                                                     <div style={{ display: 'flex' }}>
                                                         <div style={{ padding: '5px' }}>
                                                             <Link to={`/users/${comment.user._id}`}>
-                                                                <img className='feed-avatar' alt='comment author' src={getImageUrl(comment.user.profilePicture?.path) || avatarPlaceholder} />
+                                                                <img
+                                                                    className='feed-avatar'
+                                                                    alt='comment author'
+                                                                    src={getImageUrl(comment.user.profilePicture?.path) || avatarPlaceholder}
+                                                                />
                                                             </Link>
                                                         </div>
                                                         <div className='post-info'>
                                                             <Link to={`/users/${comment.user._id}`} className='post-creator'>
                                                                 <span>{comment.user.firstName} {comment.user.lastName}</span>
                                                             </Link>
-                                                            <span className='post-timestamp'>{new Date(comment.timestamp).toLocaleString()}</span>
+                                                            <span className='post-timestamp'>
+                                                                {new Date(comment.timestamp).toLocaleString()}
+                                                            </span>
                                                         </div>
                                                     </div>
                                                     {comment.user._id === user._id &&

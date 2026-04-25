@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useCookies } from 'react-cookie';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 
-import './Auth.css';
+import '@styles/Auth.css';
 
 import UserService from '@services/userService';
 

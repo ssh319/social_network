@@ -21,6 +21,8 @@ import ErrorPage from '@pages/ErrorPage';
 import ProtectedRoute from '@context/ProtectedRoute';
 import PostViewing from '@pages/posts/PostViewing';
 import ChatsPage from '@pages/chats/ChatsPage';
+import ImagesPage from '@pages/images/ImagesPage';
+import ImageViewing from '@pages/images/ImageViewing';
 
 
 const App = () => (
@@ -34,6 +36,7 @@ const App = () => (
                 <Route index element={<ProtectedRoute><SearchUsersPage /></ProtectedRoute>} />
                 <Route path=":userId" element={<ProtectedRoute><UserPage /></ProtectedRoute>} />
                 <Route path=":userId/friends" element={<ProtectedRoute><FriendsPage /></ProtectedRoute>} />
+                <Route path=":userId/images" element={<ProtectedRoute><ImagesPage /></ProtectedRoute>} />
             </Route>
             <Route path="posts">
                 <Route index element={<Navigate to="/" />} />
@@ -43,6 +46,7 @@ const App = () => (
                 <Route index element={<ProtectedRoute><ChatsPage /></ProtectedRoute>} />
                 <Route path=":chatId" element={<ProtectedRoute><ChatsPage /></ProtectedRoute>} />
             </Route>
+            <Route path="images/:imageId" element={<ProtectedRoute><ImageViewing /></ProtectedRoute>} />
             <Route path="account" element={<ProtectedRoute><AccountManagementPage /></ProtectedRoute>} />
         </Route>
 

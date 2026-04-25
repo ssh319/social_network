@@ -1,16 +1,23 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useCookies } from 'react-cookie';
 
 import UserService from '@services/userService';
 import ImageService from '@services/imageService';
+import { useAuth } from '@context/AuthContext';
+
+import '@styles/Users.css';
 
 import getImageUrl from '@utils/getImageUrl';
 
 import avatarPlaceholder from '@assets/images/avatar-placeholder.jpg';
+import PlusIcon from '@assets/icons/PlusIcon';
 
 
 const AccountManagementPage = () => {
     const [ cookies ] = useCookies(["token"]);
+
+    const { user } = useAuth();
 
     const [ userLoaded, setUserLoaded ] = useState(false);
     const [ userData, setUserData ] = useState(null);
@@ -179,13 +186,21 @@ const AccountManagementPage = () => {
                 <div className='params-header'>Account management</div>
                 {userLoaded ?
                     <>
-                        <div style={{ padding: '15px 30px' }}>
-                            <img alt='profile pic' src={image || avatarPlaceholder} width={128} height={128} />
-                            <label htmlFor='profile-pic-upload'>
-                                <input type='file' id='profile-pic-upload' accept='image/*' onChange={handleImageUpload} hidden />
-                                <span className='btn btn-outline-primary' style={{ position: 'relative', left: '30px' }}>Upload profile picture</span>
-                            </label>
+                        <div style={{ padding: '15px 40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+
+                            <img alt='profile pic' src={image || avatarPlaceholder} width={172} height={172} />
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '15px', position: 'relative', left: '20px' }}>
+
+                                <label htmlFor='profile-pic-upload'>
+                                    <input type='file' id='profile-pic-upload' accept='image/*' onChange={handleImageUpload} hidden />
+                                    <span className='btn btn-outline-primary' style={{ fontSize: '15px' }}><PlusIcon /> Upload new profile picture</span>
+                                </label>
+
+                                    <Link to={`/users/${user._id}/images`} style={{ marginLeft: '12px' }}>or choose it from your images</Link>
+                            </div>
+
                         </div>
+
                         <ul className='params-options'>
                             {Object.entries(editableUserData).map(([key, label]) =>
                                 <li key={key}>

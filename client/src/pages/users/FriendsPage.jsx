@@ -9,7 +9,7 @@ import ChatService from '@services/chatService';
 import LastActive from '@components/LastActive';
 import getImageUrl from '@utils/getImageUrl';
 
-import './Users.css';
+import '@styles/Users.css';
 
 import avatarPlaceholder from '@assets/images/avatar-placeholder.jpg';
 

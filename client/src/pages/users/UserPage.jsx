@@ -10,7 +10,8 @@ import { useAuth } from '@context/AuthContext';
 import Feed from '@components/Feed';
 import LastActive from '@components/LastActive';
 import getImageUrl from '@utils/getImageUrl';
-import './Users.css';
+
+import '@styles/Users.css';
 
 import avatarPlaceholder from '@assets/images/avatar-placeholder.jpg';
 
@@ -247,6 +248,30 @@ const UserPage = () => {
                                 </div>
                             </div>
 
+                            <div className='userpage-images-mobile'>
+                                <div className='userpage-sidebar-header'>
+                                    <Link to={`/users/${userProfile._id}/images`}>
+                                        <span>Images</span>
+                                        <span style={{ color: 'var(--bs-gray-600)', position: 'relative', left: '9px' }}>
+                                            {userProfile.images.length}
+                                        </span>
+                                    </Link>
+                                </div>
+                                <ul className='userpage-images-list'>
+                                    {userProfile.images.map(image => (
+                                        <li key={image._id}>
+                                            <Link to={`/images/${image._id}`} style={{ all: 'inherit' }}>
+                                                <img
+                                                    className='userpage-image'
+                                                    alt={image._id}
+                                                    src={getImageUrl(image.path)}
+                                                />
+                                            </Link>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+
                             <div className='userpage-friends-mobile'>
                                 <div className='userpage-sidebar-header'>
                                     <Link to={`/users/${userProfile._id}/friends`}>
@@ -257,7 +282,7 @@ const UserPage = () => {
                                     </Link>
                                 </div>
                                 <ul className='userpage-friends-list'>
-                                    {userProfile.friends.slice(0, 6).map(friend => (
+                                    {userProfile.friends.map(friend => (
                                         <li key={friend.user._id}>
                                             <Link to={`/users/${friend.user._id}`} style={{ all: 'inherit' }}>
                                                 <img
@@ -320,7 +345,9 @@ const UserPage = () => {
                                 <ul className='userpage-images-list'>
                                     {userProfile.images.slice(0, 6).map(img => (
                                         <li key={img._id}>
-                                            <img alt='example' src={getImageUrl(img.path)} />
+                                            <Link to={`/images/${img._id}`}>
+                                                <img className='userpage-image' alt={img._id} src={getImageUrl(img.path)} />
+                                            </Link>
                                         </li>
                                     ))}
                                 </ul>

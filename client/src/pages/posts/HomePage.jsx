@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState, useRef } from 'react';
 import { useCookies } from 'react-cookie';
 import { Link } from 'react-router-dom';
 
-import './Posts.css';
+import '@styles/Posts.css';
 
 import PostService from '@services/postService';
 import UserService from '@services/userService';

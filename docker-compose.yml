@@ -6,5 +6,7 @@ services:
       - "443:5000"
     env_file:
       - .env.production
+    # volumes:
+    #   - /root/uploads:/app/uploads
     restart:
       unless-stopped

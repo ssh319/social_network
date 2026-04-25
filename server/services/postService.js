@@ -92,7 +92,7 @@ export const createPost = async (userId, post) => {
         const [ createdPost ] = await Post.insertMany(post, { session });
         
         if (!createdPost) {
-            throw new Error("Failed to create post");
+            throw new Error("Failed to create new post");
         }
 
         await User.findByIdAndUpdate(userId, {

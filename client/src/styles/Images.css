@@ -1,0 +1,116 @@
+.main-imagespage-container {
+    display: flex;
+    max-width: 1200px;
+    width: 100%;
+}
+
+.imagespage-content-container {
+    width: 100%;
+    background-color: white;
+    min-height: 350px;
+    border: 1px solid var(--bs-gray-400);
+    border-radius: 7px;
+    padding-bottom: 30px;
+}
+
+.images-header {
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 80px;
+    padding: 0 33px;
+}
+
+.images-list {
+    list-style-type: none;
+    margin: 0;
+    padding: 0 24px;
+    display: flex;
+    gap: 18px;
+    justify-content: space-evenly;
+    flex-wrap: wrap;
+}
+
+.images-list > li {
+    flex: 1 0 200px;
+    max-width: 320px;
+    aspect-ratio: 1 / 1;
+}
+
+.image {
+    width: 100%;
+    height: 100%;
+}
+
+.main-imageview-container {
+    min-width: 350px;
+    max-width: 1000px;
+    width: 100%;
+}
+
+.imageview-content-container {
+    background-color: white;
+    display: flex;
+    flex-direction: column;
+    padding: 0 20px 40px 20px;
+    border: 1px solid var(--bs-gray-400);
+    border-radius: 7px;
+    margin-bottom: 40px;
+}
+
+.imageview-image {
+    display: flex;
+    padding: 7px;
+    width: 100%;
+    justify-content: center;
+}
+
+.dropdown-dots {
+    background: none;
+    border: none;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 32px;
+    height: 32px;
+    color: var(--bs-gray-600);
+    transition: color 0.3s ease;
+}
+
+.dropdown-dots:hover {
+    color: var(--bs-link-hover-color);
+}
+
+#image-dropdown {
+    width: 220px;
+    font-size: 14px;
+    right: 0;
+    top: 30%;
+}
+
+#image-dropdown.show {
+    top: 70%;
+}
+
+#image-dropdown > button {
+    border: none;
+    background: none;
+    text-align: left;
+}
+
+@media (max-width: 768px) {
+    .images-list > li {
+        flex-basis: 140px;
+        max-width: 220px;
+    }
+
+    .imageview-content-container {
+        padding: 0 10px 30px 10px;
+    }
+
+    .imageview-image {
+        padding: 0;
+    }
+}

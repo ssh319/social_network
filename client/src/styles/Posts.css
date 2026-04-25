@@ -270,7 +270,6 @@
 }
 
 .main-postview-container {
-    display: flex;
     min-width: 350px;
     max-width: 1000px;
     width: 100%;

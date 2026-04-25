@@ -1,3 +1,8 @@
+// import { useEffect, useState } from 'react;
+
+import '@styles/Users.css';
+
+
 const SearchUsersPage = () => {
     return (
         <main>

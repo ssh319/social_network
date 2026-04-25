@@ -1,3 +1,6 @@
+import mongoose from 'mongoose';
+import fs from 'fs/promises';
+
 import Image from '../models/imageModel.js';
 import User from '../models/userModel.js';
 
@@ -13,7 +16,11 @@ import { NoSuchImageError } from '../errors/imageErrors.js';
 export const getImage = async (imageId) => {
     const image = await Image.findById(imageId).populate({
         path: 'user',
-        select: ['firstName', 'lastName', 'profilePicture']
+        select: ['firstName', 'lastName', 'profilePicture'],
+        populate: {
+            path: 'profilePicture',
+            select: ['path']
+        }
     });
 
     if (!image) {
@@ -31,18 +38,36 @@ export const getImage = async (imageId) => {
  * @param {Object} image Image data, containing its storage path and MIME content type.
  */
 export const uploadImage = async (userId, image) => {
-    const newImage = await Image.create({
-        user: userId,
-        path: image.path,
-        mimeType: image.mimetype,
-        size: image.size
-    });
+    const session = await mongoose.startSession();
+    
+    try {
+        session.startTransaction();
 
-    await User.findByIdAndUpdate(userId, {
-        $push: { images: newImage._id }
-    });
+        const [ newImage ] = await Image.insertMany({
+            user: userId,
+            path: image.path,
+            mimeType: image.mimetype,
+            size: image.size
+        }, { session });
 
-    return newImage;
+        if (!newImage) {
+            throw new Error("Failed to create new image");
+        }
+    
+        await User.findByIdAndUpdate(userId, {
+            $push: { images: newImage._id }
+        }, { session });
+        
+        await session.commitTransaction();
+
+        return newImage;
+        
+    } catch (err) {
+        await session.abortTransaction();
+
+    } finally {
+        await session.endSession();
+    }
 }
 
 
@@ -52,8 +77,35 @@ export const uploadImage = async (userId, image) => {
  * @param {String} imageId `ObjectId` of the image to be deleted.
  */
 export const deleteImage = async (imageId) => {
-    // !!!
-    // The image existence has been checked in imageAccess.js
+    const session = await mongoose.startSession();
+    
+    try {
+        session.startTransaction();
+
+        const image = await Image.findByIdAndDelete(imageId, { session });
+
+        const user = await User.findById(image.user);
+
+        user.images.pull(image._id);
+
+        if (user.profilePicture && user.profilePicture.equals(image._id)) {
+            user.profilePicture = null;
+        }
+
+        await user.save({ session });
+
+        await session.commitTransaction();
+
+        await fs.unlink(image.path).catch(err => {
+            if (err.code !== "ENOENT") throw err;
+        });
+        
+    } catch (err) {
+        await session.abortTransaction();
+
+    } finally {
+        await session.endSession();
+    } 
 }
 
 
