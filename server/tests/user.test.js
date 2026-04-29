@@ -1,26 +1,41 @@
 import request from 'supertest';
 import mongoose from 'mongoose';
 
-import app from '../app.js';
 import User from '../models/userModel.js';
+import Post from '../models/postModel.js';
+import Chat from '../models/chatModel.js';
+import Image from '../models/imageModel.js'
+
+import { initSocket } from '../socket/index.js';
 
 import {
+    app,
     initDb,
     closeDb,
     createTestUsers,
     checkInvalidId,
-    checkNotFound
+    checkNotFound,
+    createTestPost,
+    createTestChat,
+    createTestImage
 } from './utils.js';
 
 
+const BASE_URL = '/api/users';
 const notExistingId = "00aa11bb22cc33dd44ee55ff";
+
+let io;
 
 let exampleUserId;
 let exampleFriendId;
+let examplePostId;
+let exampleChatId;
+let exampleJpegImageId;
 let userToken;
 
 beforeAll(async () => {
     await initDb();
+    io = initSocket(app);
 });
 
 beforeEach(async () => {
@@ -29,6 +44,10 @@ beforeEach(async () => {
         exampleFriendId,
         userToken
     } = await createTestUsers());
+
+    ({ examplePostId } = await createTestPost(exampleUserId));
+    ({ exampleChatId } = await createTestChat(exampleUserId, exampleFriendId));
+    ({ exampleJpegImageId } = await createTestImage(exampleUserId));
 });
 
 afterEach(async () => {
@@ -37,13 +56,14 @@ afterEach(async () => {
 
 afterAll(async () => {
     await closeDb();
+    await io.close();
 });
 
 
 // 2500 ms!
 test("should respond with 'bad request' to a syntax-malformed json request body", async () => {
     const response = await request(app)
-        .post('/users/signup')
+        .post(`${BASE_URL}/signup`)
         .send('{ "email": "syntaxerror@testmail.com",,, }')
         .set('Content-Type', 'application/json');
 
@@ -57,7 +77,7 @@ describe("User API endpoints", () => {
     // Unauthorized requests testing
     test("should respond with 'unauthorized' error due to 'Authorization' header absence", async () => {
         const response = await request(app)
-            .get('/users?firstName=unauthorizedTest');
+            .get(`${BASE_URL}?firstName=unauthorizedTest`);
             
         expect(response.status).toEqual(401);
         expect(response.body).toHaveProperty("errors");
@@ -65,7 +85,7 @@ describe("User API endpoints", () => {
         
     test("should respond with 'unauthorized' error due to invalid Bearer token", async () => {
         const response = await request(app)
-            .get('/users?firstName=unauthorizedTest')
+            .get(`${BASE_URL}?firstName=unauthorizedTest`)
             .set('Authorization', 'Bearer invalidtoken');
         
         expect(response.status).toEqual(401);
@@ -76,16 +96,15 @@ describe("User API endpoints", () => {
     describe("searchUsers", () => {
         
         test("should return an array of matching users", async () => {
-            // const response = await request(app)
-            //     .get('/users?lastName=Example')
-            // 
-            //     .set('Authorization', `Bearer ${userToken}`);
+            const response = await request(app)
+                .get(`${BASE_URL}?lastName=Example`)
+            
+                .set('Authorization', `Bearer ${userToken}`);
         
-            // expect(response.status).toEqual(200);
-            // expect(response.body).toHaveProperty("users");
-            // expect(response.body.users).toBeInstanceOf(Array);
-            // expect(response.body.users).toHaveLength(2);
-            // expect(response.body.users[0].lastName).toEqual("Example");
+            expect(response.status).toEqual(200);
+            expect(response.body).toBeInstanceOf(Array);
+            expect(response.body).toHaveLength(2);
+            expect(response.body[0].lastName).toEqual("Example");
         });
 
     });
@@ -95,7 +114,7 @@ describe("User API endpoints", () => {
 
         test("should return only the public user data in 'user' object", async () => {
             const response = await request(app)
-                .get(`/users/${exampleUserId}`)
+                .get(`${BASE_URL}/${exampleUserId}`)
                 .set('Authorization', `Bearer ${userToken}`);
 
             expect(response.status).toEqual(200);
@@ -107,11 +126,11 @@ describe("User API endpoints", () => {
         });
 
         test("should respond with 'invalid id' error", async () => {
-            await checkInvalidId('get', '/users/111', userToken);
+            await checkInvalidId('get', `${BASE_URL}/111`, userToken);
         });
 
         test("should respond with 'no such user' error", async () => {
-            await checkNotFound('get', `/users/${notExistingId}`, userToken);
+            await checkNotFound('get', `${BASE_URL}/${notExistingId}`, userToken);
         });
 
     });
@@ -120,7 +139,7 @@ describe("User API endpoints", () => {
     describe("getAccountData", () => {
         test("should return all of the account data except posts, friends, images and chats lists", async () => {
             const response = await request(app)
-                .get("/users/account")
+                .get(`${BASE_URL}/account`)
                 .set("Authorization", `Bearer ${userToken}`);
 
             expect(response.status).toEqual(200);
@@ -133,7 +152,7 @@ describe("User API endpoints", () => {
 
         test("should respond with 'unauthorized' error", async () => {
             const response = await request(app)
-                .get("/users/account");
+                .get(`${BASE_URL}/account`);
                 
             expect(response.status).toEqual(401);
             expect(response.body).toHaveProperty("errors");
@@ -146,7 +165,7 @@ describe("User API endpoints", () => {
 
         test("should sanitize and create new user, then return its generated id & first and last name", async () => {
             const response = await request(app)
-                .post('/users/signup')
+                .post(`${BASE_URL}/signup`)
                 .send({
                     email: "newuser@testmail.com",
                     password: "11112222",
@@ -166,7 +185,7 @@ describe("User API endpoints", () => {
 
         test("should respond with user data validation errors list", async () => {
             const response = await request(app)
-                .post('/users/signup')
+                .post(`${BASE_URL}/signup`)
                 .send({
                     email: "invalid mail",
                     password: "invalid password",
@@ -182,7 +201,7 @@ describe("User API endpoints", () => {
 
         test("should respond with 'unexpected fields' error", async () => {
             const response = await request(app)
-                .post('/users/signup')
+                .post(`${BASE_URL}/signup`)
                 .send({
                     email: "newuser@testmail.com",
                     password: "11112222",
@@ -199,7 +218,7 @@ describe("User API endpoints", () => {
 
         test("should respond with 'invalid type' error", async () => {
             const response = await request(app)
-                .post('/users/signup')
+                .post(`${BASE_URL}/signup`)
                 .send({
                     email: 1,
                     password: "11112222",
@@ -213,7 +232,7 @@ describe("User API endpoints", () => {
 
         test("should respond with 'already exists' error", async () => {
             const response = await request(app)
-                .post('/users/signup')
+                .post(`${BASE_URL}/signup`)
                 .send({
                     email: "example@testmail.com",
                     password: "11112222",
@@ -234,7 +253,7 @@ describe("User API endpoints", () => {
 
         test("should return an object with token string", async () => {
             const response = await request(app)
-                .post('/users/login')
+                .post(`${BASE_URL}/login`)
                 .send({
                     email: "example@testmail.com",
                     password: "12345678"
@@ -246,7 +265,7 @@ describe("User API endpoints", () => {
 
         test("should respond with 'no such user' error", async () => {
             const response = await request(app)
-                .post('/users/login')
+                .post(`${BASE_URL}/login`)
                 .send({
                     email: "notexistinguser@testmail.com",
                     password: "12345678"
@@ -258,7 +277,7 @@ describe("User API endpoints", () => {
 
         test("should respond with 'incorrect password' error", async () => {
             const response = await request(app)
-                .post('/users/login')
+                .post(`${BASE_URL}/login`)
                 .send({
                     email: "example@testmail.com",
                     password: "wrongpassword"
@@ -270,7 +289,7 @@ describe("User API endpoints", () => {
 
         test("should respond with 'unexpected fields' error", async () => {
             const response = await request(app)
-                .post('/users/login')
+                .post(`${BASE_URL}/login`)
                 .send({
                     email: "example@testmail.com",
                     password: "12345678",
@@ -286,7 +305,7 @@ describe("User API endpoints", () => {
 
         test("should respond with 'invalid type' error", async () => {
             const response = await request(app)
-                .post('/users/login')
+                .post(`${BASE_URL}/login`)
                 .send({
                     email: 1,
                     password: "12345678"
@@ -308,7 +327,7 @@ describe("User API endpoints", () => {
             const userBeforeUpdate = await User.findById(exampleUserId);
 
             const response = await request(app)
-                .patch('/users/account')
+                .patch(`${BASE_URL}/account`)
                 .send({
                     email: "updatedmail@testmail.com",
                     oldPassword: "12345678",
@@ -327,7 +346,7 @@ describe("User API endpoints", () => {
 
         test("should respond with user data validation errors list", async () => {
             const response = await request(app)
-                .patch('/users/account')
+                .patch(`${BASE_URL}/account`)
                 .send({
                     firstName: "Invalid name 123"
                 })
@@ -341,7 +360,7 @@ describe("User API endpoints", () => {
 
         test("should respond with 'unexpected fields' error", async () => {
             const response = await request(app)
-                .patch('/users/account')
+                .patch(`${BASE_URL}/account`)
                 .send({
                     email: "newuser@testmail.com",
                     oldPassword: "12345678",
@@ -360,7 +379,7 @@ describe("User API endpoints", () => {
 
         test("should respond with 'invalid type' error", async () => {
             const response = await request(app)
-                .patch('/users/account')
+                .patch(`${BASE_URL}/account`)
                 .send({
                     email: 1,
                     oldPassword: "12345678",
@@ -378,7 +397,7 @@ describe("User API endpoints", () => {
 
         test("should respond with 'old password required' error", async () => {
             const response = await request(app)
-                .patch('/users/account')
+                .patch(`${BASE_URL}/account`)
                 .send({
                     password: "newpassword"
                 })
@@ -392,7 +411,7 @@ describe("User API endpoints", () => {
 
         test("should respond with 'incorrect old password' error", async () => {
             const response = await request(app)
-                .patch('/users/account')
+                .patch(`${BASE_URL}/account`)
                 .send({
                     oldPassword: 'wrongpassword',
                     password: 'newpassword'
@@ -410,20 +429,25 @@ describe("User API endpoints", () => {
 
         test("should delete the user and all of its resources from db", async () => {
             const response = await request(app)
-                .delete('/users/account')
+                .delete(`${BASE_URL}/account`)
                 .set('Authorization', `Bearer ${userToken}`);
 
             expect(response.status).toEqual(200);
 
             const deletedUser = await User.findById(exampleUserId);
-            // const deletedPost = await Post.findById(examplePostId);
-            // const deletedChat = await Chat.findById(exampleChatId);
-            // const deletedImage = await Image.findById(exampleImageId);
+            const deletedPost = await Post.findById(examplePostId);
+            const deletedChat = await Chat.findById(exampleChatId);
+            const deletedImage = await Image.findById(exampleJpegImageId);
             
             expect(deletedUser).toBeNull();
-            // expect(deletedPost).toBeNull();
-            // expect(deletedChat).toBeNull();
-            // expect(deletedImage).toBeNull();
+            expect(deletedPost).toBeNull();
+            expect(deletedChat).toBeNull();
+            expect(deletedImage).toBeNull();
+
+            const friend = await User.findById(exampleFriendId);
+            
+            expect(friend.friends.some(f => f.user.equals(exampleUserId))).toBeFalsy();
+            expect(friend.friends).toHaveLength(0);
         });
 
     });
@@ -440,7 +464,7 @@ describe("User API endpoints", () => {
             });
 
             const response = await request(app)
-                .post(`/users/friends/${userToReceiveRequest._id}`)
+                .post(`${BASE_URL}/friends/${userToReceiveRequest._id}`)
                 .set('Authorization', `Bearer ${userToken}`);
 
             expect(response.status).toEqual(201);
@@ -464,7 +488,7 @@ describe("User API endpoints", () => {
 
         test("should respond with 'already in friends list' error", async () => {
             const response = await request(app)
-                .post(`/users/friends/${exampleFriendId}`)
+                .post(`${BASE_URL}/friends/${exampleFriendId}`)
                 .set('Authorization', `Bearer ${userToken}`);
 
             expect(response.status).toEqual(400);
@@ -472,11 +496,11 @@ describe("User API endpoints", () => {
         });
 
         test("should respond with 'no such user' error", async () => {
-            await checkNotFound('post', `/users/friends/${notExistingId}`, userToken);
+            await checkNotFound('post', `${BASE_URL}/friends/${notExistingId}`, userToken);
         });
 
         test("should respond with 'invalid user id' error", async () => {
-            await checkInvalidId('post', '/users/friends/111', userToken);
+            await checkInvalidId('post', `${BASE_URL}/friends/111`, userToken);
         })
 
     });
@@ -499,7 +523,7 @@ describe("User API endpoints", () => {
             );
 
             const response = await request(app)
-                .patch(`/users/friends/${userToSendRequest._id}`)
+                .patch(`${BASE_URL}/friends/${userToSendRequest._id}`)
                 .set('Authorization', `Bearer ${userToken}`);
 
             expect(response.status).toEqual(200);
@@ -521,15 +545,15 @@ describe("User API endpoints", () => {
         });
 
         test("should respond with 'no such request' error", async () => {
-            await checkNotFound('patch', `/users/friends/${notExistingId}`, userToken);
+            await checkNotFound('patch', `${BASE_URL}/friends/${notExistingId}`, userToken);
         });
 
         test("should respond with 'no such request' error for the user who is already a friend", async () => {
-            await checkNotFound('patch', `/users/friends/${exampleFriendId}`, userToken);
+            await checkNotFound('patch', `${BASE_URL}/friends/${exampleFriendId}`, userToken);
         });
 
         test("should respond with 'invalid user id' errors", async () => {
-            await checkInvalidId('patch', '/users/friends/111', userToken);
+            await checkInvalidId('patch', `${BASE_URL}/friends/111`, userToken);
         });
 
     });
@@ -539,7 +563,7 @@ describe("User API endpoints", () => {
 
         test("should delete users from each other's friends lists", async () => {
             const response = await request(app)
-                .delete(`/users/friends/${exampleFriendId}`)
+                .delete(`${BASE_URL}/friends/${exampleFriendId}`)
                 .set('Authorization', `Bearer ${userToken}`);
 
             expect(response.status).toEqual(200);
@@ -561,11 +585,11 @@ describe("User API endpoints", () => {
         });
 
         test("should respond with 'no such friend' error", async () => {
-            await checkNotFound('delete', `/users/friends/${notExistingId}`, userToken);
+            await checkNotFound('delete', `${BASE_URL}/friends/${notExistingId}`, userToken);
         });
 
         test("should respond with 'invalid user id' error", async () => {
-            await checkInvalidId('delete', '/users/friends/111', userToken);
+            await checkInvalidId('delete', `${BASE_URL}/friends/111`, userToken);
         });
 
     });

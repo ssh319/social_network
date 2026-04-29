@@ -64,6 +64,7 @@ export const uploadImage = async (userId, image) => {
         
     } catch (err) {
         await session.abortTransaction();
+        throw err;
 
     } finally {
         await session.endSession();
@@ -102,6 +103,7 @@ export const deleteImage = async (imageId) => {
         
     } catch (err) {
         await session.abortTransaction();
+        throw err;
 
     } finally {
         await session.endSession();

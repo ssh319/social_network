@@ -18,6 +18,7 @@ main {
 img {
     object-fit: cover;
     object-position: center;
+    flex-shrink: 0;
 }
 
 .loader {

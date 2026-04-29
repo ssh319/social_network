@@ -134,7 +134,7 @@ const SuggestedUsers = ({ users, isLoaded }) => {
                             }}>
                                 No suggestions yet.
                                 <br />
-                                Try to <Link to='/users/friends/' style={{ color: 'inherit' }}>search new friends</Link>.
+                                Try to <Link to='/users' style={{ color: 'inherit' }}>search new friends</Link>.
                             </span>
                         }
                     </> :

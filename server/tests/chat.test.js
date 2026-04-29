@@ -1,9 +1,8 @@
 import request from 'supertest';
 import mongoose from 'mongoose';
 
-import app from '../app.js';
-
 import {
+    app,
     initDb,
     closeDb,
     createTestUsers,
@@ -14,8 +13,11 @@ import {
 
 import Chat from '../models/chatModel.js';
 import User from '../models/userModel.js';
+import { initSocket } from '../socket/index.js';
 
+let io;
 
+const BASE_URL = '/api/chats';
 const notExistingId = "00aa11bb22cc33dd44ee55ff";
 
 let exampleUserId;
@@ -27,7 +29,8 @@ let friendToken;
 
 beforeAll(async () => {
     await initDb();
-
+    io = initSocket(app);
+    
     ({
         exampleUserId,
         exampleFriendId,
@@ -45,10 +48,14 @@ beforeEach(async () => {
 
 afterEach(async () => {
     await mongoose.connection.dropCollection('chats');
+
+    await User.findByIdAndUpdate(exampleUserId, { $set: { chats: [] } });
+    await User.findByIdAndUpdate(exampleFriendId, { $set: { chats: [] } });
 });
 
 afterAll(async () => {
     await closeDb();
+    await io.close();
 });
 
 
@@ -58,7 +65,7 @@ describe("Chat API endpoints", () => {
 
         test("should return user's chats in body with example chat as 1st element", async () => {
             const response = await request(app)
-                .get('/chats')
+                .get(BASE_URL)
                 .set('Authorization', `Bearer ${userToken}`);
 
             expect(response.status).toEqual(200);
@@ -77,7 +84,7 @@ describe("Chat API endpoints", () => {
 
         test("should return friend's chats in body with example chat as 1st element", async () => {
             const response = await request(app)
-                .get('/chats')
+                .get(BASE_URL)
                 .set('Authorization', `Bearer ${friendToken}`);
 
             expect(response.status).toEqual(200);
@@ -100,7 +107,7 @@ describe("Chat API endpoints", () => {
 
         test("should return a chat object for example user", async () => {
             const response = await request(app)
-                .get(`/chats/${exampleChatId}`)
+                .get(`${BASE_URL}/${exampleChatId}`)
                 .set('Authorization', `Bearer ${userToken}`);
 
             expect(response.status).toEqual(200);
@@ -114,7 +121,7 @@ describe("Chat API endpoints", () => {
 
         test("should return a chat object for example friend", async () => {
             const response = await request(app)
-                .get(`/chats/${exampleChatId}`)
+                .get(`${BASE_URL}/${exampleChatId}`)
                 .set('Authorization', `Bearer ${friendToken}`);
 
             expect(response.status).toEqual(200);
@@ -127,11 +134,11 @@ describe("Chat API endpoints", () => {
         });
 
         test("should respond with 'invalid id' error", async () => {
-            await checkInvalidId('get', '/chats/111', userToken);
+            await checkInvalidId('get', `${BASE_URL}/111`, userToken);
         });
 
         test("should respond with 'no such chat' error", async () => {
-            await checkNotFound('get', `/chats/${notExistingId}`, userToken);
+            await checkNotFound('get', `${BASE_URL}/${notExistingId}`, userToken);
         });
 
         test("should respond with 'no chat access' error", async () => {
@@ -141,7 +148,7 @@ describe("Chat API endpoints", () => {
             });
 
             const response = await request(app)
-                .get(`/chats/${_id}`)
+                .get(`${BASE_URL}/${_id}`)
                 .set('Authorization', `Bearer ${friendToken}`);
 
             expect(response.status).toEqual(403);
@@ -160,7 +167,7 @@ describe("Chat API endpoints", () => {
             });
 
             const response = await request(app)
-                .post(`/chats/${_id}`)
+                .post(`${BASE_URL}/${_id}`)
                 .set('Authorization', `Bearer ${userToken}`);
 
             expect(response.status).toEqual(201);
@@ -168,7 +175,7 @@ describe("Chat API endpoints", () => {
 
         test("should return existing chat id for example user", async () => {
             const response = await request(app)
-                .post(`/chats/${exampleFriendId}`)
+                .post(`${BASE_URL}/${exampleFriendId}`)
                 .set('Authorization', `Bearer ${userToken}`);
 
             expect(response.status).toEqual(200);
@@ -178,7 +185,7 @@ describe("Chat API endpoints", () => {
 
         test("should return existing chat id for example friend", async () => {
             const response = await request(app)
-                .post(`/chats/${exampleUserId}`)
+                .post(`${BASE_URL}/${exampleUserId}`)
                 .set('Authorization', `Bearer ${friendToken}`);
  
             expect(response.status).toEqual(200);
@@ -187,11 +194,11 @@ describe("Chat API endpoints", () => {
         });
 
         test("should respond with 'invalid id' error", async () => {
-            await checkInvalidId('post', '/chats/111', userToken);
+            await checkInvalidId('post', `${BASE_URL}/111`, userToken);
         });
 
         test("should respond with 'no such user' error", async () => {
-            await checkNotFound('post', `/chats/${notExistingId}`, userToken);
+            await checkNotFound('post', `${BASE_URL}/${notExistingId}`, userToken);
         });
 
     });
@@ -199,7 +206,7 @@ describe("Chat API endpoints", () => {
     describe("deleteChat", () => {
         test("should remove the example chat from db by example user request", async () => {
             const response = await request(app)
-                .delete(`/chats/${exampleChatId}`)
+                .delete(`${BASE_URL}/${exampleChatId}`)
                 .set('Authorization', `Bearer ${userToken}`);
 
             expect(response.status).toEqual(200);
@@ -217,7 +224,7 @@ describe("Chat API endpoints", () => {
 
         test("should remove the example chat from db by example friend request", async () => {
             const response = await request(app)
-                .delete(`/chats/${exampleChatId}`)
+                .delete(`${BASE_URL}/${exampleChatId}`)
                 .set('Authorization', `Bearer ${friendToken}`);
 
             expect(response.status).toEqual(200);
@@ -240,7 +247,7 @@ describe("Chat API endpoints", () => {
             });
 
             const response = await request(app)
-                .delete(`/chats/${_id}`)
+                .delete(`${BASE_URL}/${_id}`)
                 .set('Authorization', `Bearer ${friendToken}`);
 
             expect(response.status).toEqual(403);
@@ -258,11 +265,11 @@ describe("Chat API endpoints", () => {
         });
 
         test("should respond with 'invalid id' error", async () => {
-            await checkInvalidId('delete', '/chats/111', userToken);
+            await checkInvalidId('delete', `${BASE_URL}/111`, userToken);
         });
 
         test("should respond with 'no such chat' error", async () => {
-            await checkNotFound('delete', `/chats/${notExistingId}`, userToken);
+            await checkNotFound('delete', `${BASE_URL}/${notExistingId}`, userToken);
         });
 
     });
@@ -270,7 +277,7 @@ describe("Chat API endpoints", () => {
     describe("sendMessage", () => {
         test("should push a message to the example chat", async () => {
             const response = await request(app)
-                .post(`/chats/${exampleChatId}/messages`)
+                .post(`${BASE_URL}/${exampleChatId}/messages`)
                 .send({
                     text: "Test message"
                 })
@@ -285,11 +292,11 @@ describe("Chat API endpoints", () => {
         });
 
         test("should respond with 'invalid id' error", async () => {
-            await checkInvalidId('post', '/chats/111/messages', userToken);
+            await checkInvalidId('post', `${BASE_URL}/111/messages`, userToken);
         });
 
         test("should respond with 'no such chat' error", async () => {
-            await checkNotFound('post', `/chats/${notExistingId}/messages`, userToken);
+            await checkNotFound('post', `${BASE_URL}/${notExistingId}/messages`, userToken);
         });
 
         test("should respond with 'no chat access' error", async () => {
@@ -299,7 +306,7 @@ describe("Chat API endpoints", () => {
             });
 
             const response = await request(app)
-                .post(`/chats/${_id}/messages`)
+                .post(`${BASE_URL}/${_id}/messages`)
                 .send({
                     text: "Test message"
                 })
@@ -311,7 +318,7 @@ describe("Chat API endpoints", () => {
 
         test("should respond with message data validation errors", async () => {
             const response = await request(app)
-                .post(`/chats/${exampleChatId}/messages`)
+                .post(`${BASE_URL}/${exampleChatId}/messages`)
                 .send({
                     text: "m".repeat(1001)
                 })
@@ -325,7 +332,7 @@ describe("Chat API endpoints", () => {
 
         test("should respond with 'invalid data type' error", async () => {
             const response = await request(app)
-                .post(`/chats/${exampleChatId}/messages`)
+                .post(`${BASE_URL}/${exampleChatId}/messages`)
                 .send({
                     text: 1
                 })
@@ -339,7 +346,7 @@ describe("Chat API endpoints", () => {
 
         test("should respond with 'unexpected fields' error", async () => {
             const response = await request(app)
-                .post(`/chats/${exampleChatId}/messages`)
+                .post(`${BASE_URL}/${exampleChatId}/messages`)
                 .send({
                     text: "Test message",
                     unexpectedField: "value"
@@ -357,7 +364,7 @@ describe("Chat API endpoints", () => {
     describe("editMessage", () => {
         test("should set a new text for the message", async () => {
             const response = await request(app)
-                .patch(`/chats/${exampleChatId}/messages/${exampleMessageId}`)
+                .patch(`${BASE_URL}/${exampleChatId}/messages/${exampleMessageId}`)
                 .send({
                     text: "Edited message text"
                 })
@@ -373,7 +380,7 @@ describe("Chat API endpoints", () => {
 
         test("should respond with data validation errors list", async () => {
             const response = await request(app)
-                .patch(`/chats/${exampleChatId}/messages/${exampleMessageId}`)
+                .patch(`${BASE_URL}/${exampleChatId}/messages/${exampleMessageId}`)
                 .send({
                     text: "m".repeat(1001)
                 })
@@ -387,7 +394,7 @@ describe("Chat API endpoints", () => {
 
         test("should respond with 'invalid data type' error", async () => {
             const response = await request(app)
-                .patch(`/chats/${exampleChatId}/messages/${exampleMessageId}`)
+                .patch(`${BASE_URL}/${exampleChatId}/messages/${exampleMessageId}`)
                 .send({
                     text: 1
                 })
@@ -401,7 +408,7 @@ describe("Chat API endpoints", () => {
 
         test("should respond with 'unexpected fields' error", async () => {
             const response = await request(app)
-                .patch(`/chats/${exampleChatId}/messages/${exampleMessageId}`)
+                .patch(`${BASE_URL}/${exampleChatId}/messages/${exampleMessageId}`)
                 .send({
                     text: "Edited message text",
                     unexpectedField: "value"
@@ -421,7 +428,7 @@ describe("Chat API endpoints", () => {
             });
 
             const response = await request(app)
-                .patch(`/chats/${_id}/messages/${notExistingId}`)
+                .patch(`${BASE_URL}/${_id}/messages/${notExistingId}`)
                 .send({
                     text: "Edited message text"
                 })
@@ -433,7 +440,7 @@ describe("Chat API endpoints", () => {
 
         test("should respond with 'no message access' error", async () => {
             const response = await request(app)
-                .patch(`/chats/${exampleChatId}/messages/${exampleMessageId}`)
+                .patch(`${BASE_URL}/${exampleChatId}/messages/${exampleMessageId}`)
                 .send({
                     text: "Edited message text"
                 })
@@ -444,13 +451,13 @@ describe("Chat API endpoints", () => {
         });
 
         test("should respond with 'invalid id' errors", async () => {
-            await checkInvalidId('patch', `/chats/111/messages/${notExistingId}`, userToken);
-            await checkInvalidId('patch', `/chats/${exampleChatId}/messages/111`, userToken);
+            await checkInvalidId('patch', `${BASE_URL}/111/messages/${notExistingId}`, userToken);
+            await checkInvalidId('patch', `${BASE_URL}/${exampleChatId}/messages/111`, userToken);
         });
 
         test("should respond with 'not found' errors", async () => {
-            await checkNotFound('patch', `/chats/${notExistingId}/messages/${notExistingId}`, userToken);
-            await checkNotFound('patch', `/chats/${exampleChatId}/messages/${notExistingId}`, userToken);
+            await checkNotFound('patch', `${BASE_URL}/${notExistingId}/messages/${notExistingId}`, userToken);
+            await checkNotFound('patch', `${BASE_URL}/${exampleChatId}/messages/${notExistingId}`, userToken);
         });
 
     });
@@ -458,7 +465,7 @@ describe("Chat API endpoints", () => {
     describe("deleteMessage", () => {
         test("should remove the message from chat", async () => {
             const response = await request(app)
-                .delete(`/chats/${exampleChatId}/messages/${exampleMessageId}`)
+                .delete(`${BASE_URL}/${exampleChatId}/messages/${exampleMessageId}`)
                 .set('Authorization', `Bearer ${userToken}`);
 
             expect(response.status).toEqual(200);
@@ -476,7 +483,7 @@ describe("Chat API endpoints", () => {
             });
 
             const response = await request(app)
-                .delete(`/chats/${_id}/messages/${notExistingId}`)
+                .delete(`${BASE_URL}/${_id}/messages/${notExistingId}`)
                 .set('Authorization', `Bearer ${friendToken}`);
 
             expect(response.status).toEqual(403);
@@ -485,7 +492,7 @@ describe("Chat API endpoints", () => {
 
         test("should respond with 'no message access' error", async () => {
             const response = await request(app)
-                .delete(`/chats/${exampleChatId}/messages/${exampleMessageId}`)
+                .delete(`${BASE_URL}/${exampleChatId}/messages/${exampleMessageId}`)
                 .set('Authorization', `Bearer ${friendToken}`);
 
             expect(response.status).toEqual(403);
@@ -493,13 +500,13 @@ describe("Chat API endpoints", () => {
         });
 
         test("should respond with 'invalid id' errors", async () => {
-            await checkInvalidId('delete', `/chats/111/messages/${notExistingId}`, userToken);
-            await checkInvalidId('delete', `/chats/${exampleChatId}/messages/111`, userToken);
+            await checkInvalidId('delete', `${BASE_URL}/111/messages/${notExistingId}`, userToken);
+            await checkInvalidId('delete', `${BASE_URL}/${exampleChatId}/messages/111`, userToken);
         });
 
         test("should respond with 'not found' errors", async () => {
-            await checkNotFound('delete', `/chats/${notExistingId}/messages/${notExistingId}`, userToken);
-            await checkNotFound('delete', `/chats/${exampleChatId}/messages/${notExistingId}`, userToken);
+            await checkNotFound('delete', `${BASE_URL}/${notExistingId}/messages/${notExistingId}`, userToken);
+            await checkNotFound('delete', `${BASE_URL}/${exampleChatId}/messages/${notExistingId}`, userToken);
         });
         
     });
@@ -507,7 +514,7 @@ describe("Chat API endpoints", () => {
     describe("readMessage", () => {
         test("should mark the provided message as read", async () => {
             const response = await request(app)
-                .patch(`/chats/${exampleChatId}/messages/${exampleMessageId}/read`)
+                .patch(`${BASE_URL}/${exampleChatId}/messages/${exampleMessageId}/read`)
                 .set('Authorization', `Bearer ${friendToken}`);
 
             expect(response.status).toEqual(200);
@@ -520,7 +527,7 @@ describe("Chat API endpoints", () => {
 
         test("should respond with 'cannot mark as read your own message' error", async () => {
             const response = await request(app)
-                .patch(`/chats/${exampleChatId}/messages/${exampleMessageId}/read`)
+                .patch(`${BASE_URL}/${exampleChatId}/messages/${exampleMessageId}/read`)
                 .set('Authorization', `Bearer ${userToken}`);
 
             expect(response.status).toEqual(403);
@@ -533,13 +540,13 @@ describe("Chat API endpoints", () => {
         });
 
         test("should respond with 'invalid id' errors", async () => {
-            await checkInvalidId('patch', `/chats/111/messages/${notExistingId}`, friendToken);
-            await checkInvalidId('patch', `/chats/${exampleChatId}/messages/111`, friendToken);
+            await checkInvalidId('patch', `${BASE_URL}/111/messages/${notExistingId}`, friendToken);
+            await checkInvalidId('patch', `${BASE_URL}/${exampleChatId}/messages/111`, friendToken);
         });
 
         test("should respond with 'not found' errors", async () => {
-            await checkNotFound('patch', `/chats/${notExistingId}/messages/${notExistingId}`, friendToken);
-            await checkNotFound('patch', `/chats/${exampleChatId}/messages/${notExistingId}`, friendToken);
+            await checkNotFound('patch', `${BASE_URL}/${notExistingId}/messages/${notExistingId}`, friendToken);
+            await checkNotFound('patch', `${BASE_URL}/${exampleChatId}/messages/${notExistingId}`, friendToken);
         });
 
         test("should respond with 'no chat access' error", async () => {
@@ -549,7 +556,7 @@ describe("Chat API endpoints", () => {
             });
 
             const response = await request(app)
-                .patch(`/chats/${_id}/messages/${notExistingId}/read`)
+                .patch(`${BASE_URL}/${_id}/messages/${notExistingId}/read`)
                 .set('Authorization', `Bearer ${friendToken}`);
 
             expect(response.status).toEqual(403);

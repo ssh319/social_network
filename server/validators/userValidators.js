@@ -49,6 +49,11 @@ const isValidBirthDate = (value) => {
 }
 
 
+const sanitizeSearchField = (value) => {
+    return value.replace(/[*$\\]/g, "");
+}
+
+
 export const validateUserId = (request, response, next) => {
     if (!isValidObjectId(request.params.userId)) {
         return response.status(400).json({ errors: { userId: "Invalid user id provided" }});
@@ -201,7 +206,26 @@ export const validateUserAuth = [
 
 export const validateSearchQuery = [
     query("firstName")
-        .optional(),
+        .optional()
+        .isString().withMessage("Invalid data type for first name")
+        .customSanitizer(sanitizeSearchField),
+
+    query("lastName")
+        .optional()
+        .isString().withMessage("Invalid data type for last name")
+        .customSanitizer(sanitizeSearchField),
+
+    query("country")
+        .optional()
+        .isString().withMessage("Invalid data type for country")
+        .customSanitizer(sanitizeSearchField),
+
+    query("city")
+        .optional()
+        .isString().withMessage("Invalid data type for city")
+        .customSanitizer(sanitizeSearchField),
+
+    checkExact(),
 
     (request, response, next) => {
         const validationErrors = validationResult(request);

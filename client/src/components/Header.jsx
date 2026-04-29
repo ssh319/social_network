@@ -274,8 +274,8 @@ const Header = () => {
                                     <img
                                         style={{ borderRadius: '50%', margin: '0 auto' }}
                                         alt={`${user.firstName} ${user.lastName}`}
-                                        height='48'
-                                        width='48'
+                                        height={48}
+                                        width={48}
                                         src={getImageUrl(user.profilePicture?.path) || avatarPlaceholder}
                                     />
                                     <span style={{ color: 'var(--bs-body-color)', margin: '10px auto' }}>
@@ -297,7 +297,7 @@ const Header = () => {
                                     <span style={{ position: 'relative', left: '5px', fontWeight: '400' }}>Manage account</span>
                                 </Link>
 
-                                <button type='button' className='logout-btn' onClick={logout}>
+                                <button type='button' className='logout-btn' onClick={() => { logout(); setNotifications([]); }}>
                                     <LogoutIcon />
                                     <span style={{ position: 'relative', left: '5px', top: '0.5px' }}>Logout</span>
                                 </button>

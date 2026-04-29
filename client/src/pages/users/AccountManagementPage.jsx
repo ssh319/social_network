@@ -55,6 +55,9 @@ const AccountManagementPage = () => {
     ]
     
     useEffect(() => {
+
+        document.title = 'Account management';
+
         const fetchUserData = async () => {
             const service = new UserService(cookies.token);
 

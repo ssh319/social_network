@@ -230,7 +230,7 @@ const PostViewing = () => {
                                 <form className='postview-newcomment-form' onSubmit={sendComment}>
                                     <img
                                         className='post-avatar'
-                                        style={{ cursor: 'default', flexShrink: '0' }}
+                                        style={{ cursor: 'default' }}
                                         alt='me'
                                         src={getImageUrl(user.profilePicture?.path) || avatarPlaceholder}
                                     />

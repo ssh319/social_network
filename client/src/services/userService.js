@@ -11,7 +11,7 @@ class UserService extends BaseService {
             `${this.baseUrl}?${qs.stringify(query)}`
         );
         
-        return response.data.users;
+        return response.data;
     }
 
     async getSuggestedUsers() {

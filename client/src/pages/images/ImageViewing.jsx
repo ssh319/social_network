@@ -41,6 +41,8 @@ const ImageViewing = () => {
                 setImage(fetchedImage);
                 setImageLoaded(true);
 
+                document.title = `${fetchedImage.user.firstName}'s picture`;
+
             } catch (err) {
                 if (err.response?.status < 500) {
                     navigate('/not-found');

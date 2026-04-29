@@ -141,6 +141,7 @@ export const getOrCreateChat = async (primaryUser, secondaryUser) => {
 
     } catch (err) {
         await session.abortTransaction();
+        throw err;
         
     } finally {
         await session.endSession();
@@ -173,6 +174,7 @@ export const deleteChat = async (chatId) => {
 
     } catch (err) {
         await session.abortTransaction();
+        throw err;
 
     } finally {
         await session.endSession();

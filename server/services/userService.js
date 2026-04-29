@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
+import fs from 'fs/promises';
 
 import User from '../models/userModel.js';
 import Post from '../models/postModel.js';
@@ -16,20 +17,28 @@ import {
 
 
 /**
- * Find users by parameters.
+ * Search users by parameters.
  * 
  * @param {Object} query Search parameters.
  * @returns {Promise<Array<Object>>} List of matching users.
- * 
- * @todo Implement.
  */
 export const searchUsers = async (query) => {
+
+    const matchQuery = Object.entries(query).map(([ field, value ]) => ({
+        [field]: { $regex: value, $options: 'i' }
+    }));
+
+    if (matchQuery.length === 0) return [];
+    
     const result = await User.find(
-        query,
-        { firstName: 1, lastName: 1, profilePicture: 1 },
+        { $and: matchQuery },
+        { firstName: 1, lastName: 1, profilePicture: 1, lastActive: 1, country: 1, city: 1 },
         // ???
-        { limit: 10 }
-    );
+        // { limit: 10 }
+    ).populate({
+        path: 'profilePicture',
+        select: ['path']
+    });
 
     return result;
 }
@@ -242,7 +251,7 @@ export const authenticateUser = async (email, password) => {
     }
     
     const { _id } = retrievedUser;
-    const token = jwt.sign({ _id }, jwtSecretKey, { expiresIn: "7d" });
+    const token = jwt.sign({ _id }, jwtSecretKey, { expiresIn: "30d" });
 
     return token;
 }
@@ -255,8 +264,6 @@ export const authenticateUser = async (email, password) => {
  * @param {Object} data `Object`, containing the user data updates.
  */
 export const updateUser = async (userId, data) => {
-    // user can change password and still have the access with old token (if the change was performed from another device)
-
     const user = await User.findById(userId);
 
     if (data.email) {
@@ -309,7 +316,16 @@ export const deleteUser = async (userId) => {
         session.startTransaction();
 
         await Post.deleteMany({ user: userId }, { session });
-        await Image.deleteMany({ user: userId }, { session });
+
+        const images = await Image.find({ user: userId });
+        
+        images.map(async image => {
+            await image.deleteOne({ session });
+            await fs.unlink(image.path).catch(err => {
+                if (err.code !== "ENOENT") throw err;
+            });
+        });
+
         await Chat.deleteMany({
             $or: [
                 { primaryUser: userId },
@@ -317,12 +333,19 @@ export const deleteUser = async (userId) => {
             ]
         }, { session });
 
+        await User.updateMany(
+            { 'friends.user': userId },
+            { $pull: { friends: { user: userId } } },
+            { session }
+        );
+
         await User.findByIdAndDelete(userId, { session });
 
         await session.commitTransaction();
 
     } catch (err) {
         await session.abortTransaction();
+        throw err;
 
     } finally {
         await session.endSession();
@@ -427,6 +450,7 @@ export const addFriend = async (userId, requestReceiverId) => {
     
     } catch (err) {
         await session.abortTransaction();
+        throw err;
 
     } finally {
         await session.endSession();
@@ -472,6 +496,7 @@ export const acceptFriend = async (userId, requestSenderId) => {
 
     } catch (err) {
         await session.abortTransaction();
+        throw err;
 
     } finally {
         await session.endSession();
@@ -513,6 +538,7 @@ export const removeFriend = async (userId, friendId) => {
 
     } catch (err) {
         await session.abortTransaction();
+        throw err;
 
     } finally {
         await session.endSession();

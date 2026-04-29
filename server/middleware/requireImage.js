@@ -1,5 +1,5 @@
 const requireImage = (req, res, next) => {
-    if (!req.file) {console.log(req.body);
+    if (!req.file) {
         return res.status(400).json({ errors: { globalError: "Image file is required" } });
     }
 

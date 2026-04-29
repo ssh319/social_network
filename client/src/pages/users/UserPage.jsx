@@ -158,13 +158,25 @@ const UserPage = () => {
                             <div className='userpage-account'>
                                 <div className='userpage-account-info'>
                                     <div style={{ display: 'flex', alignItems: 'center' }}>
-                                        <img
-                                            alt={`${userProfile.firstName} ${userProfile.lastName}`}
-                                            width='108'
-                                            height='108'
-                                            src={getImageUrl(userProfile.profilePicture?.path) || avatarPlaceholder}
-                                            style={{ borderRadius: '50%' }}
-                                        />
+                                        {userProfile.profilePicture ?
+                                            <Link to={`/images/${userProfile.profilePicture._id}`}>
+                                                <img
+                                                    alt={`${userProfile.firstName} ${userProfile.lastName}`}
+                                                    width={108}
+                                                    height={108}
+                                                    src={getImageUrl(userProfile.profilePicture.path) || avatarPlaceholder}
+                                                    style={{ borderRadius: '50%' }}
+                                                />
+                                            </Link> :
+
+                                            <img
+                                                alt={`${userProfile.firstName} ${userProfile.lastName}`}
+                                                width={108}
+                                                height={108}
+                                                src={avatarPlaceholder}
+                                                style={{ borderRadius: '50%' }}
+                                            />
+                                        }
 
                                         <div style={{
                                             display: 'flex',
@@ -288,8 +300,8 @@ const UserPage = () => {
                                                 <img
                                                     alt='user'
                                                     src={getImageUrl(friend.user.profilePicture?.path) || avatarPlaceholder}
-                                                    width='38'
-                                                    height='38'
+                                                    width={38}
+                                                    height={38}
                                                     style={{ borderRadius: '50%' }}
                                                 />
                                                 <div className='userpage-friend-name'>
@@ -322,8 +334,8 @@ const UserPage = () => {
                                                 <img
                                                     alt='user'
                                                     src={getImageUrl(friend.user.profilePicture?.path) || avatarPlaceholder}
-                                                    width='38'
-                                                    height='38'
+                                                    width={38}
+                                                    height={38}
                                                     style={{ borderRadius: '50%' }}
                                                 />
                                                 <div className='userpage-friend-name'>

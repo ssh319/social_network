@@ -105,6 +105,7 @@ export const createPost = async (userId, post) => {
 
     } catch (err) {
         await session.abortTransaction();
+        throw err;
 
     } finally {
         await session.endSession();
@@ -138,6 +139,7 @@ export const deletePost = async (postId) => {
 
     } catch (err) {
         await session.abortTransaction();
+        throw err;
 
     } finally {
         await session.endSession();

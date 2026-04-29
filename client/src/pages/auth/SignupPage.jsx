@@ -47,7 +47,7 @@ const SignupPage = () => {
         try {
             await service.createUser({ email, password, firstName, lastName });
             const token = await service.authenticateUser({ email, password });
-            setCookie("token", token, { path: "/", maxAge: 60 * 60 * 24 * 7 });
+            setCookie("token", token, { path: "/", maxAge: 60 * 60 * 24 * 30 });
             navigate("/");
 
         } catch (err) {

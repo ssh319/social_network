@@ -1,9 +1,4 @@
-// import { useEffect } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
-// import { useCookies } from 'react-cookie';
-
-// import socket from './socket';
-// import { useAuth } from '@context/AuthContext';
 
 import 'bootstrap/dist/css/bootstrap.min.css';
 import '@styles/App.css';

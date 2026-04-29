@@ -16,6 +16,7 @@ import avatarPlaceholder from '@assets/images/avatar-placeholder.jpg';
 import ChatsIcon from '@assets/icons/ChatsIcon';
 import UserPlusIcon from '@assets/icons/UserPlusIcon';
 import UserMinusIcon from '@assets/icons/UsersMinusIcon';
+import SearchIcon from '@assets/icons/SearchIcon';
 
 
 const FriendsPage = () => {
@@ -142,14 +143,25 @@ const FriendsPage = () => {
                 {friendsLoaded ?
                     <div>
                         <div className='friendspage-header'>
-                            {user._id === profile._id ? 'Your friends' : `${profile.firstName}'s friends`}
-                            <span style={{ color: 'var(--bs-gray-600)', fontSize: '19px', fontWeight: '600', marginLeft: '13px' }}>{friends.length}</span>
+                            <div>
+                                {user._id === profile._id ? 'Your friends' : `${profile.firstName}'s friends`}
+                                <span style={{ color: 'var(--bs-gray-600)', fontSize: '19px', fontWeight: '600', marginLeft: '13px' }}>{friends.length}</span>
+                            </div>
+                            <Link to='/users'>
+                                <button type='button' className='search-btn'><SearchIcon /> Search users</button>
+                            </Link>
                         </div>
                         <ul className='friends-list'>
                             {friends.map(friend => (
                                 <li key={friend.user._id}>
                                     <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
-                                        <img alt='Friend avatar' src={getImageUrl(friend.user.profilePicture?.path) || avatarPlaceholder} className='friend-avatar' />
+                                        <Link to={`/users/${friend.user._id}`}>
+                                            <img
+                                                alt={friend.user._id}
+                                                src={getImageUrl(friend.user.profilePicture?.path) || avatarPlaceholder}
+                                                className='friend-avatar'
+                                            />
+                                        </Link>
                                         <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }} className='friend-info'>
                                             <Link to={`/users/${friend.user._id}`}>
                                                 {friend.user.firstName} {friend.user.lastName}

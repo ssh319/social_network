@@ -5,16 +5,18 @@ import { MongoMemoryReplSet } from 'mongodb-memory-server';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
+import http from 'http';
 
-// TEST_JWT_SECRET_KEY instead of prod. key?
-dotenv.config();
+dotenv.config({ path: '.env.development' });
 
 import User from '../models/userModel.js';
 import Post from '../models/postModel.js';
 import Chat from '../models/chatModel.js';
-// import Image from '../models/imageModel.js';
+import Image from '../models/imageModel.js';
 
-import app from '../app.js';
+import expressApp from '../app.js';
+
+export const app = http.createServer(expressApp);
 
 
 let replset;
@@ -67,8 +69,8 @@ export const createTestUsers = async () => {
     await User.findByIdAndUpdate(exampleUserId, { $push: { friends: { user: exampleFriendId, status: 'friend' } } });
     await User.findByIdAndUpdate(exampleFriendId, { $push: { friends: { user: exampleUserId, status: 'friend' } } });
     
-    const userToken = jwt.sign({ _id: exampleUserId }, process.env.JWT_SECRET_KEY, { expiresIn: '7d' });
-    const friendToken = jwt.sign({ _id: exampleFriendId }, process.env.JWT_SECRET_KEY, { expiresIn: '7d' });
+    const userToken = jwt.sign({ _id: exampleUserId }, process.env.JWT_SECRET_KEY, { expiresIn: '3d' });
+    const friendToken = jwt.sign({ _id: exampleFriendId }, process.env.JWT_SECRET_KEY, { expiresIn: '3d' });
     
     return {
         exampleUserId,
@@ -139,27 +141,22 @@ export const createTestChat = async (userId, friendId) => {
 }
 
 
-// const createTestImage = async (userId) => {
-//     const pngImage = await Image.create({
-//         user: userId,
-//         path: "../?/pngExampleImage.png",
-//         contentType: "image/png"
-//     });
+export const createTestImage = async (userId) => {
+    const jpegImage = await Image.create({
+        user: userId,
+        path: "../uploads/jpegExampleImage.jpeg",
+        mimeType: "image/jpeg",
+        size: 10000
+    });
 
-//     const jpegImage = await Image.create({
-//         user: userId,
-//         path: "../?/jpegExampleImage.jpeg",
-//         contentType: "image/jpeg"
-//     });
+    const exampleJpegImageId = jpegImage._id.toHexString();
 
-//     const examplePngImageId = pngImage._id.toHexString();
-//     const exampleJpegImageId = jpegImage._id.toHexString();
+    await User.findByIdAndUpdate(userId, {
+        $push: { images: exampleJpegImageId }
+    });
 
-//     return {
-//         examplePngImageId,
-//         exampleJpegImageId
-//     };
-// }
+    return { exampleJpegImageId };
+}
 
 
 export const checkInvalidId = async (method, route, token) => {

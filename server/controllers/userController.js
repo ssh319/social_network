@@ -5,22 +5,18 @@ import { emitNotification } from '../socket/notifications.js';
 
 
 export const searchUsers = async (request, response, next) => {
+    try {
+        const users = await service.searchUsers(request.query);
+        response.json(users);
 
-    console.log(request.query);
-    return response.sendStatus(501);
-
-    // try {
-    //     const users = await service.searchUsers(request.query);
-    //     response.json({ users });
-
-    // } catch (err) {
-    //     if (err instanceof ClientError) {
-    //         response.status(err.statusCode).json({ errors: { [err.path]: err.msg } });
+    } catch (err) {
+        if (err instanceof ClientError) {
+            response.status(err.statusCode).json({ errors: { [err.path]: err.msg } });
     
-    //     } else {
-    //         next(err);
-    //     }
-    // }
+        } else {
+            next(err);
+        }
+    }
 }
 
 
