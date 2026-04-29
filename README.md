@@ -73,13 +73,13 @@ MIT
 ## Demo
 
 ### Authentication
-<video src="./assets/user_demo.mp4" autoplay loop muted playsinline width="900"></video>
+![GIF Authentication Demo](./assets/user_demo.gif)
 
 ### Messaging
-<video src="./assets/msg_demo.mp4" autoplay loop muted playsinline width="900"></video>
+![GIF Messaging Demo](./assets/msg_demo.gif)
 
 ### Feed & Notifications
-<video src="./assets/feed_demo.mp4" autoplay loop muted playsinline width="900"></video>
+![GIF Feed & Notifications Demo](./assets/feed_demo.gif)
 
 ### Mobile version
-<video src="./assets/mobile_demo.mp4" autoplay loop muted playsinline width="200"></video>
+![GIF Mobile Demo](./assets/mobile_demo.gif)
