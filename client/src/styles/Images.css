@@ -6,9 +6,9 @@
 
 .imagespage-content-container {
     width: 100%;
-    background-color: white;
+    background-color: var(--section);
     min-height: 350px;
-    border: 1px solid var(--bs-gray-400);
+    border: 1px solid var(--border);
     border-radius: 7px;
     padding-bottom: 30px;
 }
@@ -50,11 +50,11 @@
 }
 
 .imageview-content-container {
-    background-color: white;
+    background-color: var(--section);
     display: flex;
     flex-direction: column;
     padding: 0 20px 40px 20px;
-    border: 1px solid var(--bs-gray-400);
+    border: 1px solid var(--border);
     border-radius: 7px;
     margin-bottom: 40px;
 }

@@ -130,7 +130,7 @@ const HomePage = () => {
                                 <strong>{user.stats.postsCount}</strong>
                                 <span>Posts</span>
                             </p>
-                            <p style={{ borderInline: '1px solid var(--bs-gray-400)' }}>
+                            <p style={{ borderInline: '1px solid var(--border)' }}>
                                 <strong>{user.stats.friendsCount}</strong>
                                 <span>Friends</span>
                             </p>
@@ -160,7 +160,7 @@ const HomePage = () => {
                         <div className='post-panel'>
                             <label htmlFor='post-image-upload' className='image-attachment-btn'>
                                 <input type='file' id='post-image-upload' accept='image/*' disabled={!feedLoaded} hidden />
-                                <PhotoIcon color='var(--bs-gray-600)' />
+                                <PhotoIcon />
                             </label>
                             <span className='chars-counter'>{postText.length} / {MAX_POST_LENGTH}</span>
                             <button type='submit' className='posting-submit-btn' disabled={!feedLoaded}>

@@ -7,6 +7,12 @@ import { AuthProvider } from '@context/AuthContext';
 import { SocketProvider } from '@context/SocketContext';
 
 
+if (!localStorage.getItem('theme')) {
+    localStorage.setItem('theme', window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+}
+
+document.documentElement.dataset.theme = localStorage.getItem('theme');
+
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
     <React.StrictMode>

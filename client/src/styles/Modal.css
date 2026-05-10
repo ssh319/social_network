@@ -10,8 +10,8 @@
 }
 
 .modal-layout {
-    background-color: white;
-    border: 1px solid var(--bs-gray-400);
+    background-color: var(--section);
+    border: 1px solid var(--border);
     border-radius: 11px;
     padding: 20px;
     width: 800px;
@@ -21,7 +21,7 @@
 
 .modal-main-content {
     position: relative;
-    border-right: 1px solid var(--bs-gray-400);
+    border-right: 1px solid var(--border);
     display: flex;
     flex-direction: column;
     flex: 0 0 600px;

@@ -231,7 +231,7 @@ const PostViewing = () => {
                                     <img
                                         className='post-avatar'
                                         style={{ cursor: 'default' }}
-                                        alt='me'
+                                        alt='Me'
                                         src={getImageUrl(user.profilePicture?.path) || avatarPlaceholder}
                                     />
                                     <input

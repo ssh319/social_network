@@ -8,8 +8,8 @@
 }
 
 .post-container {
-    background-color: white;
-    border: 1px solid var(--bs-gray-400);
+    background-color: var(--section);
+    border: 1px solid var(--border);
     border-radius: 7px;
     padding: 0 12px;
     text-align: left;
@@ -32,7 +32,7 @@
 
 .post-creator {
     font-size: 15px;
-    color: var(--bs-body-color);
+    color: var(--text);
     text-decoration: none;
 }
 

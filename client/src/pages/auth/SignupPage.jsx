@@ -100,7 +100,7 @@ const SignupPage = () => {
                             />
 
                             <button type='button' className='eye-icon' onClick={togglePasswordVisibility}>
-                                {passwordVisibility ? <EyeSlashIcon color='black' /> : <EyeFillIcon color='black' />}
+                                {passwordVisibility ? <EyeSlashIcon /> : <EyeFillIcon />}
                             </button>
 
                             {errors.password &&
@@ -121,7 +121,7 @@ const SignupPage = () => {
                             />
 
                             <button type='button' className='eye-icon' onClick={togglePasswordVisibility}>
-                                {passwordVisibility ? <EyeSlashIcon color='black' /> : <EyeFillIcon color='black' />}
+                                {passwordVisibility ? <EyeSlashIcon /> : <EyeFillIcon />}
                             </button>
 
                             {errors.confirmPassword &&

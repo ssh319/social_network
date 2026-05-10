@@ -32,11 +32,11 @@ const authenticate = async (request, response, next) => {
         } catch (err) {
 
             if (err instanceof jwt.JsonWebTokenError) {
-                response.status(401).json({ errors: { globalError: "Invalid JWT token provided: " + err.message }});
+                response.status(401).json({ errors: { globalError: "Invalid authentication token" }});
 
             } else {
                 console.error(err);
-                response.status(500).json({ errors: { globalError: "Unknown internal error occured" }});
+                response.status(500).json({ errors: { globalError: "Unknown internal error occurred" }});
             }
         }
 

@@ -243,7 +243,7 @@ const ChatsPage = () => {
                                                         </Link>
 
                                                         <Link to={`/users/${msg.user}`} style={{ textDecoration: 'none' }}>
-                                                            <span style={{ color: 'var(--bs-body-color)' }}>
+                                                            <span style={{ color: 'var(--text)' }}>
                                                                 {msg.user === convo.me._id ?
                                                                     `${convo.me.firstName} ${convo.me.lastName}` :
                                                                     `${convo.peer.firstName} ${convo.peer.lastName}`
@@ -273,7 +273,7 @@ const ChatsPage = () => {
                                                 ref={messageInputRef}
                                                 type='text'
                                                 onChange={handleMessageChange}
-                                                className='message-input'
+                                                className='form-control message-input'
                                                 placeholder='Enter your message...'
                                             />
                                             <button ref={sendButtonRef} type='submit' className='send-btn'>

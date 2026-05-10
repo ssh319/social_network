@@ -1,7 +1,7 @@
 .header {
     display: flex;
-    background-color: white;
-    border-bottom: 1px solid var(--bs-gray-400);
+    background-color: var(--section);
+    border-bottom: 1px solid var(--border);
     height: var(--header-height);
     align-items: center;
     justify-content: space-around;
@@ -54,7 +54,7 @@
 
 .header-navbar-links > li > button,
 .header-navbar-links > li > a {
-    background-color: white;
+    background-color: var(--section);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -66,7 +66,7 @@
 
 .header-navbar-links > li > button:hover,
 .header-navbar-links > li > a:hover {
-    background-color: var(--bs-gray-100);
+    background-color: var(--hover);
 }
 
 .tooltip {
@@ -75,8 +75,8 @@
     font-weight: 600;
     top: 85%;
     color: var(--bs-gray-600);
-    background-color: white;
-    border: 1px solid var(--bs-gray-400);
+    background-color: var(--section);
+    border: 1px solid var(--border);
     border-radius: 4px;
     padding: 3px 15px;
     pointer-events: none;
@@ -102,7 +102,7 @@
 .dropdown-header {
     display: flex;
     flex-direction: column;
-    border-bottom: 1px solid var(--bs-gray-400);
+    border-bottom: 1px solid var(--border);
     padding-bottom: 9px;
     margin-bottom: 9px;
     font-size: 15px;
@@ -120,7 +120,7 @@
 }
 
 .dropdown-button:hover {
-    background-color: var(--bs-gray-100);
+    background-color: var(--hover);
 }
 
 .dropdown-profile-btn {
@@ -135,9 +135,7 @@
     align-items: center;
     background: none;
     border: none;
-    padding: 0;
     color: var(--bs-red);
-    margin-top: 3px;
     cursor: pointer;
 }
 

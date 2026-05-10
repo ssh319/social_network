@@ -86,7 +86,7 @@ const SearchUsersPage = () => {
                             />
                         ))}
                     </div>
-                    <button type='submit' style={{ fontSize: '15px' }} className='btn'><SearchIcon /> Search</button>
+                    <button type='submit' style={{ fontSize: '15px', color: 'var(--text)' }} className='btn'><SearchIcon /> Search</button>
                 </form>
 
                 {usersLoaded ?

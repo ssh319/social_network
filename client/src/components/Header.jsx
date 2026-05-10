@@ -14,6 +14,8 @@ import avatarPlaceholder from '@assets/images/avatar-placeholder.jpg';
 
 import LogoIcon from '@assets/icons/LogoIcon';
 import SettingsIcon from '@assets/icons/SettingsIcon';
+import LightIcon from '@assets/icons/LightIcon';
+import DarkIcon from '@assets/icons/DarkIcon';
 import LogoutIcon from '@assets/icons/LogoutIcon';
 import ChevronDownIcon from '@assets/icons/ChevronDownIcon';
 import ChatsIcon from '@assets/icons/ChatsIcon';
@@ -37,6 +39,8 @@ const Header = () => {
     
     const notifDropdownRef = useRef(null);
     const [ notifDropdownActive, setNotifDropdownActive ] = useState(false);
+
+    const [ theme, setTheme ] = useState(document.documentElement.dataset.theme);
     
     useEffect(() => {
         loadUser();
@@ -169,6 +173,21 @@ const Header = () => {
             console.error(err);
         }
     }
+
+    const toggleTheme = () => {
+        document.documentElement.classList.add('disable-theme-transitions');
+
+        localStorage.setItem('theme', document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark');
+        document.documentElement.dataset.theme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+        
+        setTheme(document.documentElement.dataset.theme);
+
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                document.documentElement.classList.remove('disable-theme-transitions');
+            });
+        });
+    }
     
     return (
         <>
@@ -200,7 +219,7 @@ const Header = () => {
                                                             <div>
                                                                 <img alt='Message sender' src={getImageUrl(notif.sender.profilePicture?.path) || avatarPlaceholder} width={20} height={20} style={{ borderRadius: '50%' }} />
                                                                 <span style={{ fontSize: '13px', color: 'var(--bs-gray-600)', position: 'relative', left: '7px' }}>
-                                                                    <strong style={{ color: 'var(--bs-body-color)' }}>
+                                                                    <strong style={{ color: 'var(--text)' }}>
                                                                         <Link to={`/users/${notif.sender._id}`} style={{ color: 'inherit', textDecoration: 'none' }}>
                                                                             {notif.sender.firstName} {notif.sender.lastName}
                                                                         </Link>
@@ -265,11 +284,7 @@ const Header = () => {
                                 <ChevronDownIcon style={{ position: 'relative', top: '1px', color: 'var(--bs-gray-600)' }} />
                             </div>
 
-                            <div
-                                id='account-dropdown'
-                                className='dropdown'
-                                ref={accountDropdownRef}
-                            >
+                            <div id='account-dropdown' className='dropdown' ref={accountDropdownRef}>
                                 <div className='dropdown-header'>
                                     <img
                                         style={{ borderRadius: '50%', margin: '0 auto' }}
@@ -278,15 +293,29 @@ const Header = () => {
                                         width={48}
                                         src={getImageUrl(user.profilePicture?.path) || avatarPlaceholder}
                                     />
-                                    <span style={{ color: 'var(--bs-body-color)', margin: '10px auto' }}>
+                                    <span style={{ margin: '10px auto' }}>
                                         {user.firstName} {user.lastName}
                                     </span>
-                                    <Link to={`/users/${user._id}`} onClick={ () => { setAccountDropdownActive(false) } }>
+                                    <Link to={`/users/${user._id}`} onClick={() => { setAccountDropdownActive(false) }}>
                                         <button type='button' className='btn btn-outline-primary dropdown-profile-btn'>
                                             View profile
                                         </button>
                                     </Link>
                                 </div>
+
+                                <button
+                                    type='button'
+                                    onClick={toggleTheme} 
+                                    style={{ display: 'flex', alignItems: 'center', color: 'var(--bs-gray-600)', background: 'none', border: 'none' }}
+                                >
+                                    {theme === 'light' ? <DarkIcon /> : <LightIcon />}
+                                    <span style={{ position: 'relative', left: '5px', fontWeight: '400' }}>
+                                        {theme === 'light' ?
+                                            'Dark theme' :
+                                            'Light theme'
+                                        }
+                                    </span>
+                                </button>
 
                                 <Link
                                     to='/account'

@@ -7,6 +7,9 @@
 
 .auth-window {
     position: relative;
+    background-color: var(--section);
+    color: var(--text);
+    border: 1px solid var(--border);
     width: 31rem;
     border-radius: 15px;
     text-align: center;
@@ -32,6 +35,8 @@
     padding: 9px 15px;
     opacity: 85%;
     width: 95%;
+    background-color: var(--section);
+    color: var(--text);
 }
 
 .error-message {
@@ -55,6 +60,7 @@
 .eye-icon {
     position: absolute;
     border: none;
+    color: var(--text);
     background: transparent;
     right: 20px;
     top: 9px;
